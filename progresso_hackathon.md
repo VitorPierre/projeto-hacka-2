@@ -52,10 +52,10 @@
 - [ ] Enviar URL do GitHub
 
 ## Prompt base curto para continuidade
-Use este progresso como memória do projeto. Leia o markdown de progresso antes de responder. Continue na mesma linha de raciocínio, com soluções simples, pragmáticas e curtas em tokens. Stack fixa: SQLite + Ruby on Rails + Tailwind CSS. Ferramenta: Antigravity com Gemini. Evite complexidade desnecessária, contexto longo e abstrações prematuras. Ao final, atualize o progresso com o que foi decidido e o próximo passo.
+Use este progresso como memória do projeto. Leia o arquivo `progresso_hackathon.md` antes de responder. Continue na mesma linha de raciocínio, com soluções simples, pragmáticas e curtas em tokens. Stack fixa: SQLite + Ruby on Rails + Tailwind CSS. Ferramenta: Antigravity com Gemini. Evite complexidade desnecessária, contexto longo e abstrações prematuras. Ao final, atualize o `progresso_hackathon.md` com o que foi decidido e o próximo passo.
 
 ## Prompt curto para pedir implementação
-Leia o markdown de progresso e continue de onde parou. Faça apenas o necessário para esta tarefa, com Rails simples, SQLite e Tailwind. Gere código enxuto, fácil de manter e alinhado ao hackathon.
+Leia o markdown `progresso_hackathon.md` e continue de onde parou. Faça apenas o necessário para esta tarefa, com Rails simples, SQLite e Tailwind. Gere código enxuto, fácil de manter e alinhado ao hackathon.
 
 ## Estado atual
 - Stack e forma de trabalho definidas.
