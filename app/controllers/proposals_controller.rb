@@ -1,22 +1,48 @@
 class ProposalsController < ApplicationController
   before_action :require_login
-  before_action :require_student, only: [:new, :create]
   before_action :set_proposal, only: [:show, :update, :accept, :reject, :close]
 
   def new
-    @teacher = User.certified_teachers.find(params[:teacher_id])
+    if current_user.student?
+      @teacher = User.certified_teachers.find(params[:teacher_id])
+      @student = current_user
+    elsif current_user.teacher?
+      @student = User.student.find(params[:student_id])
+      @teacher = current_user
+    else
+      redirect_to root_path, alert: "Acesso não permitido."
+      return
+    end
     @proposal = Proposal.new
   end
 
   def create
-    @proposal = current_user.sent_proposals.build(proposal_params)
+    if current_user.student?
+      @proposal = Proposal.new(proposal_params)
+      @proposal.student = current_user
+      @proposal.teacher_id = proposal_params[:teacher_id]
+    elsif current_user.teacher?
+      @proposal = Proposal.new(proposal_params)
+      @proposal.teacher = current_user
+      @proposal.student_id = proposal_params[:student_id]
+    else
+      redirect_to root_path, alert: "Acesso não permitido."
+      return
+    end
     @proposal.status = :pending
     
     if @proposal.save
       flash[:notice] = "Proposta enviada com sucesso! Aguarde a resposta."
       redirect_to proposal_path(@proposal)
     else
-      @teacher = User.find(proposal_params[:teacher_id])
+      # Reload counterpart for re-rendering the form
+      if current_user.student?
+        @teacher = User.find_by(id: proposal_params[:teacher_id])
+        @student = current_user
+      else
+        @student = User.find_by(id: proposal_params[:student_id])
+        @teacher = current_user
+      end
       flash.now[:alert] = "Não foi possível enviar a proposta: " + @proposal.errors.full_messages.to_sentence
       render :new, status: :unprocessable_entity
     end
@@ -85,6 +111,6 @@ class ProposalsController < ApplicationController
   end
 
   def proposal_params
-    params.require(:proposal).permit(:teacher_id, :subject_id, :price)
+    params.require(:proposal).permit(:teacher_id, :student_id, :subject_id, :price)
   end
 end

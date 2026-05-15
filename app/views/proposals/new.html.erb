@@ -2,10 +2,23 @@
   <h2 class="text-2xl md:text-3xl font-medium text-aprende-text px-2">Enviar Proposta de Aula</h2>
 
   <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm border border-aprende-secondary flex flex-col gap-6">
+    <%# Determine counterpart based on who is creating the proposal %>
+    <% if current_user.student? %>
+      <% counterpart = @teacher %>
+      <% counterpart_label = "Professor" %>
+      <% counterpart_subjects = @teacher.subjects %>
+    <% else %>
+      <% counterpart = @student %>
+      <% counterpart_label = "Aluno" %>
+      <% counterpart_subjects = @student.subjects %>
+    <% end %>
+
     <div class="pb-6 border-b border-aprende-secondary">
-      <h3 class="font-medium text-aprende-muted text-sm uppercase tracking-wider mb-2">Detalhes do Professor</h3>
-      <p class="text-xl font-medium text-aprende-text"><%= @teacher.name %></p>
-      <p class="text-aprende-primary font-medium mt-1"><%= @teacher.education_level.humanize %></p>
+      <h3 class="font-medium text-aprende-muted text-sm uppercase tracking-wider mb-2">Detalhes do <%= counterpart_label %></h3>
+      <p class="text-xl font-medium text-aprende-text"><%= counterpart.name %></p>
+      <% if counterpart.teacher? %>
+        <p class="text-aprende-primary font-medium mt-1"><%= counterpart.education_level.humanize %></p>
+      <% end %>
       
       <% if @teacher.technical? || @teacher.higher? %>
         <div class="mt-4 bg-aprende-secondary/50 border border-aprende-secondary text-aprende-text p-4 rounded-xl text-sm flex gap-3 items-start">
@@ -20,11 +33,15 @@
     </div>
 
     <%= form_with model: @proposal, class: "flex flex-col gap-6" do |f| %>
-      <%= f.hidden_field :teacher_id, value: @teacher.id %>
+      <% if current_user.student? %>
+        <%= f.hidden_field :teacher_id, value: @teacher.id %>
+      <% else %>
+        <%= f.hidden_field :student_id, value: @student.id %>
+      <% end %>
       
       <div class="flex flex-col gap-1">
         <%= f.label :subject_id, "Selecione a Área", class: "text-sm font-medium text-aprende-text" %>
-        <%= f.collection_select :subject_id, @teacher.subjects, :id, :name, { prompt: "Escolha uma especialidade..." }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text" %>
+        <%= f.collection_select :subject_id, counterpart_subjects, :id, :name, { prompt: "Escolha uma especialidade..." }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text" %>
       </div>
 
       <div class="flex flex-col gap-1">
@@ -33,7 +50,8 @@
       </div>
 
       <div class="pt-2 flex flex-col sm:flex-row gap-4">
-        <%= link_to "Cancelar", teachers_path, class: "w-full sm:flex-1 text-center bg-white border border-aprende-secondary hover:bg-aprende-bg text-aprende-muted font-medium py-3 rounded-xl transition-colors" %>
+        <% cancel_path = current_user.student? ? teachers_path : students_path %>
+        <%= link_to "Cancelar", cancel_path, class: "w-full sm:flex-1 text-center bg-white border border-aprende-secondary hover:bg-aprende-bg text-aprende-muted font-medium py-3 rounded-xl transition-colors" %>
         <%= f.submit "Enviar Proposta", class: "w-full sm:flex-1 bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 rounded-xl transition-colors cursor-pointer" %>
       </div>
     <% end %>
