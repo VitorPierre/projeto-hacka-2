@@ -1,0 +1,56 @@
+<div class="max-w-4xl mx-auto w-full flex flex-col gap-6">
+  <h2 class="text-2xl md:text-3xl font-medium text-aprende-text px-2"><%= current_user == @student ? "Meu Painel" : "Perfil de #{@student.name}" %></h2>
+  <!-- Perfil Card -->
+  <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-6 md:p-8 flex flex-col gap-6">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-medium text-aprende-text"><%= @student.name %></h1>
+      
+      <div class="mt-6">
+        <p class="text-sm text-aprende-muted mb-2 font-medium">Áreas de Interesse</p>
+        <div class="flex flex-wrap gap-2">
+          <% @student.subjects.each do |subject| %>
+            <span class="bg-aprende-bg border border-aprende-secondary text-aprende-text text-xs px-3 py-1.5 rounded-full font-medium"><%= subject.name %></span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel do Aluno (Apenas se for o próprio) -->
+  <% if current_user == @student %>
+    <div class="flex flex-col gap-4 mt-2">
+      <h2 class="text-xl md:text-2xl font-medium text-aprende-text px-2">Minhas Propostas</h2>
+      
+      <% if @student.sent_proposals.any? %>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <% @student.sent_proposals.each do |proposal| %>
+            <div class="bg-white rounded-xl shadow-sm border border-aprende-secondary p-5 flex flex-col gap-3">
+              <div class="flex justify-between items-start gap-4">
+                <div>
+                  <p class="text-xs text-aprende-muted">Professor</p>
+                  <p class="font-medium text-aprende-text"><%= proposal.teacher.name %></p>
+                  <p class="text-sm text-aprende-muted mt-1"><%= proposal.subject.name %></p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <p class="text-xs text-aprende-muted">Proposta</p>
+                  <p class="font-bold text-lg text-aprende-primary mt-1"><%= number_to_currency(proposal.price) %></p>
+                </div>
+              </div>
+              <div class="pt-3 border-t border-aprende-secondary mt-auto flex justify-between items-center">
+                <span class="inline-block px-3 py-1 text-xs font-medium rounded-full <%= proposal.status == 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' : 'bg-aprende-bg text-aprende-primary border border-aprende-primary' %>">
+                  <%= proposal.status.humanize %>
+                </span>
+                <%= link_to "Ver Detalhes / Chat", proposal_path(proposal), class: "text-sm text-aprende-primary hover:text-[#159b3f] font-medium" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="bg-white border border-aprende-secondary rounded-xl p-8 text-center shadow-sm">
+          <p class="text-aprende-muted mb-4">Você ainda não enviou propostas.</p>
+          <%= link_to "Encontrar Professores", teachers_path, class: "inline-block bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-full transition-transform hover:scale-[1.02] shadow-sm text-sm" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

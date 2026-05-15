@@ -1,0 +1,41 @@
+<div class="max-w-2xl mx-auto w-full flex flex-col gap-6">
+  <h2 class="text-2xl md:text-3xl font-medium text-aprende-text px-2">Enviar Proposta de Aula</h2>
+
+  <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm border border-aprende-secondary flex flex-col gap-6">
+    <div class="pb-6 border-b border-aprende-secondary">
+      <h3 class="font-medium text-aprende-muted text-sm uppercase tracking-wider mb-2">Detalhes do Professor</h3>
+      <p class="text-xl font-medium text-aprende-text"><%= @teacher.name %></p>
+      <p class="text-aprende-primary font-medium mt-1"><%= @teacher.education_level.humanize %></p>
+      
+      <% if @teacher.technical? || @teacher.higher? %>
+        <div class="mt-4 bg-aprende-secondary/50 border border-aprende-secondary text-aprende-text p-4 rounded-xl text-sm flex gap-3 items-start">
+          <svg class="w-5 h-5 text-aprende-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <strong class="font-medium">Atenção:</strong> Por possuir nível técnico ou superior, este professor exige uma negociação mínima de <strong>R$ 50,00</strong> por hora.
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%= form_with model: @proposal, class: "flex flex-col gap-6" do |f| %>
+      <%= f.hidden_field :teacher_id, value: @teacher.id %>
+      
+      <div class="flex flex-col gap-1">
+        <%= f.label :subject_id, "Selecione a Área", class: "text-sm font-medium text-aprende-text" %>
+        <%= f.collection_select :subject_id, @teacher.subjects, :id, :name, { prompt: "Escolha uma especialidade..." }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text" %>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <%= f.label :price, "Valor Ofertado (R$)", class: "text-sm font-medium text-aprende-text" %>
+        <%= f.number_field :price, step: "0.01", min: "1", placeholder: "Ex: 60.00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text text-lg placeholder-aprende-muted" %>
+      </div>
+
+      <div class="pt-2 flex flex-col sm:flex-row gap-4">
+        <%= link_to "Cancelar", teachers_path, class: "w-full sm:flex-1 text-center bg-white border border-aprende-secondary hover:bg-aprende-bg text-aprende-muted font-medium py-3 rounded-xl transition-colors" %>
+        <%= f.submit "Enviar Proposta", class: "w-full sm:flex-1 bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 rounded-xl transition-colors cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+# No proposals by default, we'll test creation dynamically or add one.
+pending_proposal:
+  student: student
+  teacher: teacher
+  subject: math
+  price: 60.0
+  status: 0

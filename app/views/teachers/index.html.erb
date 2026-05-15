@@ -1,0 +1,53 @@
+<div class="mb-6 md:mb-8">
+  <h2 class="text-2xl md:text-3xl font-medium text-aprende-text">Professores Disponíveis</h2>
+  <p class="text-aprende-muted mt-2">Escolha o profissional ideal e envie uma proposta de aula.</p>
+</div>
+
+<% if @teachers.any? %>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+    <% @teachers.each do |teacher| %>
+      <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-6 md:p-8 flex flex-col h-full gap-4">
+        <div class="flex-1 flex flex-col gap-2">
+          <div>
+            <h3 class="text-xl font-medium text-aprende-text"><%= teacher.name %></h3>
+            <p class="text-aprende-primary font-medium text-sm"><%= teacher.education_level.humanize %></p>
+          </div>
+          
+          <% if teacher.certified? %>
+            <div class="inline-flex items-center gap-1.5 text-xs text-[#0f6b2e] font-medium mt-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Certificado
+            </div>
+          <% end %>
+
+          <% if teacher.subjects.any? %>
+            <div class="mt-4">
+              <p class="text-sm text-aprende-muted mb-3 font-medium">Especialidades</p>
+              <div class="flex flex-wrap gap-2">
+                <% teacher.subjects.each do |subject| %>
+                  <span class="bg-aprende-bg border border-aprende-secondary text-aprende-text text-xs px-3 py-1.5 rounded-full font-medium"><%= subject.name %></span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-aprende-secondary flex flex-col gap-3">
+          <% if current_user&.student? %>
+            <%= link_to "Fazer Proposta", new_proposal_path(teacher_id: teacher.id), class: "block w-full text-center bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 rounded-xl transition-colors" %>
+          <% elsif !current_user %>
+            <%= link_to "Entrar para Fazer Proposta", login_path, class: "block w-full text-center bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 rounded-xl transition-colors" %>
+          <% else %>
+            <%= link_to "Ver Perfil", teacher_path(teacher), class: "block w-full text-center bg-white border border-aprende-secondary hover:bg-aprende-bg text-aprende-text font-medium py-3 rounded-xl transition-colors" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="bg-white border border-aprende-secondary rounded-xl p-8 text-center shadow-sm">
+    <p class="text-aprende-muted">Nenhum professor certificado disponível ainda.</p>
+  </div>
+<% end %>

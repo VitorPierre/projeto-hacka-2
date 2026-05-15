@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Hacka2" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Hacka2">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-aprende-bg text-aprende-text font-sans min-h-screen flex flex-col">
+    <nav class="bg-white/80 backdrop-blur-md border-b border-aprende-secondary px-8 py-4 flex justify-between items-center sticky top-0 z-50 transition-all">
+      <%= link_to root_path, class: "font-medium text-2xl tracking-tight hover:opacity-80 transition-opacity" do %>
+        <span class="text-aprende-text">aprende</span><span class="text-aprende-primary font-bold">AI</span>
+      <% end %>
+      
+      <div class="flex items-center gap-6">
+        <div class="hidden md:flex items-center gap-6">
+          <% if !current_user || current_user.student? %>
+            <%= link_to "Professores", teachers_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+          <% end %>
+          <% if !current_user || current_user.teacher? %>
+            <%= link_to "Alunos", students_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+          <% end %>
+        </div>
+        
+        <div class="hidden md:block w-px h-6 bg-aprende-secondary mx-2"></div>
+        
+        <% if current_user %>
+          <% if current_user.student? %>
+            <%= link_to "Meu Painel", student_path(current_user), class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+          <% else %>
+            <%= link_to "Meu Painel", teacher_path(current_user), class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+          <% end %>
+          <%= button_to "Sair", logout_path, method: :delete, class: "bg-white border border-aprende-secondary hover:border-aprende-primary text-aprende-text font-medium py-2 px-6 rounded-full transition-all text-sm cursor-pointer" %>
+        <% else %>
+          <%= link_to "Entrar", login_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+          <%= link_to "Cadastrar", new_user_path, class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-full transition-transform hover:scale-[1.02] shadow-sm text-sm" %>
+        <% end %>
+      </div>
+    </nav>
+
+    <% if flash[:notice] %>
+      <div class="bg-aprende-secondary text-aprende-text px-6 py-3 border-b border-aprende-primary text-center font-medium">
+        <%= flash[:notice] %>
+      </div>
+    <% end %>
+    <% if flash[:alert] %>
+      <div class="bg-red-50 text-red-700 px-6 py-3 border-b border-red-200 text-center font-medium">
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+
+    <main class="flex-1 w-full max-w-7xl mx-auto p-6">
+      <%= yield %>
+    </main>
+  </body>
+</html>
