@@ -9,14 +9,47 @@
         
         <div class="flex flex-col gap-4 mt-6">
           <div>
-            <p class="text-sm text-aprende-muted mb-2 font-medium">Especialidades</p>
-            <div class="flex flex-wrap gap-2">
-              <% @teacher.subjects.each do |subject| %>
-                <span class="bg-aprende-bg border border-aprende-secondary text-aprende-text text-xs px-3 py-1.5 rounded-full font-medium"><%= subject.name %></span>
+            <div class="flex items-center gap-3 mb-2">
+              <p class="text-sm text-aprende-muted font-medium">Especialidades</p>
+                <% if current_user == @teacher %>
+                  <button onclick="document.getElementById('edit_subjects').classList.toggle('hidden')" class="text-sm text-aprende-primary border border-aprende-primary rounded-full px-3 py-1 hover:bg-aprende-bg transition-colors"> 
+                  + Editar
+                  </button>
+                <% end %>
+            </div>
+          <div>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <% if @teacher.subjects.any? %>
+                <% @teacher.subjects.each do |subject| %>
+                  <span class="bg-aprende-bg border border-aprende-secondary text-aprende-text text-xs px-3 py-1.5 rounded-full font-medium"><%= subject.name %></span>
+                  <% end %>
+                <% else %>
+                  <p class="text-sm text-aprende-muted italic">Nenhuma especialidade adicionada.</p>
               <% end %>
             </div>
+            <% if current_user == @teacher %>
+              <div id="edit_subjects" class="hidden mt-4 border border-aprende-secondary rounded-xl p-4 bg-aprende-bg">
+                  <p class="text-sm font-medium text-aprende-primary mb-3">Selecione suas especialidades:</p>
+                <%= form_with url: update_subjects_teacher_path(@teacher), method: :patch, local: true do |f| %> 
+                  <div class="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-1">
+                      <% Subject.all.each do |subject| %>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-white rounded-lg px-2 py-1.5 transition-colors">
+                         <input type="checkbox" name="subject_ids[]" value="<%= subject.id %>"
+                          <%= @teacher.subject_ids.include?(subject.id) ? "checked" : '' %>
+                           class="h-4 w-4 text-aprende-primary rounded border-aprende-secondary focus:ring-aprende-primary">
+                          <span class="text-sm text-aprende-text"><%= subject.name %></span>
+                        </label>
+                      <% end %>
+                  </div>
+                  <div class="mt-4 flex justify-end">
+                    <%= f.submit "Salvar especialidades", class: "bg-aprende-primary hover:bg-[#159b3f] text-white text-sm font-medium py-2 px-6 rounded-xl transition-colors cursor-pointer" %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
           </div>
-
+                 
+          </div>
           <% if @teacher.certified? %>
             <div class="inline-flex items-center gap-2 bg-[#e8f6ed] text-[#0f6b2e] px-4 py-2 rounded-full text-sm font-medium border border-[#c2e8cf] self-start">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,6 +109,39 @@
       <% else %>
         <div class="bg-white border border-aprende-secondary rounded-xl p-8 text-center shadow-sm">
           <p class="text-aprende-muted">Você ainda não recebeu propostas.</p>
+        </div>
+      <% end %>
+
+      <% if @teacher.subjects.any? %>
+        <% compatible_students = User.student.includes(:subjects).select { |s| (s.subject_ids & @teacher.subject_ids).any? } %>
+        <div class="mt-6">
+          <h2 class="text-xl md:text-2xl font-medium text-aprende-text px-2">Alunos compatíveis com suas especialidades</h2>
+          <% if compatible_students.any? %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <% compatible_students.first(5).each do |student| %>
+                <% match_count = (student.subject_ids & @teacher.subject_ids).count %>
+                <% total = student.subject_ids.count %>
+                <% percent = total.positive? ? (match_count.to_f / total * 100).round : 0 %>
+                <%= link_to student_path(student), class: "bg-white border border-aprende-secondary rounded-xl p-4 flex items-center justify-between hover:border-aprende-primary transition-colors" do %>
+                  <div class="space-y-2">
+                    <p class="font-medium text-aprende-text"><%= student.name %></p>
+                    <div class="flex flex-wrap gap-2">
+                      <% (student.subject_ids & @teacher.subject_ids).each do |subject_id| %>
+                        <% subject = Subject.find(subject_id) %>
+                        <span class="bg-aprende-bg border border-aprende-secondary text-aprende-text text-xs px-2 py-0.5 rounded-full"><%= subject.name %></span>
+                      <% end %>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-2xl font-medium text-aprende-primary"><%= percent %>%</p>
+                    <p class="text-xs text-aprende-muted">match</p>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-aprende-muted italic mt-4">Nenhum aluno compatível encontrado.</p>
+          <% end %>
         </div>
       <% end %>
     </div>

@@ -7,13 +7,95 @@
         <h1 class="text-2xl md:text-3xl font-medium text-aprende-text"><%= @student.name %></h1>
         
         <div class="mt-6">
-          <p class="text-sm text-aprende-muted mb-2 font-medium">Áreas de Interesse</p>
-          <div class="flex flex-wrap gap-2">
-            <% @student.subjects.each do |subject| %>
-              <span class="bg-aprende-bg border border-aprende-secondary text-aprende-text text-xs px-3 py-1.5 rounded-full font-medium"><%= subject.name %></span>
+          <div class="flex items-center justify-between mb-4">
+            <p class="text-sm text-aprende-muted font-medium">Áreas de Interesse</p>
+            <% if current_user == @student %>
+              <button type="button" onclick="document.getElementById('edit_subjects').classList.toggle('hidden')" class="text-xs text-aprende-primary border border-aprende-primary rounded-full px-3 py-1 hover:bg-aprende-bg transition-colors">
+                + Editar
+              </button>
             <% end %>
           </div>
+
+          <!-- Exibição das Áreas Atuais -->
+          <div class="flex flex-wrap gap-2">
+            <% if @student.subjects.any? %>
+              <% @student.subjects.each do |subject| %>
+                <span class="bg-aprende-bg border border-aprende-secondary text-aprende-text text-xs px-3 py-1.5 rounded-full font-medium"><%= subject.name %></span>
+              <% end %>
+            <% else %>
+              <p class="text-sm text-aprende-muted">Nenhuma área de interesse cadastrada.</p>
+            <% end %>
+          </div>
+
+          <!-- Painel de Edição de Áreas (Oculto) -->
+          <% if current_user == @student %>
+            <div id="edit_subjects" class="hidden mt-4 p-4 bg-aprende-bg border border-aprende-secondary rounded-xl">
+              <%= form_with url: update_subjects_student_path(@student), method: :patch, local: true do |f| %>
+                <p class="text-sm font-medium text-aprende-text mb-3">Selecione suas áreas de interesse:</p>
+                <div class="flex flex-wrap gap-2 max-h-64 overflow-y-auto mb-4">
+                  <% Subject.all.each do |subject| %>
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-white rounded-lg px-2 py-1.5 transition-colors">
+                      <%= f.check_box :subject_ids, { multiple: true, include_hidden: false }, subject.id, nil %>
+                      <span class="text-sm text-aprende-text"><%= subject.name %></span>
+                    </label>
+                  <% end %>
+                </div>
+                <div class="flex gap-2">
+                  <%= f.submit "Salvar Áreas", class: "bg-aprende-primary hover:bg-[#159b3f] text-white text-sm px-4 py-2 rounded-full font-medium transition-colors" %>
+                  <button type="button" onclick="document.getElementById('edit_subjects').classList.add('hidden')" class="bg-aprende-bg border border-aprende-secondary text-aprende-text text-sm px-4 py-2 rounded-full font-medium transition-colors hover:bg-gray-100">
+                    Cancelar
+                  </button>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
         </div>
+
+        <!-- Professores Compatíveis -->
+        <% if @student.subjects.any? %>
+          <div class="mt-8">
+            <h3 class="text-sm text-aprende-muted mb-4 font-medium">Professores Compatíveis</h3>
+            <% compatible_teachers = User.where(role: :teacher, certified: true)
+                                         .joins(:subjects)
+                                         .where(subjects: { id: @student.subject_ids })
+                                         .distinct %>
+            
+            <% if compatible_teachers.any? %>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <% compatible_teachers.each do |teacher| %>
+                  <% match_count = (teacher.subject_ids & @student.subject_ids).count %>
+                  <% match_percentage = (match_count.to_f / @student.subjects.count * 100).round %>
+                  
+                  <div class="bg-white rounded-xl border border-aprende-secondary p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 class="font-medium text-aprende-text"><%= teacher.name %></h4>
+                        <p class="text-xs text-aprende-muted mt-1"><%= teacher.education_level || "Escolaridade não especificada" %></p>
+                      </div>
+                      <span class="inline-block px-2 py-1 text-xs font-bold rounded-full bg-aprende-primary text-white"><%= match_percentage %>%</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <p class="text-xs text-aprende-muted mb-2">Matérias em comum:</p>
+                      <div class="flex flex-wrap gap-1.5">
+                        <% (teacher.subject_ids & @student.subject_ids).each do |subject_id| %>
+                          <% subject = Subject.find(subject_id) %>
+                          <span class="bg-aprende-bg border border-aprende-secondary text-aprende-text text-xs px-2 py-1 rounded-full font-medium"><%= subject.name %></span>
+                        <% end %>
+                      </div>
+                    </div>
+                    
+                    <%= link_to "Ver Perfil", student_teacher_path(@student, teacher), class: "inline-block text-sm text-aprende-primary hover:text-[#159b3f] font-medium transition-colors" %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="bg-white border border-aprende-secondary rounded-xl p-4 text-center shadow-sm">
+                <p class="text-aprende-muted text-sm">Nenhum professor compatível encontrado.</p>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
       </div>
 
       <% if current_user && current_user.teacher? && current_user != @student %>

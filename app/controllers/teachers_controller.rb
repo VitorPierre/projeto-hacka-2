@@ -12,6 +12,16 @@ class TeachersController < ApplicationController
     end
   end
 
+  def update_subjects
+    @teacher = current_user
+    @teacher.subject_ids = params[:subject_ids] || []
+    if @teacher.save
+      redirect_to teacher_path(@teacher), notice: "Especialidades atualizadas com sucesso!"
+    else
+      redirect_to teacher_path(@teacher), alert: "Erro aoatualizar as especialidades: "
+    end
+  end
+
   private
 
   def check_teacher_access
