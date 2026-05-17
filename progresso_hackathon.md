@@ -454,6 +454,19 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
   5. **Suíte Completa de Testes (`banned_users_visibility_test.rb`):**
      - Criados 6 testes de integração detalhados cobrindo: exclusão das listagens públicas e home, bypass de administrador na visualização pública, bloqueio na criação de propostas por rotas de interface, e validação robusta no model de propostas. Todos os testes integrados de visibilidade passam com sucesso.
 
+## 💾 Persistência Definitiva de Uploads no Render (Active Storage)
+- **Causa Raiz Identificada:** O ambiente de produção utilizava o serviço de armazenamento `:local` que apontava para o diretório efêmero `storage/` local. Como instâncias de deploy no Render possuem um sistema de arquivos efêmero (ephemeral storage), todos os arquivos enviados por usuários (como fotos de perfil) eram deletados a cada novo deploy ou reinicialização.
+- **Implementação Inteligente de Persistência:**
+  1. **Configuração Autodectável (`config/storage.yml`):** Refatorado o serviço `:local` utilizando lógica ERB dinâmica.
+  2. **Ordem de Prioridade de Boot:**
+     - Primeiro, busca o caminho configurado explicitamente na variável de ambiente `ACTIVE_STORAGE_PERSISTENT_DIR`.
+     - Caso não encontre, detecta automaticamente se o diretório `/data` (caminho padrão de discos persistentes montados no Render) existe e possui permissão de escrita, utilizando `/data/storage`.
+     - Caso não encontre, realiza o mesmo teste para `/var/data`, utilizando `/var/data/storage`.
+     - Como *fallback* definitivo (desenvolvimento local, testes locais ou ambientes sem disco montado), cai suavemente de volta na pasta padrão `storage/` no diretório raiz do Rails.
+  3. **Vantagens Obtidas:** 
+     - **Zero-config em Desenvolvimento/Testes:** A suíte de testes e o setup local de desenvolvimento continuam rodando 100% isolados sem necessidade de configuração adicional.
+     - **Persistência Total no Render:** Fotos de perfil e mídias do chat agora sobrevivem a qualquer quantidade de deploys e commits, necessitando apenas da adição padrão de um Persistent Disk no painel do Render.
+
 ## 🔜 Próximos Passos Evolutivos
 - Implementar alertas dinâmicos de termos impróprios em tempo real no frontend com JavaScript antes mesmo da submissão do formulário.
 - Criar tela de log visual das ações administrativas (histórico de auditoria) para consulta rápida na interface admin.
