@@ -29,6 +29,7 @@ class Proposal < ApplicationRecord
   validate :users_are_different
   validate :sender_is_participant
   validate :users_are_not_banned
+  validate :users_are_not_admins
   validate :valid_status_transition, on: :update
 
   validates :subject_id, uniqueness: { 
@@ -132,6 +133,11 @@ class Proposal < ApplicationRecord
   def users_are_not_banned
     errors.add(:student, "está banido e não pode participar de propostas") if student&.banned?
     errors.add(:teacher, "está banido e não pode participar de propostas") if teacher&.banned?
+  end
+
+  def users_are_not_admins
+    errors.add(:student, "com perfil de administrador não pode participar de propostas") if student&.admin?
+    errors.add(:teacher, "com perfil de administrador não pode participar de propostas") if teacher&.admin?
   end
 
   def valid_status_transition

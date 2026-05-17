@@ -495,6 +495,21 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
   4. **Testes de Integração Robustos (`admin_audit_logs_test.rb`):**
      - Adicionada suíte de testes integrada validando a restrição de rotas para não-admins, checagem AJAX pública, inserções no banco em tempo de moderação, e a renderização do diário oficial visual. Testes rodando com 100% de sucesso.
 
+## 🚫 Ocultação de Administradores em Exibições Públicas
+- **Causa Raiz/Necessidade:** Evitar que contas com a flag de administrador (`admin: true`) apareçam erroneamente como professores ou estudantes elegíveis nas listagens, buscas ou landing pages públicas da plataforma. O acesso dos administradores deve ser restrito e visível estritamente no Painel Administrativo.
+- **Implementação Realizada:**
+  1. **Centralização no Escopo Central (`User#public_view`):**
+     - O escopo `public_view` foi estendido de `where.not(status: :banned)` para `where.not(status: :banned).where(admin: false)`.
+     - Como o escopo `certified_teachers` e as buscas de alunos em `StudentsController#index` herdam ou utilizam `public_view`, toda e qualquer listagem pública, carrossel de home page, caixa de busca de matérias ou filtros passaram a excluir automaticamente administradores do fluxo.
+  2. **Bloqueio de Acesso Direto nos Controllers Públicos (`show`):**
+     - Adicionadas validações rigorosas em `TeachersController#show` e `StudentsController#show` para perfis que possuam `admin: true`.
+     - Se um usuário comum tentar burlar o fluxo digitando a URL direta para o ID de um administrador (ex: `/teachers/4`), o servidor responde imediatamente com `404 Not Found` (`raise ActiveRecord::RecordNotFound`).
+     - Foi mantido um bypass exclusivo para administradores autenticados (`!current_user&.admin?`), de modo que outros administradores possam continuar acessando e editando esses perfis livremente.
+  3. **Blindagem e Validação no Model de Transações (`Proposal`):**
+     - Adicionado o validador `validate :users_are_not_admins` em `Proposal` que impede que propostas de aula sejam abertas ou persistidas no banco se o estudante ou o professor envolvidos possuírem `admin: true`. Isso blinda a integridade transacional contra bypasses de API direta.
+  4. **Testes de Integração Robustos (`admin_visibility_prevention_test.rb`):**
+     - Criados 6 testes de integração cobrindo a ausência de admins na listagem pública de professores, ausência nas landing pages, bloqueio 404 para alunos comuns, liberação para outros admins, integridade do banco de propostas, e a garantia de que admins permanecem 100% visíveis na fila de moderação administrativa.
+
 ## 🔜 Próximos Passos Evolutivos
 - Realizar deploy e testar o envio de mídias e atualização de perfis no Render.
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.

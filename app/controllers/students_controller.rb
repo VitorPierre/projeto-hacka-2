@@ -10,7 +10,7 @@ class StudentsController < ApplicationController
 
   def show
     @student = User.student.find(params[:id])
-    if @student.banned? && !current_user&.admin?
+    if (@student.banned? || @student.admin?) && !current_user&.admin?
       raise ActiveRecord::RecordNotFound
     end
     if current_user == @student
