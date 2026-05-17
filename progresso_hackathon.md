@@ -372,6 +372,18 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
   3. **Revisão do database.yml e render-build.sh:** Mantida a unificação estável sob `DATABASE_URL` no Render, configurando o script de build para rodar `bundle exec rails db:migrate` que agora processa perfeitamente todas as migrações sem conflito de versão.
   4. **Active Storage Blindado:** Com as tabelas do Solid Queue existentes (`solid_queue_jobs`), o enfileiramento de `ActiveStorage::PurgeJob` e `AnalysisJob` funciona perfeitamente sem gerar erros 500 ou quebras de backend.
 
+## 🏷️ Gerenciador de Especialidades Integrado (Filtros)
+- **Causa Raiz/Necessidade:** Havia a necessidade de cadastrar, editar e remover especialidades (`Subject`) de maneira fluida e dinâmica, diretamente nas telas de busca de Professores e Alunos, sem quebras de layout ou redundância de fluxo.
+- **Implementação Realizada:**
+  1. **Interface Autocontida (subjects/manager):** Criado o partial `app/views/subjects/_manager.html.erb` que renderiza o filtro de busca ao lado de um botão redondo de "+" na cor verde `aprende-primary`.
+  2. **Painel Flutuante (Dropdown):** Clicar no botão "+" abre um painel flutuante elegante que lista todas as especialidades cadastradas e oferece formulários em linha para criação, edição de nome (pencil) e remoção segura (trash).
+  3. **Controlador RESTful Hardened (SubjectsController):** Criado o `SubjectsController` para processar as ações de `create`, `update` e `destroy`. Ele recebe o parâmetro `:redirect_to` para garantir que o usuário continue na mesma página de busca (`teachers_path` ou `students_path`) após qualquer alteração.
+  4. **Proteção de Integridade & Validação de Negócios:**
+     - O model `Subject` foi reforçado com `before_validation` para remover espaços em branco adicionais.
+     - Adicionada validação de unicidade case-insensitive para evitar nomes duplicados.
+     - Implementado um callback de `before_destroy` para impedir a remoção de especialidades que possuam propostas de aula ativas ou históricas associadas, blindando a integridade referencial do banco.
+  5. **Cobertura de Testes Sólida:** Criado o teste de integração `test/integration/subjects_management_test.rb` que garante 100% de cobertura nos fluxos de criação, recusa de duplicidade, atualização, remoção permitida e impedimento de remoção proibida.
+
 ## 🔜 Próximos Passos Evolutivos
 - Realizar deploy e testar o envio de mídias e atualização de perfis no Render.
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.

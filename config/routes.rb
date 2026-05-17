@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   resources :users, only: [:new, :create, :edit, :update]
   resources :students, only: [:index, :show]
   resources :teachers, only: [:index, :show]
+  resources :subjects, only: [:create, :update, :destroy]
   resources :proposals, only: [:new, :create, :show, :update] do
     member do
       patch :accept
