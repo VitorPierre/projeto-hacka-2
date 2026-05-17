@@ -72,6 +72,18 @@ A integração com IA no [AiService](file:///c:/Users/vitor/documents/hacka2/app
 *   **Filtro Temático Acadêmico:** Antes de enviar a requisição à API do Gemini, o serviço executa uma pré-análise proativa no texto do prompt. Se a questão não for relacionada a tópicos de estudo, planejamento escolar ou pedagogia, a IA recusa a resposta de forma educada, protegendo o uso de tokens da plataforma.
 *   **Parser de Markdown Resiliente:** As respostas recebidas da IA em Markdown são passadas pelo helper `format_ai_response` no [ApplicationHelper](file:///c:/Users/vitor/documents/hacka2/app/helpers/application_helper.rb), que escapa toda e qualquer tag HTML maliciosa e, em seguida, reconstrói o texto em elementos HTML estilizados de forma acessível com as classes de cor e espaçamento do Tailwind.
 
+> [!IMPORTANT]
+> Para que as funcionalidades de Inteligência Artificial do **aprendeAI** funcionem corretamente, é obrigatório configurar uma chave de API válida de um provedor de IA no ambiente local da aplicação.
+>
+> Exemplo:
+> ```bash
+> GEMINI_API_KEY=sua_chave_aqui
+> ```
+>
+> Sem essa configuração, recursos como perguntas acadêmicas, apoio pedagógico por IA e respostas inteligentes não funcionarão.
+>
+> **Importante:** nunca envie sua chave real para o GitHub. Armazene-a em variáveis de ambiente ou em um arquivo `.env` que esteja no `.gitignore`. 
+
 ### 5. Atividades Pedagógicas Interativas de Fixação
 *   Professores contam com uma aba exclusiva no Chat para formular e enviar tarefas de fixação.
 *   **Tipos de Atividades:** Podem ser de resposta discursiva aberta ou de múltipla escolha (questões fechadas com opções delimitadas).
