@@ -30,7 +30,7 @@ class TeachersController < ApplicationController
   private
 
   def check_teacher_access
-    if current_user&.teacher? && (action_name == 'index' || params[:id].to_s != current_user.id.to_s)
+    if current_user&.teacher? && !current_user&.admin? && (action_name == 'index' || params[:id].to_s != current_user.id.to_s)
       redirect_to students_path, alert: "Você só tem acesso a alunos ou ao seu painel."
     end
   end

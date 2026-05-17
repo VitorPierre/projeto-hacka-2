@@ -402,6 +402,7 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
 - **Causa Raiz/Necessidade:** Permitir que administradores identifiquem perfis suspeitos na base atual, revisem-nos individualmente ou em lote, editem nomes inapropriados de forma corretiva, suspendam ou banam infratores persistentes e mantenham um registro transparente de auditoria.
 - **Implementação Realizada:**
   1. **Schema Seguro (`db/migrate`):**
+- **Schema Seguro (`db/migrate`):**
      - Adicionada a coluna `status` (inteiro, default 0: ativo, 1: suspenso, 2: banido) na tabela `users`.
      - Adicionada a coluna `moderation_status` (inteiro, default 0: não revisado, 1: suspeito, 2: revisado seguro) para gerenciar o fluxo de aprovação e bypass.
      - Adicionada a coluna `admin` (booleano, default false) para controle de acesso restrito.
@@ -420,6 +421,11 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
      - Barra de busca dinâmica com ícone de lupa e menu de seleção de status.
      - Suporte nativo para checkboxes com seletor master inteligente e contagem automática em JavaScript.
      - Preserva e propaga parâmetros ocultos (`tab`, `search`, `status_filter`) nos formulários, garantindo que o admin não perca sua filtragem ao aplicar ações.
+     - **Refinamento Premium do Frontend (UX/UI):** Substituição da antiga tabela/lista densa e genérica por cards individuais amplos, arejados e modernos com cantos arredondados (`rounded-[1.5rem]`), bordas `border-aprende-secondary` e fundos em branco puro com sombras suaves, garantindo consistência visual perfeita com a listagem de professores e alunos do aprendeAI.
+     - **Componentes Refinados:** A barra de ações em lote foi encapsulada em um card próprio destacado e arredondado, contendo botões de CTA reativos e ícones SVG harmoniosos.
+     - **Badges e Destaques:** Todos os badges de papéis (Estudante/Professor) e de status de moderação (Ativo, Suspenso, Banido) foram desenhados com contornos elegantes usando a paleta HSL e bordas finas.
+     - **Campos Analisados e Ações:** Os blocos contendo termos flagrados (`name`, `availability`, `experience`, `preferences`) foram organizados dentro de um contêiner suave `bg-aprende-bg/30` com micro-espaçamentos, facilitando a legibilidade. Formulários de correção inline (salvar nome) e botões rápidos de ação de linha receberam cantos `rounded-xl` e animações de escala no hover.
+     - **Preservação de DOM:** O alinhamento manteve 100% de compatibilidade estrutural das IDs, classes funcionais de checkboxes e parâmetros de rotas, mantendo o JavaScript perfeitamente compatível.
    6. **Mecanismo de Segurança e Restrição de Acesso:**
       - Bloqueio completo na rota de login (`SessionsController#create`) para contas suspensas ou banidas com alertas personalizados.
       - Proteção ativa no `ApplicationController#current_user` que encerra a sessão imediatamente e desloga o usuário caso seu status mude para suspenso ou banido enquanto ele navega na plataforma.

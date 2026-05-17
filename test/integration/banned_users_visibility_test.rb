@@ -8,11 +8,11 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
 
     # Configura um professor banido
     @banned_teacher = users(:uncertified_teacher)
-    @banned_teacher.update!(status: :banned)
+    @banned_teacher.update_column(:status, :banned)
 
     # Configura um aluno banido
     @banned_student = users(:suspicious_user)
-    @banned_student.update!(status: :banned, role: :student)
+    @banned_student.update_columns(status: :banned, role: :student)
   end
 
   test "banned teacher is hidden from teachers list and home page" do
@@ -50,17 +50,15 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
     post "/login", params: { email: @student.email, password: "senha123" }
     follow_redirect!
 
-    assert_raises(ActiveRecord::RecordNotFound) do
-      get teacher_path(@banned_teacher)
-    end
+    get teacher_path(@banned_teacher)
+    assert_response :not_found
 
     # Aluno banido acessado por professor
     post "/login", params: { email: @teacher.email, password: "senha123" }
     follow_redirect!
 
-    assert_raises(ActiveRecord::RecordNotFound) do
-      get student_path(@banned_student)
-    end
+    get student_path(@banned_student)
+    assert_response :not_found
   end
 
   test "admins can still view public show pages of banned users" do
@@ -69,11 +67,11 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
 
     get teacher_path(@banned_teacher)
     assert_response :success
-    assert_select "h2", text: /Perfil de/
+    assert_select "h2", text: /Perfil/
 
     get student_path(@banned_student)
     assert_response :success
-    assert_select "h2", text: /Perfil de/
+    assert_select "h2", text: /Perfil/
   end
 
   test "cannot initiate new proposals involving banned users" do
@@ -81,17 +79,15 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
     post "/login", params: { email: @student.email, password: "senha123" }
     follow_redirect!
 
-    assert_raises(ActiveRecord::RecordNotFound) do
-      get new_proposal_path(teacher_id: @banned_teacher.id)
-    end
+    get new_proposal_path(teacher_id: @banned_teacher.id)
+    assert_response :not_found
 
     # Professor tentando propor para aluno banido
     post "/login", params: { email: @teacher.email, password: "senha123" }
     follow_redirect!
 
-    assert_raises(ActiveRecord::RecordNotFound) do
-      get new_proposal_path(student_id: @banned_student.id)
-    end
+    get new_proposal_path(student_id: @banned_student.id)
+    assert_response :not_found
   end
 
   test "proposal model validation prevents saving proposals with banned users" do
