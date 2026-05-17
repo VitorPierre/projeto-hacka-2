@@ -6,4 +6,6 @@ pending_proposal:
   price: 60.0
   status: 0
   sender: student
+  modality: 2
+  duration: 60
 

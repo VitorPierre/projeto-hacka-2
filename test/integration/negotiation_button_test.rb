@@ -85,7 +85,9 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
         proposal: {
           student_id: other_student.id,
           subject_id: subjects(:math).id,
-          price: 75.0
+          price: 75.0,
+          modality: "focused_mentoring",
+          duration: 60
         }
       }
     end
@@ -108,7 +110,9 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
         proposal: {
           teacher_id: other_teacher.id,
           subject_id: subjects(:programming).id,
-          price: 80.0
+          price: 80.0,
+          modality: "focused_mentoring",
+          duration: 60
         }
       }
     end

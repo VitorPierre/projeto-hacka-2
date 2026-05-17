@@ -20,7 +20,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
 
     proposal = nil
     assert_difference('Proposal.count', 1) do
-      post proposals_path, params: { proposal: { teacher_id: @teacher.id, subject_id: new_subject.id, price: 60.0 } }
+      post proposals_path, params: { proposal: { teacher_id: @teacher.id, subject_id: new_subject.id, price: 60.0, modality: "focused_mentoring", duration: 60 } }
       proposal = Proposal.last
     end
 
@@ -39,7 +39,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
     post login_path, params: { email: @student.email, password: "senha123" }
     new_subject = Subject.create!(name: "Química")
 
-    post proposals_path, params: { proposal: { teacher_id: @teacher.id, subject_id: new_subject.id, price: 75.0 } }
+    post proposals_path, params: { proposal: { teacher_id: @teacher.id, subject_id: new_subject.id, price: 75.0, modality: "focused_mentoring", duration: 60 } }
     proposal = Proposal.last
 
     assert_equal @student.id, proposal.student_id
@@ -64,7 +64,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
 
     proposal = nil
     assert_difference('Proposal.count', 1) do
-      post proposals_path, params: { proposal: { student_id: other_student.id, subject_id: new_subject.id, price: 80.0 } }
+      post proposals_path, params: { proposal: { student_id: other_student.id, subject_id: new_subject.id, price: 80.0, modality: "focused_mentoring", duration: 60 } }
       proposal = Proposal.last
     end
 
@@ -83,7 +83,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
     post login_path, params: { email: @teacher.email, password: "senha123" }
     other_student = User.create!(name: "Aluno Persist", email: "persist@aluno.com", password: "senha123", role: "student", phone: "11988888888", cpf: "22222222222")
     
-    post proposals_path, params: { proposal: { student_id: other_student.id, subject_id: @subject.id, price: 90.0 } }
+    post proposals_path, params: { proposal: { student_id: other_student.id, subject_id: @subject.id, price: 90.0, modality: "focused_mentoring", duration: 60 } }
     proposal = Proposal.last
 
     assert_equal other_student.id, proposal.student_id
@@ -107,7 +107,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
 
   test "student (recipient) can accept a teacher-sent proposal" do
     other_student = User.create!(name: "Aluno Accept", email: "accept@aluno.com", password: "senha123", role: "student", phone: "11999999999", cpf: "11111111111")
-    proposal = Proposal.create!(student: other_student, teacher: @teacher, subject: @subject, price: 60.0, sender: @teacher)
+    proposal = Proposal.create!(student: other_student, teacher: @teacher, subject: @subject, price: 60.0, sender: @teacher, modality: :focused_mentoring, duration: 60)
 
     post login_path, params: { email: other_student.email, password: "senha123" }
     patch accept_proposal_path(proposal)
@@ -136,7 +136,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
 
   test "student (recipient) can reject a teacher-sent proposal" do
     other_student = User.create!(name: "Aluno Reject", email: "reject@aluno.com", password: "senha123", role: "student", phone: "11988888888", cpf: "22222222222")
-    proposal = Proposal.create!(student: other_student, teacher: @teacher, subject: @subject, price: 60.0, sender: @teacher)
+    proposal = Proposal.create!(student: other_student, teacher: @teacher, subject: @subject, price: 60.0, sender: @teacher, modality: :focused_mentoring, duration: 60)
 
     post login_path, params: { email: other_student.email, password: "senha123" }
     patch reject_proposal_path(proposal)
@@ -235,7 +235,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
 
   test "student panel shows all proposals including teacher-sent" do
     # Create a proposal sent by the teacher to this student
-    Proposal.create!(student: @student, teacher: @teacher, subject: subjects(:programming), price: 70.0, sender: @teacher)
+    Proposal.create!(student: @student, teacher: @teacher, subject: subjects(:programming), price: 70.0, sender: @teacher, modality: :focused_mentoring, duration: 60)
 
     post login_path, params: { email: @student.email, password: "senha123" }
     get student_path(@student)
@@ -276,7 +276,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
     # pending_proposal was sent by student to teacher, so teacher is recipient
     # Let's make teacher the sender and student the recipient by creating a new proposal where sender is teacher
     new_subject = subjects(:programming)
-    proposal = Proposal.create!(student: @student, teacher: @teacher, subject: new_subject, price: 80.0, sender: @teacher, status: :pending)
+    proposal = Proposal.create!(student: @student, teacher: @teacher, subject: new_subject, price: 80.0, sender: @teacher, status: :pending, modality: :focused_mentoring, duration: 60)
 
     post login_path, params: { email: @student.email, password: "senha123" }
 

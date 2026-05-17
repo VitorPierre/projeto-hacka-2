@@ -105,7 +105,8 @@ class Proposal < ApplicationRecord
                 end
 
     if price.to_f < min_price
-      errors.add(:price, "deve ser no mínimo R$ #{'%.2f' % min_price} para professores certificados nesta modalidade")
+      formatted_min_price = ('%.2f' % min_price).gsub('.', ',')
+      errors.add(:price, "deve ser no mínimo R$ #{formatted_min_price} para professores certificados nesta modalidade")
     end
   end
 
