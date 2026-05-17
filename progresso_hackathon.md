@@ -361,7 +361,19 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
 - **Bilateralidade Dinâmica (WebSockets vs CSS):** A view `_message.html.erb` foi purificada de checagens de `current_user` (que vêm nulas do WebSocket/Background Job). Em vez disso, a view de Proposta injeta CSS puramente reativo no navegador (via pseudo tag `<style>`) que cruza o `data-sender-id` da mensagem com o ID do visualizador e aciona um `flex-row-reverse`. Nenhuma linha de JS complexo ou views duplicadas foi necessária, a UI responde nativamente, resolvendo a arquitetura de chat bilateral perfeitamente.
 - **Regras de Negociação e Mídia no Chat:** O campo de texto do chat fica disponível desde a criação da proposta (permitindo negociação livre e contra-propostas) até o término da aula. No entanto, o envio de **anexos e acesso à videochamada** permanecem desativados visualmente (e funcionalmente) até que o status da proposta conste como `paid?` (pago), reforçando o fluxo de monetização.
 
+## 🛠️ Correção da Infraestrutura de Fila e Cache (Deploy Render)
+- **Causa Raiz/Necessidade:** No Rails 8, o Solid Queue, Solid Cache e Solid Cable são configurados por padrão como múltiplos bancos de dados em produção. No Render (e ambientes PaaS com banco de dados PostgreSQL único), eles apontavam para o mesmo `DATABASE_URL`. Sem tabelas isoladas de controle de migração (`schema_migrations`), as migrações geradas com o mesmo timestamp colidiam, fazendo com que apenas a primeira migration (cache) rodasse, ignorando as tabelas de fila (`solid_queue_jobs`) e chat/cable. Isso causava erro 500 no upload de fotos/edição de perfil ao tentar purgar arquivos antigos via Active Storage (`ActiveStorage::PurgeJob`).
+- **Correção Aplicada:**
+  1. **Remoção de Conflitos:** Deletadas as antigas migrations que usavam o mesmo timestamp conflitante (`20260517000001`).
+  2. **Geração de Migrations com Timestamps Únicos:**
+     - Criada `db/cache_migrate/20260517000001_create_solid_cache_entries.rb`
+     - Criada `db/queue_migrate/20260517000002_create_solid_queue_tables.rb`
+     - Criada `db/cable_migrate/20260517000003_create_solid_cable_messages.rb`
+  3. **Revisão do database.yml e render-build.sh:** Mantida a unificação estável sob `DATABASE_URL` no Render, configurando o script de build para rodar `bundle exec rails db:migrate` que agora processa perfeitamente todas as migrações sem conflito de versão.
+  4. **Active Storage Blindado:** Com as tabelas do Solid Queue existentes (`solid_queue_jobs`), o enfileiramento de `ActiveStorage::PurgeJob` e `AnalysisJob` funciona perfeitamente sem gerar erros 500 ou quebras de backend.
+
 ## 🔜 Próximos Passos Evolutivos
+- Realizar deploy e testar o envio de mídias e atualização de perfis no Render.
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
 - Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.
 - Sistema de feedback/rating pós-sessão para ranquear professores e refinar indicações algorítmicas.
