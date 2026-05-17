@@ -1,0 +1,99 @@
+class Admin::ModerationController < ApplicationController
+  before_action :require_admin
+
+  def index
+    # Encontra todos os perfis suspeitos automaticamente usando o ModerationService
+    @users = User.suspicious
+
+    # Permite filtros opcionais por status se o admin desejar listar outros perfis
+    if params[:status_filter].present?
+      @users = User.where(status: params[:status_filter])
+    elsif params[:moderation_filter].present?
+      @users = User.where(moderation_status: params[:moderation_filter])
+    end
+  end
+
+  # Atualiza um perfil individualmente (ex: edição de nome corrigível ou ação de linha)
+  def update_user
+    @user = User.find(params[:user_id])
+    
+    if params[:name].present?
+      @user.name = params[:name]
+    end
+    
+    if params[:status].present?
+      @user.status = params[:status]
+    end
+    
+    if params[:moderation_status].present?
+      @user.moderation_status = params[:moderation_status]
+    end
+
+    if @user.save
+      Rails.logger.warn "[AUDIT ADMIN] Perfil de usuário ID: #{@user.id} atualizado. Nome: '#{@user.name}', Status: #{@user.status}, Moderação: #{@user.moderation_status} por Admin: #{current_user.email}"
+      flash[:notice] = "Perfil de #{@user.name} atualizado com sucesso!"
+    else
+      flash[:alert] = "Erro ao atualizar: #{@user.errors.full_messages.join(', ')}"
+    end
+
+    redirect_to admin_moderation_index_path
+  end
+
+  # Executa ações em lote selecionadas pelo admin
+  def batch_action
+    user_ids = params[:user_ids] || []
+    action_type = params[:action_type]
+
+    if user_ids.empty?
+      flash[:alert] = "Nenhum perfil selecionado."
+      redirect_to admin_moderation_index_path
+      return
+    end
+
+    users = User.where(id: user_ids)
+    count = 0
+
+    case action_type
+    when 'mark_safe'
+      users.each do |user|
+        user.moderation_status = :reviewed_safe
+        if user.save
+          count += 1
+          Rails.logger.warn "[AUDIT ADMIN LOTE] Perfil ID: #{user.id} marcado como REVISADO/SEGURO por Admin: #{current_user.email}"
+        end
+      end
+      flash[:notice] = "#{count} perfis marcados como revisados e seguros."
+    when 'suspend'
+      users.each do |user|
+        user.status = :suspended
+        if user.save
+          count += 1
+          Rails.logger.warn "[AUDIT ADMIN LOTE] Perfil ID: #{user.id} SUSPENSO por Admin: #{current_user.email}"
+        end
+      end
+      flash[:notice] = "#{count} perfis suspensos com sucesso."
+    when 'ban'
+      users.each do |user|
+        user.status = :banned
+        if user.save
+          count += 1
+          Rails.logger.warn "[AUDIT ADMIN LOTE] Perfil ID: #{user.id} BANIDO por Admin: #{current_user.email}"
+        end
+      end
+      flash[:notice] = "#{count} perfis banidos com sucesso."
+    else
+      flash[:alert] = "Ação em lote inválida."
+    end
+
+    redirect_to admin_moderation_index_path
+  end
+
+  private
+
+  def require_admin
+    unless current_user&.admin?
+      flash[:alert] = "Acesso restrito para administradores."
+      redirect_to root_path
+    end
+  end
+end

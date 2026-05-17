@@ -5,6 +5,16 @@ class SessionsController < ApplicationController
   def create
     user = User.find_by(email: params[:email])
     if user && user.authenticate(params[:password])
+      if user.suspended?
+        flash.now[:alert] = "Sua conta está suspensa temporariamente por violar os termos de uso."
+        render :new, status: :unprocessable_entity
+        return
+      elsif user.banned?
+        flash.now[:alert] = "Sua conta foi banida permanentemente por abuso e violação dos termos."
+        render :new, status: :unprocessable_entity
+        return
+      end
+
       session[:user_id] = user.id
       flash[:notice] = "Bem-vindo(a) de volta!"
       redirect_to user.student? ? student_path(user) : teacher_path(user)

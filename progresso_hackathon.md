@@ -398,8 +398,37 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
   5. **Auditoria de Tentativas:** Registra logs detalhados via `Rails.logger.warn` contendo a tentativa bloqueada, termo infringido e a estratégia de captura utilizada, útil para análise futura e detecção de padrões de abuso.
   6. **Suíte Completa de Testes:** Desenvolvido `test/services/moderation_service_test.rb` cobrindo 9 cenários complexos (leetspeak, homóglifos, espaços, símbolos, substrings válidas, plurais) e testes em `test/models/user_test.rb` validando o bloqueio e erro nos 4 campos do modelo `User`. Todos os testes passam 100%.
 
+## 🛡️ Painel Administrativo de Moderação (Revisão em Lote e Controle de Perfis)
+- **Causa Raiz/Necessidade:** Permitir que administradores identifiquem perfis suspeitos na base atual, revisem-nos individualmente ou em lote, editem nomes inapropriados de forma corretiva, suspendam ou banam infratores persistentes e mantenham um registro transparente de auditoria.
+- **Implementação Realizada:**
+  1. **Schema Seguro (`db/migrate`):**
+     - Adicionada a coluna `status` (inteiro, default 0: ativo, 1: suspenso, 2: banido) na tabela `users`.
+     - Adicionada a coluna `moderation_status` (inteiro, default 0: não revisado, 1: suspeito, 2: revisado seguro) para gerenciar o fluxo de aprovação e bypass.
+     - Adicionada a coluna `admin` (booleano, default false) para controle de acesso restrito.
+  2. **Detecção Automática no Model (`app/models/user.rb`):**
+     - Criado o escopo `User.suspicious` e o método helper `user.suspicious?` que escaneiam dinamicamente o banco em busca de usuários que contêm palavras inadequadas e não tenham sido previamente marcados como `reviewed_safe` (salvaguarda para evitar falsos positivos).
+     - Refatoração dos validadores de texto impróprio para rodar condicionalmente (`if: :name_changed?`, etc.). Isso evita "travamentos de validação" quando o admin edita o status ou outros atributos de um usuário que ainda possui um termo suspeito.
+  3. **Controlador Admin (`app/controllers/admin/moderation_controller.rb`):**
+     - Implementado controle de acesso rigoroso com `before_action :require_admin`.
+     - Ação `index` que exibe todos os perfis identificados automaticamente e suporta filtros adicionais por status.
+     - Ação `update_user` que edita nomes inline ou atualiza status (seguro, suspenso, banido) individualmente.
+     - Ação `batch_action` que processa ações em lote (aprovar como seguro, suspender ou banir todos os selecionados simultaneamente).
+  4. **Interface Administrativa Premium (`app/views/admin/moderation/index.html.erb`):**
+     - Layout elegante seguindo a identidade visual verde monochrome `aprendeAI`.
+     - **Destaque Visual Dinâmico:** Utiliza o helper `highlight_inappropriate(text)` para pintar os termos ofensivos de vermelho diretamente no texto, mostrando ao admin exatamente o que ativou o filtro.
+     - Controle multi-seleção de checkboxes com um script JS para seleção/contagem em lote.
+     - Ações rápidas de linha com botões e formulários em linha para máxima usabilidade.
+  5. **Mecanismo de Segurança e Restrição de Acesso:**
+     - Bloqueio completo na rota de login (`SessionsController#create`) para contas suspensas ou banidas com alertas personalizados.
+     - Proteção ativa no `ApplicationController#current_user` que encerra a sessão imediatamente e desloga o usuário caso seu status mude para suspenso ou banido enquanto ele navega na plataforma.
+  6. **Integração de Links na Navbar (`app/views/layouts/application.html.erb`):**
+     - Link para "Moderação" inserido dinamicamente no menu Desktop e Mobile quando `current_user.admin?` é verdadeiro.
+  7. **Cobertura Sólida de Integração (`test/integration/admin_moderation_test.rb`):**
+     - Escrita de 10 novos testes integrados cobrindo: controle de acesso para não-admins, visibilidade dos perfis, edições individuais de nome, suspensão e banimento direto, ações de lote, e bloqueio e deslogamento em tempo de execução. Testes passando 100%.
+
 ## 🔜 Próximos Passos Evolutivos
 - Implementar alertas dinâmicos de termos impróprios em tempo real no frontend com JavaScript antes mesmo da submissão do formulário.
+- Criar tela de log visual das ações administrativas (histórico de auditoria) para consulta rápida na interface admin.
 - Realizar deploy e testar o envio de mídias e atualização de perfis no Render.
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
 - Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.

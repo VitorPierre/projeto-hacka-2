@@ -46,6 +46,9 @@
               <%= link_to "Planejar com IA", plan_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
             <% end %>
           <% end %>
+          <% if current_user&.admin? %>
+            <%= link_to "Moderação", admin_moderation_index_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+          <% end %>
         </div>
         
         <div class="hidden md:block w-px h-6 bg-aprende-secondary mx-2"></div>
@@ -112,6 +115,9 @@
             <% if current_user&.teacher? %>
               <%= link_to "Planejar com IA", plan_path, class: "text-aprende-text font-medium py-2 border-b border-aprende-secondary/30" %>
             <% end %>
+          <% end %>
+          <% if current_user&.admin? %>
+            <%= link_to "Moderação", admin_moderation_index_path, class: "text-aprende-text font-medium py-2 border-b border-aprende-secondary/30" %>
           <% end %>
           
           <% if current_user %>

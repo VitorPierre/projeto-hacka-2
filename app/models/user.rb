@@ -26,6 +26,20 @@ class User < ApplicationRecord
 
   enum :role, student: 0, teacher: 1
   enum :education_level, basic: 0, technical: 1, higher: 2
+  enum :status, active: 0, suspended: 1, banned: 2
+  enum :moderation_status, unreviewed: 0, flagged_suspicious: 1, reviewed_safe: 2
+
+  def suspicious?
+    return false if reviewed_safe?
+    ModerationService.inappropriate?(name) ||
+      ModerationService.inappropriate?(availability) ||
+      ModerationService.inappropriate?(experience) ||
+      ModerationService.inappropriate?(preferences)
+  end
+
+  def self.suspicious
+    all.select(&:suspicious?)
+  end
 
   EDUCATION_LEVEL_NAMES = {
     "basic" => "Médio",
@@ -39,16 +53,16 @@ class User < ApplicationRecord
 
   before_validation :normalize_cpf_and_phone
 
-  validates :name, presence: { message: "não pode ficar em branco" }, inappropriate_text: true
+  validates :name, presence: { message: "não pode ficar em branco" }, inappropriate_text: true, if: :name_changed?
   validates :email, presence: { message: "não pode ficar em branco" }
   validates :email, uniqueness: { message: "já está cadastrado em outra conta" }, if: :email_changed?
   validates :phone, presence: { message: "não pode ficar em branco" }
   validates :cpf, presence: { message: "não pode ficar em branco" }
   validates :cpf, uniqueness: { message: "já está cadastrado em outra conta" }, if: :cpf_changed?
   validates :certificate_url, presence: { message: "não pode ficar em branco" }, if: :teacher?
-  validates :availability, inappropriate_text: true
-  validates :experience, inappropriate_text: true
-  validates :preferences, inappropriate_text: true
+  validates :availability, inappropriate_text: true, if: :availability_changed?
+  validates :experience, inappropriate_text: true, if: :experience_changed?
+  validates :preferences, inappropriate_text: true, if: :preferences_changed?
 
   private
 

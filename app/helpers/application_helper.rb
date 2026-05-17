@@ -149,4 +149,17 @@ module ApplicationHelper
     # Para o MVP, simple_format(..., sanitize: false) já que nós mesmos escapamos.
     simple_format(escaped, { class: "m-0 text-sm leading-relaxed" }, sanitize: false)
   end
+
+  def highlight_inappropriate(text)
+    return "" if text.blank?
+    safe_text = ERB::Util.html_escape(text).to_s
+    
+    ModerationService.blacklist.each do |term|
+      regex = ModerationService.regex_for(term)
+      safe_text = safe_text.gsub(regex) do |match|
+        "<mark class='bg-red-100 text-red-700 px-1 rounded font-semibold border border-red-200' title='Termo suspeito'>#{match}</mark>"
+      end
+    end
+    safe_text.html_safe
+  end
 end

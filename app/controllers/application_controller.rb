@@ -10,7 +10,15 @@ class ApplicationController < ActionController::Base
   private
 
   def current_user
-    @current_user ||= User.find_by(id: session[:user_id]) if session[:user_id]
+    if session[:user_id]
+      user = User.find_by(id: session[:user_id])
+      if user && (user.suspended? || user.banned?)
+        session[:user_id] = nil
+        @current_user = nil
+      else
+        @current_user ||= user
+      end
+    end
   end
 
   def logged_in?

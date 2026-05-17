@@ -29,3 +29,26 @@ uncertified_teacher:
   phone: "11777777777"
   cpf: "99900011122"
   certified: false
+
+admin:
+  name: "Administrador"
+  email: "admin@aprendeai.com"
+  password_digest: <%= require 'bcrypt'; BCrypt::Password.create('senha123') %>
+  role: 1
+  education_level: 2
+  certificate_url: "http://certificado.com"
+  phone: "11666666666"
+  cpf: "88899900011"
+  certified: true
+  admin: true
+
+suspicious_user:
+  name: "bobo"
+  email: "suspicious@teste.com"
+  password_digest: <%= require 'bcrypt'; BCrypt::Password.create('senha123') %>
+  role: 0
+  education_level: 0
+  phone: "11555555555"
+  cpf: "22233344455"
+  certified: false
+  moderation_status: 0

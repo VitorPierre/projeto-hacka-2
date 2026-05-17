@@ -1,0 +1,206 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex flex-col gap-6">
+    <!-- Cabeçalho Principal -->
+    <div class="bg-white p-6 md:p-8 rounded-[1.5rem] border border-aprende-secondary flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-extrabold text-aprende-text tracking-tight">Painel de Moderação</h1>
+        <p class="text-aprende-muted mt-1 text-sm md:text-base">Administração e revisão de perfis suspeitos com termos impróprios.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="bg-aprende-bg text-aprende-primary font-semibold px-4 py-2 rounded-full border border-aprende-secondary text-sm">
+          <%= @users.size %> perfil(is) suspeito(s)
+        </span>
+      </div>
+    </div>
+
+    <% if @users.empty? %>
+      <!-- Estado Vazio -->
+      <div class="bg-white p-12 rounded-[1.5rem] border border-aprende-secondary text-center flex flex-col items-center justify-center gap-4">
+        <div class="w-16 h-16 bg-aprende-bg rounded-full flex items-center justify-center border border-aprende-secondary text-aprende-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-aprende-text">Tudo Limpo!</h2>
+        <p class="text-aprende-muted max-w-md text-sm">Nenhum perfil suspeito ou inadequado foi encontrado na base de dados neste momento. O sistema está 100% seguro.</p>
+        <div class="flex gap-3 mt-2">
+          <%= link_to "Filtro: Todos os Usuários", admin_moderation_index_path(moderation_filter: :unreviewed), class: "text-aprende-primary bg-aprende-bg hover:bg-aprende-secondary/30 border border-aprende-secondary px-4 py-2 rounded-xl text-sm font-semibold transition" %>
+          <%= link_to "Filtro: Suspensos", admin_moderation_index_path(status_filter: :suspended), class: "text-aprende-primary bg-aprende-bg hover:bg-aprende-secondary/30 border border-aprende-secondary px-4 py-2 rounded-xl text-sm font-semibold transition" %>
+        </div>
+      </div>
+    <% else %>
+      <!-- Ações em Lote e Listagem -->
+      <%= form_tag batch_action_admin_moderation_index_path, method: :post, id: "batch-form" do %>
+        <!-- Barra de Ferramentas de Lote -->
+        <div class="bg-white p-4 rounded-t-[1.5rem] border border-aprende-secondary flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-sm text-aprende-text">
+              <input type="checkbox" id="select-all" class="w-4 h-4 rounded text-aprende-primary focus:ring-aprende-primary border-slate-300">
+              Selecionar Todos
+            </label>
+            <span id="selected-count" class="text-xs text-aprende-muted hidden">
+              (0 selecionados)
+            </span>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs text-aprende-muted mr-1 font-semibold uppercase tracking-wider">Ações em lote:</span>
+            <button type="submit" name="action_type" value="mark_safe" class="bg-aprende-bg text-aprende-primary hover:bg-aprende-secondary/40 border border-aprende-secondary px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
+              ✓ Marcar como Seguro
+            </button>
+            <button type="submit" name="action_type" value="suspend" class="bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
+              ⚠ Suspender
+            </button>
+            <button type="submit" name="action_type" value="ban" class="bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
+              ✕ Banir
+            </button>
+          </div>
+        </div>
+
+        <!-- Lista de Perfis Flagrados -->
+        <div class="bg-white border-x border-b border-aprende-secondary rounded-b-[1.5rem] divide-y divide-slate-100 overflow-hidden">
+          <% @users.each do |user| %>
+            <div class="p-6 flex flex-col lg:flex-row gap-6 items-start lg:items-center hover:bg-slate-50/50 transition">
+              <!-- Checkbox de Seleção -->
+              <div class="flex items-center self-start lg:self-center mt-1 lg:mt-0">
+                <input type="checkbox" name="user_ids[]" value="<%= user.id %>" class="user-checkbox w-4 h-4 rounded text-aprende-primary focus:ring-aprende-primary border-slate-300">
+              </div>
+
+              <!-- Avatar e Informações Gerais -->
+              <div class="flex items-center gap-4 min-w-[200px]">
+                <%= user_avatar(user, size: "w-12 h-12") %>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase px-2 py-0.5 rounded <%= user.student? ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800' %>">
+                      <%= user.student? ? 'Aluno' : 'Prof' %>
+                    </span>
+                    <% if user.suspended? %>
+                      <span class="text-[10px] font-bold uppercase bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded border border-yellow-200">Suspenso</span>
+                    <% elsif user.banned? %>
+                      <span class="text-[10px] font-bold uppercase bg-red-100 text-red-800 px-1.5 py-0.5 rounded border border-red-200">Banido</span>
+                    <% end %>
+                  </div>
+                  <div class="text-slate-500 text-xs font-mono mt-1"><%= user.email %></div>
+                </div>
+              </div>
+
+              <!-- Campos Suspeitos com Destaque dos Erros -->
+              <div class="flex-1 w-full flex flex-col gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <!-- Nome -->
+                <div class="text-sm flex flex-col sm:flex-row sm:items-start gap-1">
+                  <strong class="text-aprende-text font-bold sm:min-w-[100px] text-xs uppercase tracking-wider text-slate-400">Nome:</strong>
+                  <span class="text-slate-800"><%= highlight_inappropriate(user.name) %></span>
+                </div>
+
+                <!-- Disponibilidade -->
+                <% if user.availability.present? %>
+                  <div class="text-sm flex flex-col sm:flex-row sm:items-start gap-1">
+                    <strong class="text-aprende-text font-bold sm:min-w-[100px] text-xs uppercase tracking-wider text-slate-400">Agenda:</strong>
+                    <span class="text-slate-600"><%= highlight_inappropriate(user.availability) %></span>
+                  </div>
+                <% end %>
+
+                <!-- Experiência -->
+                <% if user.experience.present? %>
+                  <div class="text-sm flex flex-col sm:flex-row sm:items-start gap-1">
+                    <strong class="text-aprende-text font-bold sm:min-w-[100px] text-xs uppercase tracking-wider text-slate-400">Exp:</strong>
+                    <span class="text-slate-600"><%= highlight_inappropriate(user.experience) %></span>
+                  </div>
+                <% end %>
+
+                <!-- Preferências -->
+                <% if user.preferences.present? %>
+                  <div class="text-sm flex flex-col sm:flex-row sm:items-start gap-1">
+                    <strong class="text-aprende-text font-bold sm:min-w-[100px] text-xs uppercase tracking-wider text-slate-400">Preferências:</strong>
+                    <span class="text-slate-600"><%= highlight_inappropriate(user.preferences) %></span>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Ações Individuais (Edição de Nome e Status) -->
+              <div class="flex flex-col gap-3 w-full lg:w-auto lg:min-w-[280px]">
+                <!-- Mini Formulário Inline para Editar o Nome -->
+                <%= form_tag update_user_admin_moderation_index_path, method: :patch, class: "w-full" do %>
+                  <%= hidden_field_tag :user_id, user.id %>
+                  <div class="flex gap-1.5 items-center w-full">
+                    <input type="text" name="name" value="<%= user.name %>" required class="flex-1 px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-aprende-primary focus:ring-1 focus:ring-aprende-primary">
+                    <button type="submit" class="bg-aprende-primary text-white hover:bg-aprende-primary/95 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+                      Salvar
+                    </button>
+                  </div>
+                <% end %>
+
+                <!-- Botões Rápidos de Ação de Linha -->
+                <div class="flex items-center gap-1.5 w-full justify-end">
+                  <!-- Marcar como Seguro -->
+                  <%= button_to update_user_admin_moderation_index_path(user_id: user.id, moderation_status: :reviewed_safe), method: :patch, class: "flex-1 py-1.5 bg-aprende-bg text-aprende-primary hover:bg-aprende-secondary/30 border border-aprende-secondary rounded-xl text-xs font-bold transition text-center" do %>
+                    ✓ Seguro
+                  <% end %>
+
+                  <!-- Suspender -->
+                  <% if user.active? || user.banned? %>
+                    <%= button_to update_user_admin_moderation_index_path(user_id: user.id, status: :suspended), method: :patch, class: "flex-1 py-1.5 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200 rounded-xl text-xs font-bold transition text-center" do %>
+                      ⚠ Suspender
+                    <% end %>
+                  <% end %>
+
+                  <!-- Banir -->
+                  <% if user.active? || user.suspended? %>
+                    <%= button_to update_user_admin_moderation_index_path(user_id: user.id, status: :banned), method: :patch, class: "flex-1 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 rounded-xl text-xs font-bold transition text-center" do %>
+                      ✕ Banir
+                    <% end %>
+                  <% end %>
+                  
+                  <!-- Ativar (caso esteja suspenso ou banido e precise voltar) -->
+                  <% unless user.active? %>
+                    <%= button_to update_user_admin_moderation_index_path(user_id: user.id, status: :active), method: :patch, class: "flex-1 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-xs font-bold transition text-center" do %>
+                      Reativar
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("turbo:load", function() {
+    const selectAllCheckbox = document.getElementById("select-all");
+    const userCheckboxes = document.querySelectorAll(".user-checkbox");
+    const selectedCountSpan = document.getElementById("selected-count");
+
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener("change", function() {
+        userCheckboxes.forEach(cb => {
+          cb.checked = selectAllCheckbox.checked;
+        });
+        updateCount();
+      });
+    }
+
+    userCheckboxes.forEach(cb => {
+      cb.addEventListener("change", function() {
+        if (!cb.checked) {
+          selectAllCheckbox.checked = false;
+        } else {
+          const allChecked = Array.from(userCheckboxes).every(c => c.checked);
+          selectAllCheckbox.checked = allChecked;
+        }
+        updateCount();
+      });
+    });
+
+    function updateCount() {
+      const checkedCount = Array.from(userCheckboxes).filter(c => c.checked).length;
+      if (checkedCount > 0) {
+        selectedCountSpan.textContent = `(${checkedCount} selecionado(s))`;
+        selectedCountSpan.classList.remove("hidden");
+      } else {
+        selectedCountSpan.classList.add("hidden");
+      }
+    }
+  });
+</script>
