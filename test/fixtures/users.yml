@@ -4,6 +4,8 @@ student:
   password_digest: <%= require 'bcrypt'; BCrypt::Password.create('senha123') %>
   role: 0
   education_level: 0
+  phone: "11999999999"
+  cpf: "11122233344"
   certified: false
 
 teacher:
@@ -13,6 +15,8 @@ teacher:
   role: 1
   education_level: 1
   certificate_url: "http://certificado.com"
+  phone: "11888888888"
+  cpf: "55566677788"
   certified: true
 
 uncertified_teacher:
@@ -22,4 +26,6 @@ uncertified_teacher:
   role: 1
   education_level: 2
   certificate_url: "http://certificado.com"
+  phone: "11777777777"
+  cpf: "99900011122"
   certified: false

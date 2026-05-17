@@ -1,6 +1,6 @@
 class ProposalsController < ApplicationController
   before_action :require_login
-  before_action :set_proposal, only: [:show, :update, :accept, :reject, :close]
+  before_action :set_proposal, only: [:show, :update, :accept, :reject, :close, :counter]
 
   def new
     if current_user.student?
@@ -29,6 +29,7 @@ class ProposalsController < ApplicationController
       redirect_to root_path, alert: "Acesso não permitido."
       return
     end
+    @proposal.sender = current_user
     @proposal.status = :pending
     
     if @proposal.save
@@ -54,7 +55,7 @@ class ProposalsController < ApplicationController
   end
 
   def accept
-    if current_user.teacher? && @proposal.pending?
+    if @proposal.recipient?(current_user) && @proposal.pending?
       @proposal.update(status: :accepted)
       flash[:notice] = "Proposta aceita com sucesso!"
     else
@@ -64,7 +65,7 @@ class ProposalsController < ApplicationController
   end
 
   def reject
-    if current_user.teacher? && @proposal.pending?
+    if @proposal.recipient?(current_user) && @proposal.pending?
       @proposal.update(status: :rejected)
       flash[:notice] = "Proposta recusada."
     else
@@ -83,11 +84,66 @@ class ProposalsController < ApplicationController
     redirect_to proposal_path(@proposal)
   end
 
+  def counter
+    if !@proposal.pending?
+      flash[:alert] = "Esta proposta não está pendente."
+      redirect_to proposal_path(@proposal)
+      return
+    end
+
+    if !@proposal.recipient?(current_user)
+      flash[:alert] = "Acesso não autorizado."
+      redirect_to proposal_path(@proposal)
+      return
+    end
+
+    raw_price = params[:price]
+    if raw_price.is_a?(String)
+      price_str = raw_price.gsub("R$ ", "").strip
+      if price_str.include?(",")
+        price = price_str.gsub(".", "").gsub(",", ".").to_f
+      else
+        price = price_str.to_f
+      end
+    else
+      price = raw_price.to_f
+    end
+
+    if price <= 0
+      flash[:alert] = "Valor inválido para a contra-proposta."
+      redirect_to proposal_path(@proposal)
+      return
+    end
+
+    old_price = @proposal.price
+    @proposal.price = price
+    @proposal.sender = current_user
+    @proposal.status = :pending
+
+    if @proposal.save
+      formatted_old = helpers.number_to_currency(old_price)
+      formatted_new = helpers.number_to_currency(price)
+      system_text = "Fez uma contra-proposta de #{formatted_new} (valor anterior: #{formatted_old})."
+      
+      @proposal.messages.create!(
+        user: current_user,
+        content: system_text,
+        message_type: :regular
+      )
+
+      flash[:notice] = "Contra-proposta enviada com sucesso!"
+    else
+      flash[:alert] = "Não foi possível enviar a contra-proposta: " + @proposal.errors.full_messages.to_sentence
+    end
+    redirect_to proposal_path(@proposal)
+  end
+
   def update
     new_status = params[:status]
-    if current_user.student? && %w[accepted rejected].include?(new_status)
-      flash[:alert] = "Aluno não pode aceitar ou recusar propostas."
-      redirect_to student_path(current_user)
+    # Only the recipient can accept/reject
+    if !@proposal.recipient?(current_user) && %w[accepted rejected].include?(new_status)
+      flash[:alert] = "Apenas o destinatário pode aceitar ou recusar propostas."
+      redirect_to proposal_path(@proposal)
       return
     end
 
@@ -111,6 +167,15 @@ class ProposalsController < ApplicationController
   end
 
   def proposal_params
-    params.require(:proposal).permit(:teacher_id, :student_id, :subject_id, :price)
+    p = params.require(:proposal).permit(:teacher_id, :student_id, :subject_id, :price)
+    if p[:price].is_a?(String)
+      price_str = p[:price].gsub("R$ ", "").strip
+      if price_str.include?(",")
+        p[:price] = price_str.gsub(".", "").gsub(",", ".")
+      else
+        p[:price] = price_str
+      end
+    end
+    p
   end
 end

@@ -12,16 +12,16 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "teacher requires certificate_url" do
-    teacher = User.new(name: "Prof", email: "p@t.com", password: "pw", role: :teacher)
+    teacher = User.new(name: "Prof", email: "p@t.com", password: "pw", role: :teacher, phone: "11999999999", cpf: "12345678901")
     assert_not teacher.valid?
     teacher.certificate_url = "http://link.com"
     assert teacher.valid?
   end
 
-  test "certified_teachers scope only returns certified teachers" do
+  test "certified_teachers scope returns all teachers for hackathon flow" do
     teachers = User.certified_teachers
     assert_includes teachers, users(:teacher)
-    assert_not_includes teachers, users(:uncertified_teacher)
+    assert_includes teachers, users(:uncertified_teacher)
     assert_not_includes teachers, users(:student)
   end
 end

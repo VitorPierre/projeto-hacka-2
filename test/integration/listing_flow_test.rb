@@ -26,15 +26,15 @@ class ListingFlowTest < ActionDispatch::IntegrationTest
   end
 
   # === PROFESSOR VÊ ALUNOS ===
-
-  test "teacher sees students list with Ver Perfil button" do
+  
+  test "teacher sees students list with Fazer Proposta button" do
     post login_path, params: { email: @teacher.email, password: "senha123" }
 
     get students_path
     assert_response :success
     assert_select "h2", text: /Alunos Disponíveis/
     assert_select "h3", text: @student.name
-    assert_select "a", text: "Ver Perfil"
+    assert_select "a", text: "Fazer Proposta"
   end
 
   test "teacher is redirected away from teachers index" do
@@ -44,12 +44,23 @@ class ListingFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to students_path
   end
 
+  # === NOVAS REGRAS DE VISIBILIDADE ===
+
+  test "student can see uncertified teachers" do
+    uncertified = users(:uncertified_teacher)
+    post login_path, params: { email: @student.email, password: "senha123" }
+
+    get teachers_path
+    assert_response :success
+    assert_select "h3", text: uncertified.name
+  end
+
   # === PERFIS INDIVIDUAIS ===
 
   test "student sees Fazer Proposta on teacher profile" do
     post login_path, params: { email: @student.email, password: "senha123" }
 
-    get teacher_path(@teacher)
+    get teacher_path(users(:uncertified_teacher))
     assert_response :success
     assert_select "a", text: "Fazer Proposta"
   end

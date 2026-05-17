@@ -28,7 +28,7 @@ class RoleAccessTest < ActionDispatch::IntegrationTest
     get student_path(@student)
     assert_response :success
 
-    other_student = User.create!(name: "Outro", email: "outro@aluno.com", password: "pw", role: "student")
+    other_student = User.create!(name: "Outro", email: "outro@aluno.com", password: "pw", role: "student", phone: "11911111111", cpf: "77777777777")
     get student_path(other_student)
     assert_redirected_to teachers_path
   end
@@ -39,7 +39,7 @@ class RoleAccessTest < ActionDispatch::IntegrationTest
     get teacher_path(@teacher)
     assert_response :success
 
-    other_teacher = User.create!(name: "Outro T", email: "outrot@prof.com", password: "pw", role: "teacher", education_level: "technical", certificate_url: "link")
+    other_teacher = User.create!(name: "Outro T", email: "outrot@prof.com", password: "pw", role: "teacher", education_level: "technical", certificate_url: "link", phone: "11922222222", cpf: "88888888888")
     get teacher_path(other_teacher)
     assert_redirected_to students_path
   end

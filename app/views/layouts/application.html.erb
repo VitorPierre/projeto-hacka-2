@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Hacka2" %></title>
+    <title><%= content_for(:title) || "aprendeAI" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Hacka2">
+    <meta name="application-name" content="aprendeAI">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="<%= asset_url('logo.png') %>" type="image/png">
+    <link rel="icon" href="<%= asset_url('logo.png') %>" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="<%= asset_url('logo.png') %>">
 
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
@@ -29,21 +29,28 @@
         <div class="hidden md:flex items-center gap-6">
           <% if !current_user || current_user.student? %>
             <%= link_to "Professores", teachers_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+            <% if current_user&.student? %>
+              <%= link_to "Aprender com IA", learn_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+            <% end %>
           <% end %>
           <% if !current_user || current_user.teacher? %>
             <%= link_to "Alunos", students_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+            <% if current_user&.teacher? %>
+              <%= link_to "Planejar com IA", plan_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
+            <% end %>
           <% end %>
         </div>
         
         <div class="hidden md:block w-px h-6 bg-aprende-secondary mx-2"></div>
         
         <% if current_user %>
-          <% if current_user.student? %>
-            <%= link_to "Meu Painel", student_path(current_user), class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
-          <% else %>
-            <%= link_to "Meu Painel", teacher_path(current_user), class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
-          <% end %>
-          <%= button_to "Sair", logout_path, method: :delete, class: "bg-white border border-aprende-secondary hover:border-aprende-primary text-aprende-text font-medium py-2 px-6 rounded-full transition-all text-sm cursor-pointer" %>
+          <div class="flex items-center gap-4">
+            <%= link_to current_user.student? ? student_path(current_user) : teacher_path(current_user), class: "flex items-center gap-2 group" do %>
+              <%= user_avatar(current_user, size: "w-8 h-8", text_size: "text-xs") %>
+              <span class="text-aprende-muted group-hover:text-aprende-primary font-medium transition-colors hidden sm:inline">Meu Painel</span>
+            <% end %>
+            <%= button_to "Sair", logout_path, method: :delete, class: "bg-white border border-aprende-secondary hover:border-aprende-primary text-aprende-text font-medium py-1.5 px-4 rounded-full transition-all text-xs cursor-pointer" %>
+          </div>
         <% else %>
           <%= link_to "Entrar", login_path, class: "text-aprende-muted hover:text-aprende-primary font-medium transition-colors" %>
           <%= link_to "Cadastrar", new_user_path, class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-full transition-transform hover:scale-[1.02] shadow-sm text-sm" %>

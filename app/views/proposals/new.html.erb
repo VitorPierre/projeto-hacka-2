@@ -17,7 +17,7 @@
       <h3 class="font-medium text-aprende-muted text-sm uppercase tracking-wider mb-2">Detalhes do <%= counterpart_label %></h3>
       <p class="text-xl font-medium text-aprende-text"><%= counterpart.name %></p>
       <% if counterpart.teacher? %>
-        <p class="text-aprende-primary font-medium mt-1"><%= counterpart.education_level.humanize %></p>
+        <p class="text-aprende-primary font-medium mt-1">Escolaridade: <%= counterpart.education_level_human %></p>
       <% end %>
       
       <% if @teacher.technical? || @teacher.higher? %>
@@ -40,13 +40,13 @@
       <% end %>
       
       <div class="flex flex-col gap-1">
-        <%= f.label :subject_id, "Selecione a Área", class: "text-sm font-medium text-aprende-text" %>
+        <%= f.label :subject_id, "Selecione a Especialidade", class: "text-sm font-medium text-aprende-text" %>
         <%= f.collection_select :subject_id, counterpart_subjects, :id, :name, { prompt: "Escolha uma especialidade..." }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text" %>
       </div>
 
       <div class="flex flex-col gap-1">
-        <%= f.label :price, "Valor Ofertado (R$)", class: "text-sm font-medium text-aprende-text" %>
-        <%= f.number_field :price, step: "0.01", min: "1", placeholder: "Ex: 60.00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text text-lg placeholder-aprende-muted" %>
+        <% initial_price = (@teacher.technical? || @teacher.higher?) ? "50,00" : "" %>
+        <%= f.text_field :price, value: initial_price, data: { controller: "mask", mask_type_value: "money" }, placeholder: "R$ 0,00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text text-lg placeholder-aprende-muted" %>
       </div>
 
       <div class="pt-2 flex flex-col sm:flex-row gap-4">

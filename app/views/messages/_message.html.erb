@@ -1,0 +1,97 @@
+<div id="<%= dom_id(message) %>" class="flex items-start gap-3 <%= message.user_id == (defined?(current_user) ? current_user&.id : nil) ? 'flex-row-reverse' : 'flex-row' %>" data-user-id="<%= message.user_id %>">
+  <div class="flex-shrink-0 mt-1">
+    <%= user_avatar(message.user, size: "w-8 h-8", text_size: "text-xs") %>
+  </div>
+  <div class="flex flex-col <%= message.user_id == (defined?(current_user) ? current_user&.id : nil) ? 'items-end' : 'items-start' %> max-w-[85%] w-full">
+    <span class="text-[10px] text-aprende-muted mb-1 px-1"><%= message.user.name %> - <%= message.created_at.strftime('%H:%M') %></span>
+    
+    <% if message.activity? %>
+      <!-- Renderizado especial de atividade -->
+      <div class="px-5 py-4 rounded-2xl bg-white text-aprende-text border border-aprende-secondary shadow-sm w-full">
+        <!-- Cabeçalho da atividade -->
+        <div class="flex items-center justify-between gap-3 border-b border-aprende-secondary pb-3 mb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+            </svg>
+            <span class="text-xs font-semibold tracking-wide uppercase text-aprende-muted">Atividade Escolar</span>
+          </div>
+          <span class="px-2.5 py-0.5 text-[10px] font-medium rounded-full bg-aprende-bg text-aprende-primary border border-aprende-secondary">
+            <%= message.open? ? "Resposta Textual" : "Múltipla Escolha" %>
+          </span>
+        </div>
+
+        <!-- Enunciado -->
+        <div class="mb-4 text-left">
+          <h4 class="text-sm font-medium text-aprende-text leading-relaxed">
+            <%= simple_format(message.content, class: "m-0") %>
+          </h4>
+        </div>
+
+        <!-- Resposta / Formulário de Resposta -->
+        <% if message.student_answer.present? %>
+          <!-- Já Respondida -->
+          <div class="p-3.5 bg-aprende-bg rounded-xl border border-aprende-secondary flex flex-col gap-2 text-left">
+            <div class="flex items-center gap-1.5 text-xs font-semibold text-aprende-primary">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>Atividade Respondida pelo Aluno</span>
+            </div>
+            <p class="text-sm text-aprende-text italic bg-white p-3 rounded-lg border border-aprende-secondary m-0">
+              "<%= message.student_answer %>"
+            </p>
+          </div>
+        <% else %>
+          <!-- Não Respondida -->
+          <% if defined?(current_user) && current_user&.student? && current_user&.id == message.proposal.student_id %>
+            <!-- Formulário para o Aluno Responder -->
+            <%= form_with url: answer_proposal_message_path(message.proposal, message), method: :patch, class: "mt-3 pt-3 border-t border-aprende-secondary text-left" do |f| %>
+              <% if message.closed? %>
+                <!-- Pergunta Fechada (Opções de Rádio) -->
+                <div class="flex flex-col gap-2 mb-3">
+                  <% message.parsed_options.each_with_index do |option, idx| %>
+                    <label class="flex items-start gap-3 p-3 rounded-xl border border-aprende-secondary bg-aprende-bg hover:bg-white transition-all cursor-pointer">
+                      <%= radio_button_tag :student_answer, option, false, required: true, class: "mt-0.5 text-aprende-primary focus:ring-aprende-primary border-aprende-secondary cursor-pointer" %>
+                      <span class="text-sm text-aprende-text"><%= option %></span>
+                    </label>
+                  <% end %>
+                </div>
+              <% else %>
+                <!-- Pergunta Aberta (Text Area) -->
+                <div class="mb-3">
+                  <%= text_area_tag :student_answer, nil, rows: 2, required: true, placeholder: "Digite sua resposta textual...", class: "w-full p-3 text-sm rounded-xl border border-aprende-secondary bg-aprende-bg text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary resize-none" %>
+                </div>
+              <% end %>
+              <div class="flex justify-end">
+                <%= f.submit "Enviar Resposta", class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium text-xs py-2 px-4 rounded-lg transition-colors cursor-pointer shadow-sm" %>
+              </div>
+            <% end %>
+          <% else %>
+            <!-- Visualização para o Professor / Outros -->
+            <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl text-center">
+              <span class="text-xs text-gray-500 font-medium">Aguardando resposta do aluno...</span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <!-- Renderizado normal de mensagem -->
+      <div class="px-4 py-3 rounded-2xl <%= message.user_id == (defined?(current_user) ? current_user&.id : nil) ? 'bg-aprende-primary text-white rounded-tr-none' : 'bg-aprende-bg text-aprende-text border border-aprende-secondary rounded-tl-none' %> w-full text-left">
+        <% if message.content.present? %>
+          <%= simple_format(message.content, class: "m-0 text-sm") %>
+        <% end %>
+
+        <% if message.attachment.attached? %>
+          <div class="mt-2 <%= message.content.present? ? 'pt-2 border-t border-white/20' : '' %>">
+            <% if message.attachment.image? %>
+              <%= image_tag message.attachment, class: "max-w-full rounded-lg shadow-sm" %>
+            <% else %>
+              <%= link_to message.attachment.filename.to_s, rails_blob_path(message.attachment, disposition: "attachment"), class: "flex items-center gap-2 underline text-xs font-medium" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

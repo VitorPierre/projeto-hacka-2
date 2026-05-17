@@ -238,7 +238,82 @@ Leia o markdown `progresso_hackathon.md` e continue de onde parou. Faça apenas 
   - Adicionado tratamento de lista vazia.
 - **Testes criados (`listing_flow_test.rb`):** 7 testes cobrindo: aluno vê professores com botão, professor vê alunos com botão, redirecionamentos de papel errado, botão "Fazer Proposta" no perfil do professor, rota funciona, visitante vê prompt de login.
 
+## Correção da Visibilidade e Fluxo Bidirecional (Hotfix Final)
+- **Causa raiz:** O sistema utilizava um escopo estrito `certified_teachers` que filtrava apenas professores com `certified: true`. Como novos professores nascem com `false` por padrão e não havia interface de certificação, a lista de professores aparecia vazia para os alunos. Além disso, a listagem de alunos não permitia que professores iniciassem propostas diretamente.
+- **Correções aplicadas:**
+  1. **User Model:** Relaxado o escopo `certified_teachers` para incluir todos os professores, garantindo que o catálogo não fique vazio durante a demonstração do hackathon.
+  2. **View (Alunos):** Adicionado o botão "Fazer Proposta" no card de alunos em `students/index.html.erb`, visível apenas para professores logados. Visitantes veem um prompt para entrar.
+  3. **View (Professores):** Atualizada a mensagem de estado vazio para remover a menção restritiva a "professores certificados".
+  4. **Segurança de Teste:** Desativado o filtro `allow_browser` no ambiente de teste (`ApplicationController`) para evitar erros 406 (Not Acceptable) durante a execução da suíte automatizada.
+- **Testes Atualizados:** O arquivo `listing_flow_test.rb` agora cobre a visibilidade de professores não certificados e o botão de proposta na lista de alunos para professores.
+
+## Edição de Perfil e Melhorias nos Painéis
+- **Novos Campos de Perfil:** Adicionados campos `preferences` (para alunos e professores) e `experience` (exclusivo para professores) ao model `User` via migração, permitindo personalização das informações exibidas no perfil.
+- **Funcionalidade de Edição:** Implementadas as actions `edit` e `update` no `UsersController`, permitindo que usuários gerenciem seus dados e áreas de interesse após o cadastro inicial.
+- **Interface de Edição:** Criada a view `app/views/users/edit.html.erb` com um formulário limpo e responsivo, adaptado dinamicamente para o papel (aluno ou professor) do usuário logado.
+- **Dashboard do Estudante:** Atualizada a view `students/show.html.erb` para exibir a seção "Preferências e Objetivos" e um link de edição rápida para o perfil.
+- **Dashboard do Professor:**
+  - Adicionadas as seções de "Experiência" e "Preferências" no painel.
+  - Implementada a seção "Alunos que já leciono", listando dinamicamente os alunos com quem o professor possui propostas com status `accepted` ou `closed`.
+- **Navegação e UX:** Inseridos ícones de edição e links de retorno intuitivos, mantendo a consistência visual verde/monocromática do sistema.
+
 ## Estado atual
-- O fluxo de listagens está correto: alunos veem professores com "Fazer Proposta", professores veem alunos com "Ver Perfil", visitantes veem prompt de login.
-- O fluxo de negociação está funcional de ponta a ponta com status, chat e botões de ação.
-- **Próximo passo:** Testar o fluxo completo no navegador (`rails db:migrate`, `bin/dev`) e preparar o pitch final para a banca avaliadora.
+- Alunos e Professores podem editar seus perfis (preferências, experiência, áreas de interesse).
+- Painéis exibem informações completas e contextualizadas.
+- Professor tem visibilidade clara de sua "carteira de alunos" (lecionados).
+- O fluxo de propostas e negociação está totalmente integrado e dinâmico com o chat.
+- Atividades pedagógicas integradas permitem aos professores criar enunciados (abertos ou fechados) e aos alunos respondê-los interativamente com atualizações em tempo real.
+
+## Correção do Fluxo de Edição de Perfil
+- **Causa Raiz Identificada:**
+    1.  **Falhas Silenciosas:** A view de edição não possuía exibição de mensagens de erro (`@user.errors`). Se uma validação falhasse (ex: CPF duplicado ou Telefone em branco), o formulário era apenas renderizado novamente sem feedback, dando a impressão de que "não salvou".
+    2.  **Erro de Renderização:** Havia um erro crítico no helper de avatar e na view que tentava dar `upcase` na primeira letra do nome. Se o usuário limpasse o nome e o `save` falhasse, a página quebrava ao tentar renderizar o nome vazio, impedindo a visualização dos erros.
+    3.  **Segurança e Consistência:** A ausência de `before_action :require_login` no `UsersController` permitia acessos inconsistentes à action de edição.
+    4.  **Conflitos na Validação de CPF/E-mail (Edição Tratada como Cadastro):** O modelo executava a validação de `uniqueness` de CPF e e-mail incondicionalmente em todas as ações de atualização (`update`), gerando conflitos falsos-positivos caso o usuário mantivesse o mesmo CPF/e-mail, ou no caso de registros legados com CPFs vazios/nulos coexistindo na base.
+- **Correções Aplicadas:**
+    1.  **Exibição de Erros:** Adicionado bloco de alertas do Tailwind para exibir mensagens de erro detalhadas no topo do formulário.
+    2.  **Tratamento de Strings:** Implementado uso de `&.first&.upcase || "?"` para garantir que a interface não quebre mesmo com campos vazios durante a validação.
+    3.  **Proteção de Rota:** Adicionado `before_action :require_login` para garantir que apenas usuários logados acessem a edição.
+    4.  **Validação Condicional de Unicidade (`if: :cpf_changed?` / `if: :email_changed?`):** As validações de unicidade para CPF e e-mail foram isoladas para rodar **somente quando o respectivo campo for de fato alterado** (ou na criação inicial). Isso evita consultas desnecessárias de unicidade na edição de outros campos e elimina por completo os falsos erros de duplicidade.
+    5.  **Nova Mensagem Amigável:** A mensagem de erro de unicidade foi reescrita de `"já está cadastrado por outro usuário"` para `"já está cadastrado em outra conta"`.
+    6.  **Testes de Integração:** O arquivo `test/integration/users_edit_test.rb` foi atualizado para atestar o sucesso da edição mantendo o mesmo CPF, além de validar a nova mensagem amigável no caso de tentativa de uso de CPF alheio.
+- **Resultado:** O sistema agora persiste as alterações de perfil perfeitamente e, caso haja algum problema real de validação, o usuário recebe feedback visual imediato e contextual.
+
+
+## Integração de Atividades Pedagógicas no Chat
+- **Criação de Campos de Atividade no Banco:** Criada migration para adicionar `message_type` (inteiro, default 0 para regular, 1 para activity), `question_type` (inteiro, default 0 para open, 1 para closed), `options` (texto com quebras de linha para múltipla escolha) e `student_answer` (texto para resposta do aluno) na tabela `messages`.
+- **Modelagem de Atividades:**
+  - Atualizado o model `Message` com os enums `message_type` (`regular: 0, activity: 1`) e `question_type` (`open: 0, closed: 1`).
+  - Adicionadas validações para exigir o preenchimento de `options` caso a atividade seja do tipo fechada.
+  - Implementado helper `parsed_options` para separar as opções baseadas em quebras de linha.
+  - Adicionado callback `after_update_commit` para propagar atualizações de respostas em tempo real via Turbo Stream para os participantes do chat.
+- **Segurança e Rotas no Controller:**
+  - Adicionada rota RESTful `:answer` aninhada sob mensagens de propostas em `config/routes.rb`.
+  - Atualizado o `MessagesController` para garantir que apenas professores possam criar atividades (`message_type: 'activity'`).
+  - Criada a action `answer` no `MessagesController` permitindo que apenas o aluno da respectiva proposta possa enviar sua resposta (textual ou seleção) e bloqueando o envio de múltiplas respostas para a mesma atividade.
+- **Interface e Experiência Visual Premium:**
+  - **Formulário de Envio (`messages/_form.html.erb`):** Adicionada uma barra de abas dinâmicas ("Mensagem Normal" e "Nova Atividade") para professores logados. A seleção de "Nova Atividade" exibe campos para escolha de tipo de questão (aberta ou fechada) e digitação de opções de múltipla escolha. Toda a alternância de formulários é controlada por JavaScript reativo.
+  - **Balões do Chat (`messages/_message.html.erb`):** Criado template dedicado e refinado para renderizar atividades recebidas. Alunos logados visualizam o enunciado e botões do tipo rádio (para múltipla escolha) ou caixa de texto (para discursiva) para envio imediato da resposta. Professores visualizam um aviso de "Aguardando resposta do aluno...". Uma vez respondida, a atividade se atualiza dinamicamente em tempo real para exibir a resposta informada pelo aluno com design elegante e legível.
+- **Testes de Integração Automatizados (`activity_flow_test.rb`):**
+  - Desenvolvida suíte de testes robusta contendo 5 cenários completos, validando a criação e resposta de atividades (abertas e fechadas), prevenção de dupla resposta, bloqueio de alunos tentando criar atividades e restrição de acesso a terceiros. Todos os testes integrados passam com 100% de sucesso.
+- **Próximo passo:** Finalizar o README com as novas funcionalidades e preparar o pitch final.
+
+## Formatação Legível das Respostas da IA (Aprender com IA)
+- **Causa Raiz Identificada:** A resposta gerada pelo `AiService` (retornando Markdown do Gemini ou textos formatados) era renderizada diretamente na view via `<%= @answer %>`. Como o HTML colapsa espaços e quebras de linha normais por padrão, todo o conteúdo ficava aglomerado e sem espaçamento entre parágrafos, cabeçalhos ou itens de listas.
+- **Correções Aplicadas:**
+  1.  **ApplicationHelper (`format_ai_response`):** Desenvolvido um parser stateful robusto, rápido e leve de Markdown para HTML em Ruby vanilla. Ele garante absoluta segurança escapando todos os elementos HTML injetados de forma maliciosa e, em seguida, mapeia com precisão os estilos de títulos (`#`, `##`, `###`), listas não ordenadas (`*`, `-`), listas ordenadas (`1.`), negritos (`**`) e itálicos (`*`) em elementos HTML perfeitamente estilizados com as classes do Tailwind do AprendeAI.
+  2.  **View (`learn/index.html.erb`):** Atualizada a linha de renderização para utilizar o helper `<%= format_ai_response(@answer) %>`.
+  3.  **Isolamento de Rota e Autorização (`LearnController`):** Adicionado controle estrito onde `/learn` redireciona professores com `"Acesso restrito para alunos."` e `/plan` redireciona alunos com `"Acesso restrito para professores."`.
+  4.  **Testes de Integração (`learn_flow_test.rb`):** Atualizados e corrigidos. Adicionado stub com `WebMock` para simular as requisições à API de forma estática, rápida e isolada, garantindo o funcionamento do teste em ambientes integrados sem internet ou chaves de API reais.
+- **Resultado:** Respostas da IA agora aparecem impecavelmente diagramadas, com títulos em destaque, listas estruturadas com bullets e numeração, espaçamentos uniformes e perfeita leitura no desktop e mobile.
+
+## Sistema de Contra-propostas (Negociação Aluno <-> Professor)
+- **Causa Raiz Identificada:** O fluxo original de negociação de propostas era unidirecional e estático: uma vez que o remetente enviava uma proposta com determinado valor, o destinatário só tinha a opção de aceitar ou recusar sumariamente. Não existia uma forma interativa e bidirecional de negociar novos valores sem que fosse necessário recusar a proposta e abrir um novo registro de negociação do zero, o que fragmentava o histórico do chat.
+- **Correções e Funcionalidades Aplicadas:**
+  1. **Estratégia de Atualização In-Place:** Em vez de gerar propostas redundantes na base de dados, a contra-proposta atualiza o `price` da proposta atual, define o `sender` como o `current_user` e mantém o status como `:pending`. Isso faz com que o `recipient` (destinatário) da proposta inverta-se automaticamente e de forma extremamente elegante (quem enviou agora aguarda e quem recebeu agora pode responder).
+  2. **Preservação de Mensagens e Histórico:** Mantém a conversa, arquivos e atividades anteriores intactos, pois a proposta continua sendo a mesma no banco de dados.
+  3. **Rotas e Lógica RESTful (`ProposalsController`):** Adicionada a member action `patch :counter` protegida pelo filtro `set_proposal` (bloqueando acessos de não participantes) e com tratamento inteligente de preços (aceitando decimais com ponto ou vírgula BRL).
+  4. **Mensagens Contextuais do Sistema:** Ao enviar a contra-proposta, o sistema insere automaticamente uma mensagem do usuário logado (ex: `"Fez uma contra-proposta de R$ 90,00 (valor anterior: R$ 60,00)"`), propagando-a reativamente em tempo real via Turbo Stream/ActionCable.
+  5. **Interface Premium (`show.html.erb`):** Adicionado um componente `<details>` discreto com animação CSS suave de rotação de chevron e formulário inline monetário estilizado sob os botões CTAs principais.
+  6. **Testes de Integração Independentes de Locale (`proposals_flow_test.rb`):** Desenvolvida e integrada uma suíte de 5 testes de integração que atestam a robustez do fluxo bidirecional, restrição de acesso a terceiros, bloqueio a autopropostas e verificação de pisos salariais por categoria profissional. Todos os testes passam com 100% de sucesso.
+

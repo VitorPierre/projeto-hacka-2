@@ -1,35 +1,83 @@
 <div class="max-w-4xl mx-auto w-full flex flex-col gap-6">
+  <%= turbo_stream_from @proposal %>
   <!-- Detalhes da Proposta -->
   <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-6 md:p-8 flex flex-col gap-6">
     <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 border-b border-aprende-secondary pb-6">
       <div>
         <h1 class="text-2xl md:text-3xl font-medium text-aprende-text">Proposta: <%= @proposal.subject.name %></h1>
-        <div class="flex flex-col gap-2 mt-4 text-aprende-muted">
-          <p><strong class="font-medium">Aluno:</strong> <%= @proposal.student.name %></p>
-          <p><strong class="font-medium">Professor:</strong> <%= @proposal.teacher.name %></p>
-          <p><strong class="font-medium">Valor:</strong> <%= number_to_currency(@proposal.price) %></p>
+        <div class="flex flex-col gap-4 mt-6 text-aprende-muted">
+          <div class="flex items-center gap-3">
+            <span class="font-medium w-20">Aluno:</span>
+            <div class="flex items-center gap-2">
+              <%= user_avatar(@proposal.student, size: "w-6 h-6", text_size: "text-[10px]") %>
+              <span class="text-aprende-text"><%= @proposal.student.name %></span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-medium w-20">Professor:</span>
+            <div class="flex items-center gap-2">
+              <%= user_avatar(@proposal.teacher, size: "w-6 h-6", text_size: "text-[10px]") %>
+              <span class="text-aprende-text"><%= @proposal.teacher.name %></span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-medium w-20">Valor:</span>
+            <span class="text-aprende-primary font-bold"><%= number_to_currency(@proposal.price) %></span>
+          </div>
         </div>
       </div>
       
       <div class="flex flex-col items-end gap-3">
         <span class="inline-block px-4 py-2 text-sm font-medium rounded-full <%= @proposal.status == 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' : (@proposal.status == 'accepted' ? 'bg-aprende-bg text-aprende-primary border border-aprende-primary' : 'bg-gray-100 text-gray-600 border border-gray-200') %>">
-          Status: <%= @proposal.status.humanize %>
+          Status: <%= @proposal.status_human %>
         </span>
       </div>
     </div>
 
     <!-- Ações -->
-    <div class="flex flex-wrap gap-4">
-      <% if current_user.teacher? && @proposal.pending? %>
-        <%= button_to "Aceitar Proposta", accept_proposal_path(@proposal), method: :patch, class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer" %>
-        <%= button_to "Recusar", reject_proposal_path(@proposal), method: :patch, class: "bg-white text-red-600 border border-red-200 hover:bg-red-50 font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer", form: { data: { turbo_confirm: 'Tem certeza que deseja recusar?' } } %>
-      <% end %>
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-wrap gap-4 items-center">
+        <% if @proposal.recipient?(current_user) && @proposal.pending? %>
+          <%= button_to "Aceitar Proposta", accept_proposal_path(@proposal), method: :patch, class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer" %>
+          <%= button_to "Recusar", reject_proposal_path(@proposal), method: :patch, class: "bg-white text-red-600 border border-red-200 hover:bg-red-50 font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer", form: { data: { turbo_confirm: 'Tem certeza que deseja recusar?' } } %>
+        <% end %>
 
-      <% if @proposal.accepted? %>
-        <%= button_to "Fechar Proposta", close_proposal_path(@proposal), method: :patch, class: "bg-white text-aprende-text border border-aprende-secondary hover:bg-gray-50 font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer", form: { data: { turbo_confirm: 'Tem certeza que deseja fechar a proposta?' } } %>
+        <% if @proposal.pending? && !@proposal.recipient?(current_user) %>
+          <div class="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-2.5 text-yellow-700 text-sm font-medium">
+            Aguardando resposta de <%= @proposal.recipient.name %>
+          </div>
+        <% end %>
+
+        <% if @proposal.accepted? %>
+          <%= button_to "Fechar Proposta", close_proposal_path(@proposal), method: :patch, class: "bg-white text-aprende-text border border-aprende-secondary hover:bg-gray-50 font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer", form: { data: { turbo_confirm: 'Tem certeza que deseja fechar a proposta?' } } %>
+        <% end %>
+        
+        <%= link_to "Voltar", current_user.student? ? student_path(current_user) : teacher_path(current_user), class: "text-aprende-muted hover:text-aprende-text py-2.5 px-4 font-medium transition-colors" %>
+      </div>
+
+      <% if @proposal.recipient?(current_user) && @proposal.pending? %>
+        <details class="w-full group">
+          <summary class="inline-flex items-center gap-2 text-aprende-primary hover:text-[#159b3f] font-medium py-2 px-1 transition-colors cursor-pointer list-none select-none text-sm w-max border-b border-dashed border-aprende-primary/40">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 transition-transform group-open:rotate-180">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+            Contra-propor novo valor
+          </summary>
+          <div class="mt-4 p-4 border border-aprende-secondary rounded-xl bg-gray-50 max-w-md">
+            <%= form_with url: counter_proposal_path(@proposal), method: :patch, local: true, class: "flex items-center gap-3" do |f| %>
+              <div class="relative flex-1">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">R$</span>
+                <%= f.text_field :price, 
+                    value: number_with_precision(@proposal.price, precision: 2, separator: ","),
+                    class: "w-full pl-9 pr-3 py-2 border border-aprende-secondary rounded-lg focus:outline-none focus:border-aprende-primary bg-white text-aprende-text font-medium text-sm",
+                    placeholder: "0,00",
+                    required: true %>
+              </div>
+              <%= f.submit "Enviar Contra-proposta", class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer text-sm font-semibold" %>
+            <% end %>
+          </div>
+        </details>
       <% end %>
-      
-      <%= link_to "Voltar", current_user.student? ? student_path(current_user) : teacher_path(current_user), class: "text-aprende-muted hover:text-aprende-text py-2.5 px-4 font-medium transition-colors" %>
     </div>
   </div>
 
@@ -37,29 +85,17 @@
   <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-6 md:p-8 flex flex-col gap-6">
     <h2 class="text-xl font-medium text-aprende-text">Mensagens</h2>
     
-    <div class="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2">
+    <div id="messages" class="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2">
       <% if @messages.any? %>
-        <% @messages.each do |message| %>
-          <div class="flex flex-col <%= message.user == current_user ? 'items-end' : 'items-start' %>">
-            <span class="text-xs text-aprende-muted mb-1 px-1"><%= message.user.name %> - <%= message.created_at.strftime('%d/%m %H:%M') %></span>
-            <div class="px-4 py-3 rounded-2xl max-w-[80%] <%= message.user == current_user ? 'bg-aprende-primary text-white rounded-tr-none' : 'bg-aprende-bg text-aprende-text border border-aprende-secondary rounded-tl-none' %>">
-              <%= simple_format(message.content, class: "m-0") %>
-            </div>
-          </div>
-        <% end %>
+        <%= render @messages %>
       <% else %>
-        <p class="text-aprende-muted text-center py-8">Nenhuma mensagem ainda. Envie a primeira mensagem!</p>
+        <p class="text-aprende-muted text-center py-8 no-messages">Nenhuma mensagem ainda. Envie a primeira mensagem!</p>
       <% end %>
     </div>
 
     <% if %w[pending accepted].include?(@proposal.status) %>
       <div class="border-t border-aprende-secondary pt-6 mt-2">
-        <%= form_with model: [@proposal, @message], class: "flex flex-col gap-3" do |f| %>
-          <%= f.text_area :content, placeholder: "Escreva sua mensagem...", rows: 3, class: "w-full p-4 rounded-xl border border-aprende-secondary bg-aprende-bg text-aprende-text placeholder-aprende-muted focus:outline-none focus:ring-2 focus:ring-aprende-primary transition-all resize-none", required: true %>
-          <div class="flex justify-end">
-            <%= f.submit "Enviar Mensagem", class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer shadow-sm" %>
-          </div>
-        <% end %>
+        <%= render "messages/form", proposal: @proposal, message: @message %>
       </div>
     <% else %>
       <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center mt-2">

@@ -3,6 +3,9 @@ class TeachersController < ApplicationController
 
   def index
     @teachers = User.certified_teachers.includes(:subjects)
+    if params[:subject_id].present?
+      @teachers = @teachers.joins(:subjects).where(subjects: { id: params[:subject_id] }).distinct
+    end
   end
 
   def show

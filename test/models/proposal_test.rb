@@ -3,7 +3,7 @@ require "test_helper"
 class ProposalTest < ActiveSupport::TestCase
   test "price respects floor for technical teacher" do
     teacher = users(:teacher) # education_level: 1 (technical)
-    proposal = Proposal.new(student: users(:student), teacher: teacher, subject: subjects(:math), price: 40.0)
+    proposal = Proposal.new(student: users(:student), teacher: teacher, subject: subjects(:programming), price: 40.0, sender: users(:student))
     
     assert_not proposal.valid?
     assert_includes proposal.errors[:price].join, "deve ser no mínimo R$ 50,00"
@@ -13,8 +13,8 @@ class ProposalTest < ActiveSupport::TestCase
   end
 
   test "price lower than floor allowed for basic education teacher" do
-    basic_teacher = User.create!(name: "Basic", email: "b@t.com", password: "pw", role: :teacher, education_level: :basic, certificate_url: "link")
-    proposal = Proposal.new(student: users(:student), teacher: basic_teacher, subject: subjects(:math), price: 30.0)
+    basic_teacher = User.create!(name: "Basic", email: "b@t.com", password: "pw", role: :teacher, education_level: :basic, certificate_url: "link", phone: "11999999999", cpf: "12345678901")
+    proposal = Proposal.new(student: users(:student), teacher: basic_teacher, subject: subjects(:math), price: 30.0, sender: users(:student))
     assert proposal.valid?
   end
 

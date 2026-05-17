@@ -20,7 +20,7 @@ class AuthFlowTest < ActionDispatch::IntegrationTest
     get new_user_path(role: "student")
     assert_response :success
 
-    post users_path, params: { user: { name: "Novo Aluno", email: "novo@aluno.com", password: "pw", role: "student" } }
+    post users_path, params: { user: { name: "Novo Aluno", email: "novo@aluno.com", password: "pw", role: "student", phone: "11999999999", cpf: "11111111111" } }
     
     user = User.find_by(email: "novo@aluno.com")
     assert user
@@ -29,7 +29,7 @@ class AuthFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "teacher sign up is uncertified by default" do
-    post users_path, params: { user: { name: "Novo Prof", email: "novo@prof.com", password: "pw", role: "teacher", education_level: "technical", certificate_url: "http://link.com", subject_ids: [subjects(:math).id] } }
+    post users_path, params: { user: { name: "Novo Prof", email: "novo@prof.com", password: "pw", role: "teacher", education_level: "technical", certificate_url: "http://link.com", subject_ids: [subjects(:math).id], phone: "11988888888", cpf: "22222222222" } }
     
     user = User.find_by(email: "novo@prof.com")
     assert user

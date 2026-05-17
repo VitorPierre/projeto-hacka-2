@@ -3,6 +3,9 @@ class StudentsController < ApplicationController
 
   def index
     @students = User.student.includes(:subjects)
+    if params[:subject_id].present?
+      @students = @students.joins(:subjects).where(subjects: { id: params[:subject_id] }).distinct
+    end
   end
 
   def show

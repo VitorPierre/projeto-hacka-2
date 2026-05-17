@@ -1,0 +1,2 @@
+<%= turbo_stream.replace "new_message", partial: "messages/form", locals: { proposal: @proposal, message: Message.new } %>
+<%= turbo_stream.remove "no-messages" %>

@@ -11,7 +11,7 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
 
   test "teacher sees Fazer Proposta button on student profile" do
     # Create a student without existing proposal with this teacher
-    other_student = User.create!(name: "Outro Aluno", email: "outro_aluno@teste.com", password: "senha123", role: "student")
+    other_student = User.create!(name: "Outro Aluno", email: "outro_aluno@teste.com", password: "senha123", role: "student", phone: "11999999999", cpf: "11111111111")
 
     post login_path, params: { email: @teacher.email, password: "senha123" }
     get student_path(other_student)
@@ -30,7 +30,7 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
 
   test "student sees Fazer Proposta button on teacher profile" do
     # Create a new certified teacher with no active proposal
-    other_teacher = User.create!(name: "Outro Prof", email: "outroprof@teste.com", password: "senha123", role: "teacher", education_level: "technical", certificate_url: "http://cert.com", certified: true)
+    other_teacher = User.create!(name: "Outro Prof", email: "outroprof@teste.com", password: "senha123", role: "teacher", education_level: "technical", certificate_url: "http://cert.com", certified: true, phone: "11988888888", cpf: "22222222222")
     other_teacher.subjects << subjects(:math)
 
     post login_path, params: { email: @student.email, password: "senha123" }
@@ -65,7 +65,7 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
   # --- Route and action ---
 
   test "teacher can access new proposal form for a student" do
-    other_student = User.create!(name: "Aluno Form", email: "form_aluno@teste.com", password: "senha123", role: "student")
+    other_student = User.create!(name: "Aluno Form", email: "form_aluno@teste.com", password: "senha123", role: "student", phone: "11977777777", cpf: "33333333333")
     other_student.subjects << subjects(:math)
 
     post login_path, params: { email: @teacher.email, password: "senha123" }
@@ -75,7 +75,7 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
   end
 
   test "teacher can submit a proposal for a student" do
-    other_student = User.create!(name: "Aluno Submit", email: "submit_aluno@teste.com", password: "senha123", role: "student")
+    other_student = User.create!(name: "Aluno Submit", email: "submit_aluno@teste.com", password: "senha123", role: "student", phone: "11966666666", cpf: "44444444444")
     other_student.subjects << subjects(:math)
 
     post login_path, params: { email: @teacher.email, password: "senha123" }
@@ -93,11 +93,12 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
     proposal = Proposal.last
     assert_equal @teacher.id, proposal.teacher_id
     assert_equal other_student.id, proposal.student_id
+    assert_equal @teacher.id, proposal.sender_id
     assert_redirected_to proposal_path(proposal)
   end
 
   test "student can submit a proposal for a teacher" do
-    other_teacher = User.create!(name: "Prof Submit", email: "submit_prof@teste.com", password: "senha123", role: "teacher", education_level: "technical", certificate_url: "http://cert.com", certified: true)
+    other_teacher = User.create!(name: "Prof Submit", email: "submit_prof@teste.com", password: "senha123", role: "teacher", education_level: "technical", certificate_url: "http://cert.com", certified: true, phone: "11955555555", cpf: "66666666666")
     other_teacher.subjects << subjects(:programming)
 
     post login_path, params: { email: @student.email, password: "senha123" }
@@ -115,6 +116,7 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
     proposal = Proposal.last
     assert_equal @student.id, proposal.student_id
     assert_equal other_teacher.id, proposal.teacher_id
+    assert_equal @student.id, proposal.sender_id
     assert_redirected_to proposal_path(proposal)
   end
 end

@@ -5,3 +5,5 @@ pending_proposal:
   subject: math
   price: 60.0
   status: 0
+  sender: student
+

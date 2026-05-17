@@ -17,6 +17,18 @@
       <%= f.email_field :email, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary" %>
     </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <%= f.label :cpf, "CPF", class: "block text-sm font-medium text-aprende-text mb-1" %>
+        <%= f.text_field :cpf, data: { controller: "mask", mask_type_value: "cpf" }, placeholder: "000.000.000-00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary" %>
+      </div>
+
+      <div>
+        <%= f.label :phone, "Telefone", class: "block text-sm font-medium text-aprende-text mb-1" %>
+        <%= f.text_field :phone, data: { controller: "mask", mask_type_value: "phone" }, placeholder: "(00) 00000-0000", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary" %>
+      </div>
+    </div>
+
     <div>
       <%= f.label :password, "Senha", class: "block text-sm font-medium text-aprende-text mb-1" %>
       <%= f.password_field :password, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary" %>
@@ -27,7 +39,7 @@
       
       <div>
         <%= f.label :education_level, "Escolaridade", class: "block text-sm font-medium text-aprende-text mb-1" %>
-        <%= f.select :education_level, User.education_levels.keys.map { |w| [w.humanize, w] }, {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 bg-white text-aprende-text" %>
+        <%= f.select :education_level, User::EDUCATION_LEVEL_NAMES.invert.to_a, {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 bg-white text-aprende-text" %>
       </div>
 
       <div>

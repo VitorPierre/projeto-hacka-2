@@ -1,7 +1,8 @@
 class UsersController < ApplicationController
+  before_action :require_login, only: [:edit, :update]
   def new
     @user = User.new
-    @role = params[:role] || 'student'
+    @role = params[:role] || "student"
   end
 
   def create
@@ -17,10 +18,36 @@ class UsersController < ApplicationController
       render :new, status: :unprocessable_entity
     end
   end
+  def edit
+    @user = User.find(params[:id])
+    if @user != current_user
+      flash[:alert] = "Acesso não autorizado."
+      redirect_to root_path
+    end
+  end
+
+  def update
+    @user = User.find(params[:id])
+    if @user != current_user
+      flash[:alert] = "Acesso não autorizado."
+      redirect_to root_path
+      return
+    end
+
+    if @user.update(user_params)
+      flash[:notice] = "Perfil atualizado com sucesso!"
+      redirect_to @user.student? ? student_path(@user) : teacher_path(@user)
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
 
   private
 
   def user_params
-    params.require(:user).permit(:name, :email, :password, :role, :education_level, :certificate_url, subject_ids: [])
+    p = params.require(:user).permit(:name, :email, :password, :role, :education_level, :certificate_url, :preferences, :experience, :avatar, :phone, :cpf, :availability, subject_ids: [])
+    p[:cpf] = p[:cpf].gsub(/\D/, "") if p[:cpf].present?
+    p[:phone] = p[:phone].gsub(/\D/, "") if p[:phone].present?
+    p
   end
 end

@@ -1,0 +1,129 @@
+<div class="w-full max-w-2xl mx-auto mt-0 md:mt-4 bg-white p-6 md:p-10 rounded-[1.5rem] shadow-sm border border-aprende-secondary">
+  <div class="flex items-center justify-between mb-8">
+    <h2 class="text-2xl font-medium text-aprende-text">Editar Perfil</h2>
+    <%= link_to "Voltar ao Painel", @user.student? ? student_path(@user) : teacher_path(@user), class: "text-sm font-medium text-aprende-muted hover:text-aprende-primary transition-colors" %>
+  </div>
+
+  <% if @user.errors.any? %>
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-r-xl">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-red-700">
+            <%= pluralize(@user.errors.count, "erro impediu", "erros impediram") %> o salvamento:
+          </p>
+          <ul class="mt-1 text-sm text-red-600 list-disc list-inside">
+            <% @user.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%= form_with model: @user, local: true, class: "space-y-8" do |f| %>
+    <div class="flex flex-col items-center gap-4 pb-8 border-b border-aprende-secondary mb-8">
+      <div class="relative group">
+        <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-aprende-secondary shadow-md bg-slate-50 flex items-center justify-center">
+          <% if @user.avatar.attached? %>
+            <%= image_tag @user.avatar, class: "w-full h-full object-cover" %>
+          <% else %>
+            <div class="text-4xl text-aprende-primary font-bold"><%= @user.name&.first&.upcase || "?" %></div>
+          <% end %>
+        </div>
+        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        </div>
+        <%= f.file_field :avatar, class: "absolute inset-0 opacity-0 cursor-pointer w-full h-full", accept: "image/*" %>
+      </div>
+      <p class="text-sm text-aprende-muted font-medium">Clique para alterar sua foto de perfil</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <%= f.label :name, "Nome Completo", class: "block text-sm font-medium text-aprende-text mb-1" %>
+        <%= f.text_field :name, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      </div>
+
+      <div>
+        <%= f.label :email, "E-mail", class: "block text-sm font-medium text-aprende-text mb-1" %>
+        <%= f.email_field :email, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <%= f.label :cpf, "CPF", class: "block text-sm font-medium text-aprende-text mb-1" %>
+        <%= f.text_field :cpf, data: { controller: "mask", mask_type_value: "cpf" }, placeholder: "000.000.000-00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      </div>
+
+      <div>
+        <%= f.label :phone, "Telefone", class: "block text-sm font-medium text-aprende-text mb-1" %>
+        <%= f.text_field :phone, data: { controller: "mask", mask_type_value: "phone" }, placeholder: "(00) 00000-0000", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      </div>
+    </div>
+
+    <div>
+      <%= f.label :preferences, "Preferências e Objetivos", class: "block text-sm font-medium text-aprende-text mb-1" %>
+      <%= f.text_area :preferences, placeholder: "O que você busca na plataforma?", rows: 4, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      <p class="text-xs text-aprende-muted mt-1 italic">Ex: Prefiro aulas online à noite, foco em certificações, etc.</p>
+    </div>
+
+    <div>
+      <%= f.label :availability, "Pretensão de Horários", class: "block text-sm font-medium text-aprende-text mb-1" %>
+      <%= f.text_area :availability, placeholder: "Ex: Manhãs de segunda a quarta, sábados à tarde...", rows: 2, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+    </div>
+
+    <% if @user.teacher? %>
+      <div>
+        <%= f.label :experience, "Experiência e Currículo", class: "block text-sm font-medium text-aprende-text mb-1" %>
+        <%= f.text_area :experience, placeholder: "Conte um pouco sobre sua trajetória profissional e acadêmica...", rows: 4, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <%= f.label :education_level, "Nível de Escolaridade", class: "block text-sm font-medium text-aprende-text mb-1" %>
+          <%= f.select :education_level, User::EDUCATION_LEVEL_NAMES.invert.to_a, {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 bg-slate-50 text-aprende-text" %>
+        </div>
+
+        <div>
+          <%= f.label :certificate_url, "URL do Certificado", class: "block text-sm font-medium text-aprende-text mb-1" %>
+          <%= f.url_field :certificate_url, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-aprende-text mb-2">Suas Áreas de Atuação</label>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-aprende-secondary">
+          <%= f.collection_check_boxes :subject_ids, Subject.all, :id, :name do |b| %>
+            <div class="flex items-center space-x-2">
+              <%= b.check_box class: "h-4 w-4 text-aprende-primary focus:ring-aprende-primary border-aprende-secondary rounded bg-white" %>
+              <%= b.label class: "text-sm text-aprende-text cursor-pointer" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <div>
+        <label class="block text-sm font-medium text-aprende-text mb-2">Suas Áreas de Interesse</label>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-aprende-secondary">
+          <%= f.collection_check_boxes :subject_ids, Subject.all, :id, :name do |b| %>
+            <div class="flex items-center space-x-2">
+              <%= b.check_box class: "h-4 w-4 text-aprende-primary focus:ring-aprende-primary border-aprende-secondary rounded bg-white" %>
+              <%= b.label class: "text-sm text-aprende-text cursor-pointer" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="pt-6 border-t border-aprende-secondary">
+      <%= f.submit "Salvar Alterações", class: "w-full bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 px-6 rounded-xl transition-all shadow-sm cursor-pointer" %>
+    </div>
+  <% end %>
+</div>
