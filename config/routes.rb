@@ -5,7 +5,11 @@ Rails.application.routes.draw do
   post '/login', to: 'sessions#create'
   delete '/logout', to: 'sessions#destroy'
 
-  resources :users, only: [:new, :create, :edit, :update]
+  resources :users, only: [:new, :create, :edit, :update] do
+    collection do
+      post :check_moderation
+    end
+  end
   
   namespace :admin do
     resources :moderation, only: [:index] do
@@ -14,6 +18,7 @@ Rails.application.routes.draw do
         patch :update_user
       end
     end
+    resources :audit_logs, only: [:index]
   end
 
   resources :students, only: [:index, :show]

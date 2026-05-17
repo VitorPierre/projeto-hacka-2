@@ -18,6 +18,14 @@ class UsersController < ApplicationController
       render :new, status: :unprocessable_entity
     end
   end
+
+  # AJAX endpoint para checagem em tempo real de termos impróprios
+  def check_moderation
+    text = params[:text].to_s
+    is_inappropriate = ModerationService.inappropriate?(text)
+    render json: { inappropriate: is_inappropriate }
+  end
+
   def edit
     @user = User.find(params[:id])
     if @user != current_user

@@ -47,7 +47,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <%= f.label :name, "Nome Completo", class: "block text-sm font-medium text-aprende-text mb-1" %>
-        <%= f.text_field :name, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+        <%= f.text_field :name, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
       </div>
 
       <div>
@@ -70,19 +70,19 @@
 
     <div>
       <%= f.label :preferences, "Preferências e Objetivos", class: "block text-sm font-medium text-aprende-text mb-1" %>
-      <%= f.text_area :preferences, placeholder: "O que você busca na plataforma?", rows: 4, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      <%= f.text_area :preferences, placeholder: "O que você busca na plataforma?", rows: 4, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
       <p class="text-xs text-aprende-muted mt-1 italic">Ex: Prefiro aulas online à noite, foco em certificações, etc.</p>
     </div>
 
     <div>
       <%= f.label :availability, "Pretensão de Horários", class: "block text-sm font-medium text-aprende-text mb-1" %>
-      <%= f.text_area :availability, placeholder: "Ex: Manhãs de segunda a quarta, sábados à tarde...", rows: 2, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      <%= f.text_area :availability, placeholder: "Ex: Manhãs de segunda a quarta, sábados à tarde...", rows: 2, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
     </div>
 
     <% if @user.teacher? %>
       <div>
         <%= f.label :experience, "Experiência e Currículo", class: "block text-sm font-medium text-aprende-text mb-1" %>
-        <%= f.text_area :experience, placeholder: "Conte um pouco sobre sua trajetória profissional e acadêmica...", rows: 4, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+        <%= f.text_area :experience, placeholder: "Conte um pouco sobre sua trajetória profissional e acadêmica...", rows: 4, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

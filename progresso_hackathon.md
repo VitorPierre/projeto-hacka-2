@@ -467,9 +467,35 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
      - **Zero-config em Desenvolvimento/Testes:** A suíte de testes e o setup local de desenvolvimento continuam rodando 100% isolados sem necessidade de configuração adicional.
      - **Persistência Total no Render:** Fotos de perfil e mídias do chat agora sobrevivem a qualquer quantidade de deploys e commits, necessitando apenas da adição padrão de um Persistent Disk no painel do Render.
 
+## ⚠️ Alertas em Tempo Real de Termos Impróprios (Frontend)
+- **Causa Raiz/Necessidade:** Nudge visual preventivo ao usuário. Ao invés de aguardar a submissão do formulário e o recarregamento da página para descobrir que digitou uma palavra ofensiva ou suspeita, o sistema deve alertar o usuário instantaneamente, facilitando a autocorreção antes que o perfil seja flagrado pelo sistema.
+- **Implementação Realizada:**
+  1. **Endpoint Leve de Verificação (`UsersController#check_moderation`):**
+     - Criado um endpoint público em Rails que recebe `{ text: "..." }` via POST e executa de forma otimizada o `ModerationService.inappropriate?` no backend. Isso protege as regras regex e blacklist contra exposição direta no código cliente JS.
+  2. **JavaScript Vanilla Reativo com Debounce (`app/javascript/application.js`):**
+     - Criada uma rotina acionada por eventos `turbo:load` e `DOMContentLoaded` que escuta eventos `input` em qualquer campo marcado com `data-moderation-check="true"`.
+     - Implementado um debounce inteligente de 400ms para evitar avalanche de requisições ao servidor enquanto o usuário digita.
+     - O script utiliza busca nativa de tokens CSRF nos cabeçalhos HTTP para blindagem de segurança nas requisições assíncronas do `fetch`.
+  3. **Interface Visual e Alertas Estilizados:**
+     - Ao detectar um termo suspeito no campo, o JavaScript altera dinamicamente a borda do input para a cor âmbar (`border-amber-500`) e injeta no DOM um card de aviso elegante logo abaixo do input (`bg-amber-50 text-amber-800 rounded-xl p-3.5 mt-2 border border-amber-200`) com ícone SVG de exclamação.
+     - Assim que o termo impróprio é removido, a caixa de aviso desaparece instantaneamente e a borda padrão é restabelecida, garantindo um feedback visual reativo excelente.
+     - **Tagging nos Formulários:** Os campos `name` no cadastro (`users/new.html.erb`), bem como `name`, `preferences`, `availability` e `experience` no formulário de edição de perfil (`users/edit.html.erb`) foram tagueados de forma nativa para ativação automática da rotina.
+
+## 📝 Histórico de Auditoria com Tela Visual (Admin)
+- **Causa Raiz/Necessidade:** Rastreabilidade e transparência. Administradores precisam de um diário oficial centralizado para consultar quais moderações foram executadas, quem realizou e qual o impacto, permitindo auditoria visual rápida e transparente.
+- **Implementação Realizada:**
+  1. **Schema Persistente (`db/migrate/20260517232200_create_audit_logs.rb`):**
+     - Criada a tabela `audit_logs` que armazena referências opcionais para o administrador (`admin_id`) e usuário alvo (`target_id`), além de campos robustos de e-mail do admin (`admin_email`), nome do alvo (`target_name`), ação (`action`) e detalhes em texto longo (`details`).
+  2. **Rastreamento Automático no ModerationController:**
+     - Toda ação individual (`update_user`) ou em lote (`batch_action` para marcação segura, suspensão ou banimento) agora grava instâncias detalhadas em `AuditLog` mapeando o responsável pelo painel e gerando logs amigáveis.
+  3. **Visualizador Premium de Histórico (`app/controllers/admin/audit_logs_controller.rb` e `app/views/admin/audit_logs/index.html.erb`):**
+     - Criada uma tela de auditoria premium totalmente integrada no painel de moderação por meio de atalhos em abas e botões no cabeçalho.
+     - Filtros rápidos por tipo de Ação (Atualizações, Safe-marks, Suspensões e Banimentos) e barra de pesquisa textual inteligente em tempo de execução.
+     - Logs representados por cards interativos ricos com ícones SVG funcionais e badges coloridos para fácil escaneabilidade (Vermelho para Banimentos, Laranja para Suspensões, Verde para Safe-marks e Azul para Edições).
+  4. **Testes de Integração Robustos (`admin_audit_logs_test.rb`):**
+     - Adicionada suíte de testes integrada validando a restrição de rotas para não-admins, checagem AJAX pública, inserções no banco em tempo de moderação, e a renderização do diário oficial visual. Testes rodando com 100% de sucesso.
+
 ## 🔜 Próximos Passos Evolutivos
-- Implementar alertas dinâmicos de termos impróprios em tempo real no frontend com JavaScript antes mesmo da submissão do formulário.
-- Criar tela de log visual das ações administrativas (histórico de auditoria) para consulta rápida na interface admin.
 - Realizar deploy e testar o envio de mídias e atualização de perfis no Render.
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
 - Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.

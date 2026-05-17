@@ -1,0 +1,137 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex flex-col gap-6">
+    <!-- Cabeçalho Principal -->
+    <div class="bg-white p-6 md:p-8 rounded-[1.5rem] border border-aprende-secondary flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-sm">
+      <div>
+        <h1 class="text-3xl font-bold text-aprende-text tracking-tight flex items-center gap-2">
+          <svg class="w-8 h-8 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+          Histórico de Auditoria
+        </h1>
+        <p class="text-aprende-muted mt-1 text-sm md:text-base">Consulte o registro completo de todas as ações e moderações administrativas executadas.</p>
+      </div>
+      <div>
+        <%= link_to admin_moderation_index_path, class: "bg-white text-aprende-primary hover:text-[#159b3f] hover:border-aprende-primary font-semibold px-5 py-2.5 rounded-full border border-aprende-secondary text-sm flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02] cursor-pointer" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Voltar à Moderação
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Barra de Filtros e Busca -->
+    <div class="bg-white p-6 rounded-[1.5rem] border border-aprende-secondary shadow-sm">
+      <%= form_with url: admin_audit_logs_path, method: :get, local: true, class: "flex flex-col md:flex-row items-center gap-3 w-full" do |f| %>
+        
+        <div class="flex-1 w-full relative">
+          <%= f.text_field :search, value: params[:search], placeholder: "Buscar por admin, alvo ou palavras-chave...", 
+              class: "w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-aprende-primary focus:ring-1 focus:ring-aprende-primary text-sm text-aprende-text placeholder-aprende-muted transition" %>
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.604 10.604Z" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="w-full md:w-60">
+          <%= f.select :action_filter, [["Todas as Ações", ""], ["Atualização de Perfil", "update_user"], ["Marcação Segura", "mark_safe"], ["Suspensão", "suspend"], ["Banimento", "ban"]], { selected: params[:action_filter] }, 
+              class: "w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-aprende-primary focus:ring-1 focus:ring-aprende-primary text-sm text-aprende-text cursor-pointer transition" %>
+        </div>
+
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <%= f.submit "Filtrar Logs", class: "w-full md:w-auto bg-aprende-primary hover:bg-[#159b3f] text-white font-medium px-6 py-3 rounded-xl text-sm transition-all hover:scale-[1.02] shadow-sm cursor-pointer" %>
+          <% if params[:search].present? || params[:action_filter].present? %>
+            <%= link_to "Limpar", admin_audit_logs_path, class: "w-full md:w-auto text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-5 py-3 rounded-xl text-sm transition-all hover:scale-[1.02]" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Lista de Logs de Auditoria -->
+    <div class="flex flex-col gap-4">
+      <% if @audit_logs.empty? %>
+        <div class="bg-white rounded-[1.5rem] border border-aprende-secondary p-12 text-center shadow-sm">
+          <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+          <h3 class="text-lg font-semibold text-aprende-text mb-1">Nenhum registro encontrado</h3>
+          <p class="text-sm text-aprende-muted">Tente ajustar seus termos de pesquisa ou filtros.</p>
+        </div>
+      <% else %>
+        <div class="grid grid-cols-1 gap-4">
+          <% @audit_logs.each do |log| %>
+            <div class="bg-white p-6 rounded-2xl border border-aprende-secondary hover:border-slate-300 transition-all shadow-sm hover:shadow-md flex flex-col gap-4">
+              <!-- Linha Superior: Data e Badge -->
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <%= log.created_at.strftime("%d/%m/%Y às %H:%M:%S") %>
+                </div>
+                
+                <div>
+                  <% case log.action %>
+                  <% when "ban" %>
+                    <span class="bg-red-50 text-red-700 px-3.5 py-1.5 rounded-full border border-red-200 text-xs font-bold tracking-wide uppercase inline-flex items-center gap-1 shadow-sm">
+                      <span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+                      Banimento
+                    </span>
+                  <% when "suspend" %>
+                    <span class="bg-amber-50 text-amber-700 px-3.5 py-1.5 rounded-full border border-amber-200 text-xs font-bold tracking-wide uppercase inline-flex items-center gap-1 shadow-sm">
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                      Suspensão
+                    </span>
+                  <% when "mark_safe" %>
+                    <span class="bg-green-50 text-green-700 px-3.5 py-1.5 rounded-full border border-green-200 text-xs font-bold tracking-wide uppercase inline-flex items-center gap-1 shadow-sm">
+                      <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                      Revisão Segura
+                    </span>
+                  <% else %>
+                    <span class="bg-blue-50 text-blue-700 px-3.5 py-1.5 rounded-full border border-blue-200 text-xs font-bold tracking-wide uppercase inline-flex items-center gap-1 shadow-sm">
+                      <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                      Edição Perfil
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Conteúdo Central: Atores e Alvos -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-1">
+                <!-- Administrador Executor -->
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 shadow-sm">
+                  <div class="p-2 bg-white rounded-lg border border-slate-200 text-aprende-primary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Administrador</h4>
+                    <p class="font-semibold text-aprende-text text-sm"><%= log.admin_email %></p>
+                  </div>
+                </div>
+
+                <!-- Usuário Alvo -->
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 shadow-sm">
+                  <div class="p-2 bg-white rounded-lg border border-slate-200 text-indigo-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Usuário Alvo</h4>
+                    <p class="font-semibold text-aprende-text text-sm">
+                      <% if log.target %>
+                        <%= link_to log.target_name, log.target.student? ? student_path(log.target) : teacher_path(log.target), class: "hover:underline text-aprende-primary font-bold" %>
+                      <% else %>
+                        <%= log.target_name %> <span class="text-xs text-aprende-muted font-normal italic">(removido/inexistente)</span>
+                      <% end %>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Detalhes da Ação -->
+              <div class="mt-1">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 ml-1">Descrição e Detalhes da Ação</h4>
+                <div class="bg-aprende-bg/30 border border-slate-200/50 rounded-xl p-4 text-sm text-aprende-text font-medium leading-relaxed">
+                  <%= log.details %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

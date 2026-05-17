@@ -45,6 +45,14 @@ class Admin::ModerationController < Admin::BaseController
     end
 
     if @user.save
+      AuditLog.create!(
+        admin: current_user,
+        admin_email: current_user.email,
+        action: "update_user",
+        target: @user,
+        target_name: @user.name,
+        details: "Atualizou o perfil individual. Nome: '#{@user.name}', Status: #{@user.status}, Moderação: #{@user.moderation_status}"
+      )
       Rails.logger.warn "[AUDIT ADMIN] Perfil de usuário ID: #{@user.id} atualizado. Nome: '#{@user.name}', Status: #{@user.status}, Moderação: #{@user.moderation_status} por Admin: #{current_user.email}"
       flash[:notice] = "Perfil de #{@user.name} atualizado com sucesso!"
     else
@@ -74,6 +82,14 @@ class Admin::ModerationController < Admin::BaseController
         user.moderation_status = :reviewed_safe
         if user.save
           count += 1
+          AuditLog.create!(
+            admin: current_user,
+            admin_email: current_user.email,
+            action: "mark_safe",
+            target: user,
+            target_name: user.name,
+            details: "Marcou perfil como revisado e seguro."
+          )
           Rails.logger.warn "[AUDIT ADMIN LOTE] Perfil ID: #{user.id} marcado como REVISADO/SEGURO por Admin: #{current_user.email}"
         end
       end
@@ -83,6 +99,14 @@ class Admin::ModerationController < Admin::BaseController
         user.status = :suspended
         if user.save
           count += 1
+          AuditLog.create!(
+            admin: current_user,
+            admin_email: current_user.email,
+            action: "suspend",
+            target: user,
+            target_name: user.name,
+            details: "Suspendeu a conta do usuário."
+          )
           Rails.logger.warn "[AUDIT ADMIN LOTE] Perfil ID: #{user.id} SUSPENSO por Admin: #{current_user.email}"
         end
       end
@@ -92,6 +116,14 @@ class Admin::ModerationController < Admin::BaseController
         user.status = :banned
         if user.save
           count += 1
+          AuditLog.create!(
+            admin: current_user,
+            admin_email: current_user.email,
+            action: "ban",
+            target: user,
+            target_name: user.name,
+            details: "Baniu permanentemente a conta do usuário."
+          )
           Rails.logger.warn "[AUDIT ADMIN LOTE] Perfil ID: #{user.id} BANIDO por Admin: #{current_user.email}"
         end
       end

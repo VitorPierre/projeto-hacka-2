@@ -9,7 +9,7 @@
 
     <div>
       <%= f.label :name, "Nome Completo", class: "block text-sm font-medium text-aprende-text mb-1" %>
-      <%= f.text_field :name, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary" %>
+      <%= f.text_field :name, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary" %>
     </div>
 
     <div>
