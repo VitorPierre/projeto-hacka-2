@@ -14,6 +14,9 @@ class TeachersController < ApplicationController
 
   def show
     @teacher = User.teacher.find(params[:id])
+    if @teacher.banned? && !current_user&.admin?
+      raise ActiveRecord::RecordNotFound
+    end
     if current_user == @teacher
       @proposals = current_user.received_proposals.includes(:student, :subject).order(created_at: :desc)
       @scheduled_proposals = current_user.proposals_as_teacher

@@ -71,5 +71,6 @@ class User < ApplicationRecord
     self.phone = phone.gsub(/\D/, "") if phone.present?
   end
 
-  scope :certified_teachers, -> { teacher } # Showing all teachers for the hackathon flow
+  scope :public_view, -> { where.not(status: :banned) }
+  scope :certified_teachers, -> { teacher.public_view } # Showing all unbanned teachers for the hackathon flow
 end

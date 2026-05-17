@@ -5,7 +5,7 @@ class HomeController < ApplicationController
       return
     end
     
-    @teachers = User.where(role: 'teacher').includes(:subjects).limit(3)
-    @students = User.where(role: 'student').includes(:subjects).limit(3)
+    @teachers = User.teacher.public_view.includes(:subjects).limit(3)
+    @students = User.student.public_view.includes(:subjects).limit(3)
   end
 end

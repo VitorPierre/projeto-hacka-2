@@ -429,6 +429,25 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
    8. **Cobertura Sólida de Integração (`test/integration/admin_moderation_test.rb`):**
       - Escrita de 10 novos testes integrados cobrindo: controle de acesso para não-admins, visibilidade dos perfis, edições individuais de nome, suspensão e banimento direto, ações de lote, e bloqueio e deslogamento em tempo de execução. Testes passando 100%.
 
+## 🛡️ Ocultação de Usuários e Perfis Banidos da Área Pública
+- **Causa Raiz Identificada:** Usuários banidos continuavam visíveis em listagens, buscas públicas, na home page e em visualizações individuais de perfil porque o backend não filtrava a flag de banimento (`status: :banned`) nas consultas públicas. Com isso, nomes inadequados continuavam expostos ao público mesmo após o banimento.
+- **Implementação Realizada:**
+  1. **Regra Central no Model (`User`):**
+     - Criado o escopo centralizado `scope :public_view, -> { where.not(status: :banned) }` no model `User`.
+     - Atualizado o escopo `certified_teachers` para incorporar automaticamente a regra: `scope :certified_teachers, -> { teacher.public_view }`.
+  2. **Validação Robusta de Propostas (`Proposal`):**
+     - Adicionado o validador `validate :users_are_not_banned` que impede a gravação ou atualização de propostas caso o aluno ou o professor envolvidos estejam banidos, blindando a integridade das transações.
+  3. **Filtragem nos Controllers Públicos:**
+     - **Home Page (`HomeController#index`):** Ajustados os feeds de professores e alunos em destaque para usar o escopo `.public_view`, garantindo que perfis banidos nunca apareçam na página inicial.
+     - **Lista de Alunos (`StudentsController#index`):** Atualizada a listagem pública para incluir apenas alunos com status não banido (`User.student.public_view`).
+     - **Lista de Professores (`TeachersController#index`):** Já filtra por `User.certified_teachers`, que agora exclui automaticamente perfis banidos.
+  4. **Proteção e Bloqueio de Perfis Individuais (`show`):**
+     - **Professores (`TeachersController#show`):** Se o professor estiver banido, a requisição lança um erro `ActiveRecord::RecordNotFound` (retornando erro 404), exceto se o visualizador logado for um administrador (`current_user&.admin?`), que mantém acesso total para fins de auditoria, revisão, edição ou restauração.
+     - **Alunos (`StudentsController#show`):** Implementada a mesma proteção de erro 404 com bypass exclusivo de administrador.
+     - **Proposta (`ProposalsController#new`):** Adicionado escopo `.public_view` na busca de contrapartes para impedir a criação de propostas com usuários banidos no fluxo de interface.
+  5. **Suíte Completa de Testes (`banned_users_visibility_test.rb`):**
+     - Criados 6 testes de integração detalhados cobrindo: exclusão das listagens públicas e home, bypass de administrador na visualização pública, bloqueio na criação de propostas por rotas de interface, e validação robusta no model de propostas. Todos os testes integrados de visibilidade passam com sucesso.
+
 ## 🔜 Próximos Passos Evolutivos
 - Implementar alertas dinâmicos de termos impróprios em tempo real no frontend com JavaScript antes mesmo da submissão do formulário.
 - Criar tela de log visual das ações administrativas (histórico de auditoria) para consulta rápida na interface admin.
@@ -436,3 +455,4 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
 - Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.
 - Sistema de feedback/rating pós-sessão para ranquear professores e refinar indicações algorítmicas.
+

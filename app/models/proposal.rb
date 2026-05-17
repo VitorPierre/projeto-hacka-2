@@ -28,6 +28,7 @@ class Proposal < ApplicationRecord
   validate :users_have_correct_roles
   validate :users_are_different
   validate :sender_is_participant
+  validate :users_are_not_banned
   validate :valid_status_transition, on: :update
 
   validates :subject_id, uniqueness: { 
@@ -126,6 +127,11 @@ class Proposal < ApplicationRecord
     unless sender_id == student_id || sender_id == teacher_id
       errors.add(:sender, "deve ser o aluno ou o professor da proposta")
     end
+  end
+
+  def users_are_not_banned
+    errors.add(:student, "está banido e não pode participar de propostas") if student&.banned?
+    errors.add(:teacher, "está banido e não pode participar de propostas") if teacher&.banned?
   end
 
   def valid_status_transition

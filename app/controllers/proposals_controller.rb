@@ -7,7 +7,7 @@ class ProposalsController < ApplicationController
       @teacher = User.certified_teachers.find(params[:teacher_id])
       @student = current_user
     elsif current_user.teacher?
-      @student = User.student.find(params[:student_id])
+      @student = User.student.public_view.find(params[:student_id])
       @teacher = current_user
     else
       redirect_to root_path, alert: "Acesso não permitido."
