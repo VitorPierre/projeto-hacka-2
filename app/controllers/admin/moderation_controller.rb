@@ -1,15 +1,30 @@
-class Admin::ModerationController < ApplicationController
-  before_action :require_admin
-
+class Admin::ModerationController < Admin::BaseController
   def index
-    # Encontra todos os perfis suspeitos automaticamente usando o ModerationService
-    @users = User.suspicious
+    @tab = params[:tab] || 'suspicious'
 
-    # Permite filtros opcionais por status se o admin desejar listar outros perfis
+    if @tab == 'all'
+      @users = User.all
+    else
+      @users = User.suspicious
+    end
+
+    # Busca por Nome ou E-mail
+    if params[:search].present?
+      search_query = "%#{params[:search]}%"
+      if @users.is_a?(ActiveRecord::Relation)
+        @users = @users.where("name LIKE ? OR email LIKE ?", search_query, search_query)
+      else
+        @users = @users.select { |u| u.name.downcase.include?(params[:search].downcase) || u.email.downcase.include?(params[:search].downcase) }
+      end
+    end
+
+    # Filtro por Status
     if params[:status_filter].present?
-      @users = User.where(status: params[:status_filter])
-    elsif params[:moderation_filter].present?
-      @users = User.where(moderation_status: params[:moderation_filter])
+      if @users.is_a?(ActiveRecord::Relation)
+        @users = @users.where(status: params[:status_filter])
+      else
+        @users = @users.select { |u| u.status == params[:status_filter] }
+      end
     end
   end
 
@@ -36,7 +51,7 @@ class Admin::ModerationController < ApplicationController
       flash[:alert] = "Erro ao atualizar: #{@user.errors.full_messages.join(', ')}"
     end
 
-    redirect_to admin_moderation_index_path
+    redirect_to admin_moderation_index_path(tab: params[:tab], search: params[:search], status_filter: params[:status_filter])
   end
 
   # Executa ações em lote selecionadas pelo admin
@@ -46,7 +61,7 @@ class Admin::ModerationController < ApplicationController
 
     if user_ids.empty?
       flash[:alert] = "Nenhum perfil selecionado."
-      redirect_to admin_moderation_index_path
+      redirect_to admin_moderation_index_path(tab: params[:tab], search: params[:search], status_filter: params[:status_filter])
       return
     end
 
@@ -85,15 +100,7 @@ class Admin::ModerationController < ApplicationController
       flash[:alert] = "Ação em lote inválida."
     end
 
-    redirect_to admin_moderation_index_path
-  end
-
-  private
-
-  def require_admin
-    unless current_user&.admin?
-      flash[:alert] = "Acesso restrito para administradores."
-      redirect_to root_path
-    end
+    redirect_to admin_moderation_index_path(tab: params[:tab], search: params[:search], status_filter: params[:status_filter])
   end
 end
+

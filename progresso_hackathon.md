@@ -408,23 +408,26 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
   2. **Detecção Automática no Model (`app/models/user.rb`):**
      - Criado o escopo `User.suspicious` e o método helper `user.suspicious?` que escaneiam dinamicamente o banco em busca de usuários que contêm palavras inadequadas e não tenham sido previamente marcados como `reviewed_safe` (salvaguarda para evitar falsos positivos).
      - Refatoração dos validadores de texto impróprio para rodar condicionalmente (`if: :name_changed?`, etc.). Isso evita "travamentos de validação" quando o admin edita o status ou outros atributos de um usuário que ainda possui um termo suspeito.
-  3. **Controlador Admin (`app/controllers/admin/moderation_controller.rb`):**
-     - Implementado controle de acesso rigoroso com `before_action :require_admin`.
-     - Ação `index` que exibe todos os perfis identificados automaticamente e suporta filtros adicionais por status.
-     - Ação `update_user` que edita nomes inline ou atualiza status (seguro, suspenso, banido) individualmente.
-     - Ação `batch_action` que processa ações em lote (aprovar como seguro, suspender ou banir todos os selecionados simultaneamente).
-  4. **Interface Administrativa Premium (`app/views/admin/moderation/index.html.erb`):**
-     - Layout elegante seguindo a identidade visual verde monochrome `aprendeAI`.
-     - **Destaque Visual Dinâmico:** Utiliza o helper `highlight_inappropriate(text)` para pintar os termos ofensivos de vermelho diretamente no texto, mostrando ao admin exatamente o que ativou o filtro.
-     - Controle multi-seleção de checkboxes com um script JS para seleção/contagem em lote.
-     - Ações rápidas de linha com botões e formulários em linha para máxima usabilidade.
-  5. **Mecanismo de Segurança e Restrição de Acesso:**
-     - Bloqueio completo na rota de login (`SessionsController#create`) para contas suspensas ou banidas com alertas personalizados.
-     - Proteção ativa no `ApplicationController#current_user` que encerra a sessão imediatamente e desloga o usuário caso seu status mude para suspenso ou banido enquanto ele navega na plataforma.
-  6. **Integração de Links na Navbar (`app/views/layouts/application.html.erb`):**
-     - Link para "Moderação" inserido dinamicamente no menu Desktop e Mobile quando `current_user.admin?` é verdadeiro.
-  7. **Cobertura Sólida de Integração (`test/integration/admin_moderation_test.rb`):**
-     - Escrita de 10 novos testes integrados cobrindo: controle de acesso para não-admins, visibilidade dos perfis, edições individuais de nome, suspensão e banimento direto, ações de lote, e bloqueio e deslogamento em tempo de execução. Testes passando 100%.
+  3. **Proteção Completa no Backend (`app/controllers/admin/base_controller.rb`):**
+     - Criado um controlador base `Admin::BaseController` que herda de `ApplicationController` e executa filtros estritos de login (`before_action :require_login`) e autorização (`before_action :require_admin`).
+     - Todos os controladores do namespace `admin` (incluindo `Admin::ModerationController`) herdam dele. Isso impede qualquer acesso indevido via URL direta ou manipulação de sessão, bloqueando de forma segura no backend (com redirecionamento e alertas) e não apenas ocultando botões na interface.
+  4. **Painel de Moderação Ampliado (`app/controllers/admin/moderation_controller.rb`):**
+     - Ação `index` aprimorada para suportar navegação por abas (`@tab == 'suspicious'` para a fila automática de perfis flagrados ou `@tab == 'all'` para gerenciar absolutamente **qualquer** usuário da plataforma).
+     - Integração de filtro de busca textual em tempo de execução (busca por nome ou email) e filtro de status de conta (ativo, suspenso ou banido).
+     - Preservação estrita dos parâmetros de busca e abas nas requisições individuais e em lote, mantendo a experiência do administrador fluida.
+  5. **Interface Administrativa Robusta e Premium (`app/views/admin/moderation/index.html.erb`):**
+     - Interface de abas elegantes estilizadas com a paleta monocromática verde `aprendeAI`.
+     - Barra de busca dinâmica com ícone de lupa e menu de seleção de status.
+     - Suporte nativo para checkboxes com seletor master inteligente e contagem automática em JavaScript.
+     - Preserva e propaga parâmetros ocultos (`tab`, `search`, `status_filter`) nos formulários, garantindo que o admin não perca sua filtragem ao aplicar ações.
+   6. **Mecanismo de Segurança e Restrição de Acesso:**
+      - Bloqueio completo na rota de login (`SessionsController#create`) para contas suspensas ou banidas com alertas personalizados.
+      - Proteção ativa no `ApplicationController#current_user` que encerra a sessão imediatamente e desloga o usuário caso seu status mude para suspenso ou banido enquanto ele navega na plataforma.
+      - **Salvaguarda de Produção (Environment Guard):** O botão de acesso rápido "Entrar como Administrador (Demo)" e seu endpoint de login rápido foram estritamente limitados aos ambientes de desenvolvimento e testes (`Rails.env.development? || Rails.env.test?`). Em ambiente de produção, este atalho é totalmente omitido e ignorado no backend, impedindo qualquer tentativa de bypass.
+   7. **Integração de Links na Navbar (`app/views/layouts/application.html.erb`):**
+      - Link para "Moderação" ocultado completamente na interface de usuários comuns e exibido dinamicamente no menu Desktop e Mobile apenas quando `current_user.admin?` é verdadeiro.
+   8. **Cobertura Sólida de Integração (`test/integration/admin_moderation_test.rb`):**
+      - Escrita de 10 novos testes integrados cobrindo: controle de acesso para não-admins, visibilidade dos perfis, edições individuais de nome, suspensão e banimento direto, ações de lote, e bloqueio e deslogamento em tempo de execução. Testes passando 100%.
 
 ## 🔜 Próximos Passos Evolutivos
 - Implementar alertas dinâmicos de termos impróprios em tempo real no frontend com JavaScript antes mesmo da submissão do formulário.

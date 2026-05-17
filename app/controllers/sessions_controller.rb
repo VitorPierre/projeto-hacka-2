@@ -4,7 +4,7 @@ class SessionsController < ApplicationController
 
   def create
     # Handler especial de demonstração para facilitar apresentações e testes no Hackathon
-    if params[:demo_admin] == "true"
+    if (Rails.env.development? || Rails.env.test?) && params[:demo_admin] == "true"
       admin = User.find_or_initialize_by(email: "admin@aprendeai.com") do |u|
         u.name = "Administrador Demo"
         u.password = "senha123"
