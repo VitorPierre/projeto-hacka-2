@@ -1,8 +1,8 @@
-<div id="<%= dom_id(message) %>" class="flex items-start gap-3 <%= message.user_id == (defined?(current_user) ? current_user&.id : nil) ? 'flex-row-reverse' : 'flex-row' %>" data-user-id="<%= message.user_id %>">
-  <div class="flex-shrink-0 mt-1">
+<div id="<%= dom_id(message) %>" class="message-wrapper flex items-start gap-3 flex-row" data-sender-id="<%= message.user_id %>">
+  <div class="flex-shrink-0 mt-1 message-avatar">
     <%= user_avatar(message.user, size: "w-8 h-8", text_size: "text-xs") %>
   </div>
-  <div class="flex flex-col <%= message.user_id == (defined?(current_user) ? current_user&.id : nil) ? 'items-end' : 'items-start' %> max-w-[85%] w-full">
+  <div class="message-aligner flex flex-col items-start max-w-[85%] w-full">
     <span class="text-[10px] text-aprende-muted mb-1 px-1"><%= message.user.name %> - <%= message.created_at.strftime('%H:%M') %></span>
     
     <% if message.activity? %>
@@ -77,13 +77,13 @@
       </div>
     <% else %>
       <!-- Renderizado normal de mensagem -->
-      <div class="px-4 py-3 rounded-2xl <%= message.user_id == (defined?(current_user) ? current_user&.id : nil) ? 'bg-aprende-primary text-white rounded-tr-none' : 'bg-aprende-bg text-aprende-text border border-aprende-secondary rounded-tl-none' %> w-full text-left">
+      <div class="message-bubble px-4 py-3 rounded-2xl bg-aprende-bg text-aprende-text border border-aprende-secondary rounded-tl-none w-full text-left">
         <% if message.content.present? %>
-          <%= simple_format(message.content, class: "m-0 text-sm") %>
+          <%= format_chat_message(message.content) %>
         <% end %>
 
         <% if message.attachment.attached? %>
-          <div class="mt-2 <%= message.content.present? ? 'pt-2 border-t border-white/20' : '' %>">
+          <div class="mt-2 <%= message.content.present? ? 'pt-2 border-t border-aprende-secondary/20' : '' %>">
             <% if message.attachment.image? %>
               <%= image_tag message.attachment, class: "max-w-full rounded-lg shadow-sm" %>
             <% else %>

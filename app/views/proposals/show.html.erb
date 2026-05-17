@@ -36,7 +36,148 @@
 
     <!-- Ações -->
     <div class="flex flex-col gap-4">
-      <div class="flex flex-wrap gap-4 items-center">
+      <% if @proposal.closed? && !@proposal.paid? %>
+        <% if current_user == @proposal.student %>
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col gap-4 mt-2">
+            <h3 class="font-medium text-blue-900 text-lg flex items-center gap-2">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+              Métodos de Pagamento
+            </h3>
+            <p class="text-sm text-blue-800">Esta proposta foi fechada. Para liberar os recursos ou finalizar a etapa, confirme o pagamento simulado:</p>
+            <div class="flex flex-wrap gap-3 mt-2">
+              <%= button_to pay_proposal_path(@proposal), method: :patch, class: "bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors cursor-pointer shadow-sm text-sm" do %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Simular Pagamento (Pix)
+              <% end %>
+            </div>
+          </div>
+        <% else %>
+          <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center mt-2">
+            <p class="text-yellow-700 text-sm font-medium">Proposta fechada. Aguardando o aluno realizar o pagamento para prosseguir.</p>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% if @proposal.paid? && !@proposal.scheduled_at? && !@proposal.knowledge_pill? && !@proposal.started_at? %>
+        <% if current_user == @proposal.teacher %>
+          <div class="bg-aprende-bg border border-aprende-secondary rounded-xl p-6 flex flex-col gap-4 mt-2">
+            <h3 class="font-medium text-aprende-text text-lg flex items-center gap-2">
+              <svg class="w-6 h-6 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              Agendar ou Iniciar Aula
+            </h3>
+            
+            <div class="flex flex-col md:flex-row gap-6 items-start">
+              <%= form_with url: schedule_proposal_path(@proposal), method: :patch, class: "flex items-end gap-3 flex-1 w-full" do |f| %>
+                <div class="flex flex-col flex-1 gap-2">
+                  <label class="text-sm font-medium text-aprende-muted">Data e Horário (Futuro)</label>
+                  <%= f.datetime_local_field :scheduled_at, required: true, class: "w-full p-2 border border-aprende-secondary rounded-lg focus:outline-none focus:border-aprende-primary bg-white text-aprende-text" %>
+                </div>
+                <%= f.submit "Agendar", class: "bg-white border border-aprende-primary text-aprende-primary hover:bg-aprende-bg font-medium py-2.5 px-4 rounded-lg transition-colors cursor-pointer h-[42px]" %>
+              <% end %>
+
+              <div class="hidden md:block w-px h-16 bg-aprende-secondary mx-2"></div>
+              
+              <div class="flex-1 w-full">
+                <p class="text-sm font-medium text-aprende-muted mb-2">Vai dar aula agora mesmo?</p>
+                <%= button_to start_session_proposal_path(@proposal), method: :patch, class: "w-full bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-lg transition-colors cursor-pointer h-[42px] flex items-center justify-center gap-2" do %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                  Iniciar Aula Agora (<%= @proposal.duration %> min)
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% else %>
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center mt-2">
+            <p class="text-gray-600 font-medium">Pagamento confirmado. Aguardando o professor agendar a sessão.</p>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% if @proposal.scheduled_at? && !@proposal.started_at? %>
+        <div class="bg-aprende-bg border border-aprende-primary/30 rounded-xl p-4 mt-2 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <div>
+              <p class="font-medium text-aprende-text text-sm">Sessão Agendada</p>
+              <p class="text-aprende-muted text-xs"><%= I18n.l(@proposal.scheduled_at.to_time, format: :long) rescue @proposal.scheduled_at %></p>
+            </div>
+          </div>
+          <% if current_user == @proposal.teacher %>
+            <%= button_to "Iniciar Aula", start_session_proposal_path(@proposal), method: :patch, class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2 px-6 rounded-lg transition-colors cursor-pointer text-sm" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if @proposal.started_at? && !@proposal.finished_at? %>
+        <% if current_user == @proposal.teacher %>
+          <div class="mt-2 text-right">
+            <% btn_text = @proposal.knowledge_pill? ? "Encerrar Pílula" : "Finalizar Aula/Mentoria" %>
+            <%= button_to btn_text, finish_session_proposal_path(@proposal), method: :patch, form: { data: { turbo_confirm: 'Deseja encerrar definitivamente esta sessão?' } }, class: "bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors cursor-pointer text-sm" %>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% if @proposal.finished_at? %>
+        <div class="bg-gray-100 border border-gray-200 rounded-xl p-6 mt-2 flex flex-col gap-6">
+          <div class="text-center">
+            <p class="text-gray-800 text-lg font-medium">Sessão Finalizada</p>
+            <p class="text-gray-500 text-sm">Obrigado por utilizar a plataforma!</p>
+          </div>
+          
+          <% if @proposal.recording_url.present? %>
+            <div class="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <div>
+                  <p class="font-medium text-aprende-text text-sm">Gravação Disponível</p>
+                  <p class="text-aprende-muted text-xs">Assista à aula gravada quando quiser.</p>
+                </div>
+              </div>
+              <a href="<%= @proposal.recording_url %>" target="_blank" class="bg-aprende-primary/10 text-aprende-primary hover:bg-aprende-primary hover:text-white transition-colors py-2 px-4 rounded-lg font-medium text-sm">Acessar Gravação</a>
+            </div>
+          <% end %>
+
+          <% if current_user == @proposal.student && @proposal.rating.nil? %>
+            <div class="bg-white border border-yellow-200 rounded-lg p-4">
+              <h4 class="font-medium text-aprende-text mb-2">Como foi a aula com <%= @proposal.teacher.name %>?</h4>
+              <%= form_with url: rate_proposal_path(@proposal), method: :patch, class: "flex flex-col gap-3" do |f| %>
+                <div class="flex gap-2">
+                  <% 5.downto(1) do |i| %>
+                    <label class="cursor-pointer">
+                      <%= f.radio_button :rating, i, class: "peer hidden", required: true %>
+                      <svg class="w-8 h-8 text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-300 transition-colors" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    </label>
+                  <% end %>
+                </div>
+                <%= f.text_area :feedback, rows: 2, placeholder: "Deixe um comentário (opcional)...", class: "w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-aprende-primary text-sm resize-none" %>
+                <%= f.submit "Enviar Avaliação", class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer self-start" %>
+              <% end %>
+              <style>
+                /* Reverse direction for star hovering logic */
+                .flex.gap-2 { flex-direction: row-reverse; justify-content: flex-end; }
+                .flex.gap-2 > label:hover ~ label svg { color: #facc15; } /* Tailwind yellow-400 */
+                .flex.gap-2 > label:hover svg { color: #facc15; }
+              </style>
+            </div>
+          <% elsif @proposal.rating.present? %>
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="font-medium text-aprende-text">Avaliação:</span>
+                <div class="flex">
+                  <% 5.times do |i| %>
+                    <svg class="w-5 h-5 <%= i < @proposal.rating ? 'text-yellow-400' : 'text-gray-300' %>" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                  <% end %>
+                </div>
+              </div>
+              <% if @proposal.feedback.present? %>
+                <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">"<%= @proposal.feedback %>"</p>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="flex flex-wrap gap-4 items-center mt-2">
         <% if @proposal.recipient?(current_user) && @proposal.pending? %>
           <%= button_to "Aceitar Proposta", accept_proposal_path(@proposal), method: :patch, class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer" %>
           <%= button_to "Recusar", reject_proposal_path(@proposal), method: :patch, class: "bg-white text-red-600 border border-red-200 hover:bg-red-50 font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer", form: { data: { turbo_confirm: 'Tem certeza que deseja recusar?' } } %>
@@ -48,7 +189,7 @@
           </div>
         <% end %>
 
-        <% if @proposal.accepted? %>
+        <% if @proposal.accepted? && current_user == @proposal.teacher %>
           <%= button_to "Fechar Proposta", close_proposal_path(@proposal), method: :patch, class: "bg-white text-aprende-text border border-aprende-secondary hover:bg-gray-50 font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer", form: { data: { turbo_confirm: 'Tem certeza que deseja fechar a proposta?' } } %>
         <% end %>
         
@@ -81,6 +222,110 @@
     </div>
   </div>
 
+  <!-- Interação da Sessão -->
+  <% if @proposal.started_at? && !@proposal.finished_at? %>
+    <% if @proposal.synchronous? %>
+      <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-6 md:p-8 flex flex-col gap-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-medium text-aprende-text flex items-center gap-2">
+            <svg class="w-6 h-6 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            Sala Virtual
+          </h2>
+          <div class="flex items-center gap-3">
+            <span class="text-aprende-muted text-sm font-medium">Tempo Restante:</span>
+            <span id="session-timer" class="font-mono text-xl font-bold text-aprende-primary bg-aprende-bg px-3 py-1 rounded-lg border border-aprende-secondary" data-duration="<%= @proposal.duration %>">
+              <%= sprintf("%02d:00", @proposal.duration.to_i) %>
+            </span>
+          </div>
+        </div>
+        
+        <div class="w-full aspect-video rounded-xl overflow-hidden border border-aprende-secondary bg-black">
+          <iframe allow="camera; microphone; fullscreen; display-capture; autoplay" src="https://meet.jit.si/aprendeai-proposal-<%= @proposal.id %>" style="height: 100%; width: 100%; border: 0px;"></iframe>
+        </div>
+        
+        <script>
+          document.addEventListener("turbo:load", function() {
+            const timerEl = document.getElementById("session-timer");
+            if (!timerEl) return;
+            
+            let durationMinutes = parseInt(timerEl.dataset.duration);
+            let timeLeft = durationMinutes * 60; // in seconds
+            
+            const interval = setInterval(function() {
+              timeLeft--;
+              
+              if (timeLeft <= 0) {
+                clearInterval(interval);
+                timerEl.textContent = "00:00";
+                timerEl.classList.add("text-red-600");
+                timerEl.classList.remove("text-aprende-primary");
+                return;
+              }
+              
+              if (timeLeft <= 300) { // 5 minutes warning
+                timerEl.classList.add("text-yellow-600");
+                timerEl.classList.remove("text-aprende-primary");
+              }
+              
+              let minutes = Math.floor(timeLeft / 60);
+              let seconds = timeLeft % 60;
+              timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+          });
+        </script>
+      </div>
+    <% elsif @proposal.knowledge_pill? %>
+      <div class="bg-aprende-bg border border-aprende-primary/30 rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-medium text-aprende-text flex items-center gap-2">
+            <svg class="w-5 h-5 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Pílula do Conhecimento Ativa
+          </h2>
+          <p class="text-aprende-muted text-sm mt-1">Aguardando a resposta do professor pelo chat.</p>
+        </div>
+        <div class="flex items-center gap-3 bg-white p-3 rounded-lg border border-aprende-secondary shadow-sm">
+          <span class="text-aprende-text text-sm font-medium">Prazo para Resposta:</span>
+          <span id="kp-timer" class="font-mono text-xl font-bold text-aprende-primary" data-started-at="<%= @proposal.started_at.to_i %>">
+            24:00:00
+          </span>
+        </div>
+      </div>
+      
+      <script>
+        document.addEventListener("turbo:load", function() {
+          const kpTimerEl = document.getElementById("kp-timer");
+          if (!kpTimerEl) return;
+          
+          let startedAt = parseInt(kpTimerEl.dataset.startedAt);
+          let deadline = startedAt + (24 * 60 * 60); // 24 hours in seconds
+          
+          const kpInterval = setInterval(function() {
+            let now = Math.floor(Date.now() / 1000);
+            let timeLeft = deadline - now;
+            
+            if (timeLeft <= 0) {
+              clearInterval(kpInterval);
+              kpTimerEl.textContent = "00:00:00";
+              kpTimerEl.classList.add("text-red-600");
+              kpTimerEl.classList.remove("text-aprende-primary");
+              return;
+            }
+            
+            if (timeLeft <= 3600) { // 1 hour warning
+              kpTimerEl.classList.add("text-yellow-600");
+              kpTimerEl.classList.remove("text-aprende-primary");
+            }
+            
+            let hours = Math.floor(timeLeft / 3600);
+            let minutes = Math.floor((timeLeft % 3600) / 60);
+            let seconds = timeLeft % 60;
+            kpTimerEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          }, 1000);
+        });
+      </script>
+    <% end %>
+  <% end %>
+
   <!-- Chat / Mensagens -->
   <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-6 md:p-8 flex flex-col gap-6">
     <h2 class="text-xl font-medium text-aprende-text">Mensagens</h2>
@@ -93,14 +338,35 @@
       <% end %>
     </div>
 
-    <% if %w[pending accepted].include?(@proposal.status) %>
+    <% if !@proposal.rejected? && !@proposal.finished_at? %>
       <div class="border-t border-aprende-secondary pt-6 mt-2">
         <%= render "messages/form", proposal: @proposal, message: @message %>
       </div>
     <% else %>
       <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center mt-2">
-        <p class="text-aprende-muted text-sm font-medium">Esta proposta está fechada ou foi recusada. O chat não está mais disponível para envio de mensagens.</p>
+        <p class="text-aprende-muted text-sm font-medium">Esta proposta foi recusada ou a aula já foi finalizada. O chat está fechado.</p>
       </div>
     <% end %>
   </div>
 </div>
+
+<!-- CSS Dinâmico para resolver o problema de WebSockets sem side-effects no backend -->
+<style>
+  /* Mensagens do usuário atual à direita */
+  .message-wrapper[data-sender-id="<%= current_user.id %>"] {
+    flex-direction: row-reverse !important;
+  }
+  .message-wrapper[data-sender-id="<%= current_user.id %>"] .message-aligner {
+    align-items: flex-end !important;
+  }
+  .message-wrapper[data-sender-id="<%= current_user.id %>"] .message-bubble {
+    background-color: var(--color-aprende-primary) !important;
+    color: white !important;
+    border-top-right-radius: 0 !important;
+    border-top-left-radius: 1rem !important;
+  }
+  .message-wrapper[data-sender-id="<%= current_user.id %>"] .message-bubble a {
+    color: white !important;
+  }
+  /* Estilização padrão para o outro usuário mantida nas classes estáticas originais */
+</style>

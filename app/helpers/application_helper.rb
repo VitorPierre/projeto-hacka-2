@@ -119,5 +119,34 @@ module ApplicationHelper
 
     html_blocks.join("\n").html_safe
   end
-end
+  def format_chat_message(text)
+    return "" if text.blank?
 
+    # Escapar HTML para segurança
+    escaped = ERB::Util.html_escape(text).to_s
+
+    # Parse blocos de código primeiro
+    # Usando gsub com bloco para substituir todos os ```code...```
+    escaped = escaped.gsub(/```[a-z]*\n(.*?)```/m) do |match|
+      code_content = $1
+      "<pre class='bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-sm my-2 font-mono'><code>#{code_content}</code></pre>"
+    end
+    
+    escaped = escaped.gsub(/```(.*?)```/m) do |match|
+      code_content = $1
+      "<pre class='bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-sm my-2 font-mono'><code>#{code_content}</code></pre>"
+    end
+
+    # Inline code
+    escaped.gsub!(/`(.*?)`/, '<code class="bg-gray-200 text-gray-800 px-1 py-0.5 rounded text-sm font-mono">\1</code>')
+
+    # Bold e Itálico
+    escaped.gsub!(/\*\*(.*?)\*\*/, '<strong class="font-bold">\1</strong>')
+    escaped.gsub!(/\*(.*?)\*/, '<em class="italic">\1</em>')
+
+    # Usar simple_format para quebras de linha normais em volta do HTML gerado
+    # Importante: o simple_format pode embrulhar <pre> em <p>, então sanitizamos no final ou deixamos o Rails lidar.
+    # Para o MVP, simple_format(..., sanitize: false) já que nós mesmos escapamos.
+    simple_format(escaped, { class: "m-0 text-sm leading-relaxed" }, sanitize: false)
+  end
+end

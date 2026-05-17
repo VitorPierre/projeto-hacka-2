@@ -84,14 +84,53 @@
 
   <!-- Painel do Professor (Apenas se for o próprio) -->
     <% if current_user == @teacher %>
+      <!-- Seção Meus Agendamentos -->
+      <div class="flex flex-col gap-4 mt-8">
+        <h2 class="text-xl md:text-2xl font-medium text-aprende-text px-2">Meus Agendamentos</h2>
+        
+        <% if @scheduled_proposals && @scheduled_proposals.any? %>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <% @scheduled_proposals.each do |proposal| %>
+              <div class="bg-aprende-bg border border-aprende-primary/30 rounded-xl p-5 flex flex-col gap-3 shadow-sm relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1 <%= proposal.started_at? ? 'bg-red-500' : 'bg-aprende-primary' %>"></div>
+                <div class="flex justify-between items-start gap-4">
+                  <div>
+                    <p class="text-xs font-medium uppercase tracking-wide <%= proposal.started_at? ? 'text-red-500' : 'text-aprende-muted' %>">
+                      <%= proposal.started_at? ? "Sessão Ativa (Em andamento)" : "Agendado para" %>
+                    </p>
+                    <p class="font-bold text-aprende-text mt-1">
+                      <%= I18n.l(proposal.scheduled_at.to_time, format: :long) rescue proposal.scheduled_at %>
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 mt-2">
+                  <%= user_avatar(proposal.student, size: "w-8 h-8", text_size: "text-xs") %>
+                  <div>
+                    <p class="font-medium text-aprende-text text-sm"><%= proposal.student.name %></p>
+                    <p class="text-xs text-aprende-muted"><%= proposal.subject.name %></p>
+                  </div>
+                </div>
+                <div class="pt-3 border-t border-aprende-secondary mt-2 flex justify-between items-center">
+                  <%= link_to proposal.started_at? ? "Voltar para a Sala" : "Ver Detalhes / Iniciar", proposal_path(proposal), class: "text-sm #{proposal.started_at? ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'text-aprende-primary hover:bg-gray-50 border-aprende-secondary'} font-medium w-full text-center bg-white border py-2 rounded-lg transition-colors" %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="bg-white border border-aprende-secondary border-dashed rounded-xl p-6 text-center shadow-sm">
+            <p class="text-aprende-muted text-sm italic">Nenhuma aula ou mentoria agendada no momento.</p>
+          </div>
+        <% end %>
+      </div>
+
       <!-- Seção Alunos Lecionados -->
       <div class="flex flex-col gap-4 mt-6">
         <h2 class="text-xl md:text-2xl font-medium text-aprende-text px-2">Alunos que já leciono</h2>
         
-        <% taught_proposals = @teacher.proposals_as_teacher.where(status: [:accepted, :closed]).includes(:student, :subject) %>
+        <% taught_proposals = @teacher.proposals_as_teacher.where(status: [:accepted, :closed]).includes(:student, :subject).order(created_at: :desc) %>
         <% if taught_proposals.any? %>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <% taught_proposals.each do |prop| %>
+            <% taught_proposals.first(3).each do |prop| %>
               <div class="bg-white rounded-xl shadow-sm border border-aprende-secondary p-4 flex flex-col gap-2">
                 <div class="flex items-center gap-3">
                   <%= user_avatar(prop.student, size: "w-10 h-10", text_size: "text-sm") %>
@@ -104,6 +143,28 @@
               </div>
             <% end %>
           </div>
+          <% if taught_proposals.count > 3 %>
+            <details class="group mt-2">
+              <summary class="text-sm text-aprende-primary font-medium cursor-pointer list-none flex items-center justify-center gap-1 hover:underline">
+                <span>Ver todos os alunos (<%= taught_proposals.count %>)</span>
+                <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </summary>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                <% taught_proposals.drop(3).each do |prop| %>
+                  <div class="bg-white rounded-xl shadow-sm border border-aprende-secondary p-4 flex flex-col gap-2">
+                    <div class="flex items-center gap-3">
+                      <%= user_avatar(prop.student, size: "w-10 h-10", text_size: "text-sm") %>
+                      <div>
+                        <p class="font-medium text-aprende-text text-sm"><%= prop.student.name %></p>
+                        <p class="text-xs text-aprende-muted"><%= prop.subject.name %></p>
+                      </div>
+                    </div>
+                    <%= link_to "Ver Perfil", student_path(prop.student), class: "mt-2 text-xs text-center border border-aprende-secondary hover:border-aprende-primary py-1.5 rounded-lg transition-colors text-aprende-muted hover:text-aprende-primary" %>
+                  </div>
+                <% end %>
+              </div>
+            </details>
+          <% end %>
         <% else %>
           <div class="bg-white border border-aprende-secondary border-dashed rounded-xl p-6 text-center shadow-sm">
             <p class="text-aprende-muted text-sm italic">Nenhum aluno vinculado no momento.</p>
@@ -114,10 +175,14 @@
       <div class="flex flex-col gap-4 mt-8">
         <h2 class="text-xl md:text-2xl font-medium text-aprende-text px-2">Minhas Propostas</h2>
         
-        <% proposals = @teacher.all_proposals.includes(:student, :teacher, :subject, :sender).order(created_at: :desc) %>
-      <% if proposals.any? %>
+        <% 
+          all_proposals = @teacher.all_proposals.includes(:student, :teacher, :subject, :sender).order(created_at: :desc).to_a
+          visible_proposals = all_proposals.select { |p| p.pending? || p.accepted? } + all_proposals.select(&:closed?).first(2)
+          hidden_proposals = all_proposals - visible_proposals
+        %>
+      <% if all_proposals.any? %>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <% proposals.each do |proposal| %>
+          <% visible_proposals.each do |proposal| %>
             <div class="bg-white rounded-xl shadow-sm border border-aprende-secondary p-5 flex flex-col gap-3">
               <div class="flex justify-between items-start gap-4">
                 <div>
@@ -144,6 +209,40 @@
             </div>
           <% end %>
         </div>
+        
+        <% if hidden_proposals.any? %>
+          <details class="group mt-2">
+            <summary class="text-sm text-aprende-primary font-medium cursor-pointer list-none flex items-center justify-center gap-1 hover:underline">
+              <span>Ver histórico completo (<%= hidden_proposals.count %>)</span>
+              <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </summary>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <% hidden_proposals.each do |proposal| %>
+                <div class="bg-gray-50 rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col gap-3">
+                  <div class="flex justify-between items-start gap-4">
+                    <div>
+                      <p class="text-xs text-gray-500">Aluno</p>
+                      <p class="font-medium text-gray-800"><%= proposal.student.name %></p>
+                      <p class="text-sm text-gray-500"><%= proposal.subject.name %></p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                      <p class="text-xs text-gray-500">Proposta</p>
+                      <p class="font-bold text-lg text-gray-700 mt-1"><%= number_to_currency(proposal.price) %></p>
+                    </div>
+                  </div>
+                  <div class="pt-3 border-t border-gray-200 mt-auto flex justify-between items-center">
+                    <div class="flex flex-col gap-1">
+                      <span class="inline-block px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                        <%= proposal.status_human %>
+                      </span>
+                    </div>
+                    <%= link_to "Ver Histórico", proposal_path(proposal), class: "text-sm text-gray-500 hover:text-gray-700 font-medium" %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </details>
+        <% end %>
       <% else %>
         <div class="bg-white border border-aprende-secondary rounded-xl p-8 text-center shadow-sm">
           <p class="text-aprende-muted">Você ainda não tem propostas.</p>

@@ -14,6 +14,11 @@ Rails.application.routes.draw do
       patch :reject
       patch :close
       patch :counter
+      patch :pay
+      patch :schedule
+      patch :start_session
+      patch :finish_session
+      patch :rate
     end
     resources :messages, only: [:create] do
       member do
@@ -24,6 +29,12 @@ Rails.application.routes.draw do
   
   get '/learn', to: 'learn#index'
   get '/plan', to: 'learn#index'
+  
+  resources :notifications, only: [] do
+    member do
+      patch :read
+    end
+  end
   
   get "up" => "rails/health#show", as: :rails_health_check
 end

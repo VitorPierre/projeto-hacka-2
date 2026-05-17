@@ -7,6 +7,7 @@ class Proposal < ApplicationRecord
   has_many :messages, dependent: :destroy
 
   enum :status, pending: 0, accepted: 1, rejected: 2, closed: 3
+  enum :modality, knowledge_pill: 0, express_session: 1, focused_mentoring: 2
   
   STATUS_NAMES = {
     "pending" => "Pendente",
@@ -19,7 +20,10 @@ class Proposal < ApplicationRecord
     STATUS_NAMES[status] || status.humanize
   end
   
-  validates :price, presence: true, numericality: { greater_than: 0 }
+  validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :modality, presence: true
+  validates :rating, numericality: { greater_than_or_equal_to: 1, less_than_or_equal_to: 5 }, allow_nil: true
+  validate :duration_respects_modality
   validate :price_respects_floor
   validate :users_have_correct_roles
   validate :users_are_different
@@ -47,12 +51,61 @@ class Proposal < ApplicationRecord
     recipient.id == user.id
   end
 
+  def synchronous?
+    express_session? || focused_mentoring?
+  end
+
+  def asynchronous?
+    knowledge_pill?
+  end
+
+  # Monetization
+  def platform_fee_percentage
+    0.20 # 20% platform fee
+  end
+
+  def platform_fee
+    (price * platform_fee_percentage).round(2)
+  end
+
+  def teacher_receives
+    price - platform_fee
+  end
+
   private
 
+  def duration_respects_modality
+    case modality
+    when "knowledge_pill"
+      errors.add(:duration, "não deve ser preenchida para pílula de conhecimento") if duration.present?
+    when "express_session"
+      errors.add(:duration, "deve ser 15 minutos para sessão expressa") unless duration == 15
+    when "focused_mentoring"
+      errors.add(:duration, "deve ser 30, 45 ou 60 minutos para mentoria focada") unless [30, 45, 60].include?(duration)
+    end
+  end
+
   def price_respects_floor
+    if price.to_f <= 0.0
+      if modality == "knowledge_pill"
+        return # Permitido tentar gratuitamente
+      else
+        errors.add(:price, "deve ser maior que zero para esta modalidade")
+        return
+      end
+    end
+
     return unless teacher&.technical? || teacher&.higher?
-    if price.to_f < 50.0
-      errors.add(:price, "deve ser no mínimo R$ 50,00 para professores de nível técnico ou superior")
+    
+    min_price = case modality
+                when "knowledge_pill", "express_session"
+                  15.0
+                else
+                  50.0
+                end
+
+    if price.to_f < min_price
+      errors.add(:price, "deve ser no mínimo R$ #{'%.2f' % min_price} para professores certificados nesta modalidade")
     end
   end
 

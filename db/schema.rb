@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_17_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_17_060300) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -53,10 +53,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_17_000000) do
     t.index ["user_id"], name: "index_messages_on_user_id"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "message"
+    t.datetime "read_at"
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "proposals", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "duration"
+    t.text "feedback"
+    t.datetime "finished_at"
+    t.integer "modality"
+    t.boolean "paid"
     t.decimal "price", precision: 10, scale: 2
+    t.integer "rating"
+    t.string "recording_url"
+    t.datetime "scheduled_at"
     t.integer "sender_id", null: false
+    t.datetime "started_at"
     t.integer "status", default: 0
     t.integer "student_id", null: false
     t.integer "subject_id", null: false
@@ -101,6 +120,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_17_000000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "messages", "proposals"
   add_foreign_key "messages", "users"
+  add_foreign_key "notifications", "users"
   add_foreign_key "proposals", "subjects"
   add_foreign_key "proposals", "users", column: "sender_id"
   add_foreign_key "proposals", "users", column: "student_id"

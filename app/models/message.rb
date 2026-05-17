@@ -17,4 +17,17 @@ class Message < ApplicationRecord
     return [] if options.blank?
     options.split("\n").map(&:strip).reject(&:blank?)
   end
+
+  private
+
+  def notify_recipient
+    [proposal.student, proposal.teacher].each do |u|
+      prefix = u.id == user.id ? "Você enviou uma mensagem" : "Nova mensagem de #{user.name}"
+      Notification.create(
+        user: u,
+        message: "#{prefix} em #{proposal.subject.name}",
+        url: "/proposals/#{proposal.id}"
+      )
+    end
+  end
 end

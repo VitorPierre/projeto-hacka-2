@@ -6,10 +6,18 @@ class User < ApplicationRecord
   has_many :proposals_as_student, class_name: 'Proposal', foreign_key: 'student_id'
   has_many :proposals_as_teacher, class_name: 'Proposal', foreign_key: 'teacher_id'
   has_many :initiated_proposals, class_name: 'Proposal', foreign_key: 'sender_id'
-
+  has_many :notifications, dependent: :destroy
   # All proposals where this user is involved (as student or teacher)
   def all_proposals
     Proposal.where("student_id = ? OR teacher_id = ?", id, id)
+  end
+
+  def average_rating
+    proposals_as_teacher.average(:rating)&.round(1)
+  end
+
+  def ratings_count
+    proposals_as_teacher.where.not(rating: nil).count
   end
 
   # Aliases for backward compatibility

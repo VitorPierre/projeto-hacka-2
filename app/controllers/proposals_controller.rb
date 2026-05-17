@@ -1,6 +1,6 @@
 class ProposalsController < ApplicationController
   before_action :require_login
-  before_action :set_proposal, only: [:show, :update, :accept, :reject, :close, :counter]
+  before_action :set_proposal, only: [:show, :update, :accept, :reject, :close, :counter, :pay, :schedule, :start_session, :finish_session, :rate]
 
   def new
     if current_user.student?
@@ -33,6 +33,19 @@ class ProposalsController < ApplicationController
     @proposal.status = :pending
     
     if @proposal.save
+      if @proposal.knowledge_pill? && (params[:message_content].present? || params[:attachment].present?)
+        @proposal.messages.create(
+          user: current_user,
+          content: params[:message_content] || "Dúvida enviada via anexo.",
+          attachment: params[:attachment],
+          message_type: :regular
+        )
+      end
+
+      [@proposal.student, @proposal.teacher].each do |u|
+        prefix = u.id == current_user.id ? "Você enviou uma" : "Você recebeu uma"
+        Notification.create(user: u, message: "#{prefix} nova proposta de #{current_user.name} em #{@proposal.subject.name}.", url: "/proposals/#{@proposal.id}")
+      end
       flash[:notice] = "Proposta enviada com sucesso! Aguarde a resposta."
       redirect_to proposal_path(@proposal)
     else
@@ -57,6 +70,7 @@ class ProposalsController < ApplicationController
   def accept
     if @proposal.recipient?(current_user) && @proposal.pending?
       @proposal.update(status: :accepted)
+      notify_both("A proposta '#{@proposal.subject.name}' foi aceita por #{current_user.name}.")
       flash[:notice] = "Proposta aceita com sucesso!"
     else
       flash[:alert] = "Ação não permitida."
@@ -67,6 +81,7 @@ class ProposalsController < ApplicationController
   def reject
     if @proposal.recipient?(current_user) && @proposal.pending?
       @proposal.update(status: :rejected)
+      notify_both("A proposta '#{@proposal.subject.name}' foi recusada por #{current_user.name}.")
       flash[:notice] = "Proposta recusada."
     else
       flash[:alert] = "Ação não permitida."
@@ -75,9 +90,88 @@ class ProposalsController < ApplicationController
   end
 
   def close
-    if @proposal.accepted?
-      @proposal.update(status: :closed)
-      flash[:notice] = "Proposta fechada."
+    if @proposal.accepted? && current_user == @proposal.teacher
+      attributes = { status: :closed }
+      msg = "A proposta '#{@proposal.subject.name}' foi fechada por #{current_user.name}."
+      
+      if @proposal.price.to_f == 0.0 && @proposal.knowledge_pill?
+        attributes[:paid] = true
+        attributes[:started_at] = Time.current
+        msg += " Como a pílula é gratuita, ela foi ativada automaticamente!"
+      end
+      
+      @proposal.update(attributes)
+      notify_both(msg)
+      flash[:notice] = "Proposta fechada com sucesso!"
+    else
+      flash[:alert] = "Ação não permitida."
+    end
+    redirect_to proposal_path(@proposal)
+  end
+
+  def pay
+    if @proposal.closed? && !@proposal.paid? && current_user == @proposal.student
+      attributes = { paid: true }
+      attributes[:started_at] = Time.current if @proposal.knowledge_pill?
+      
+      @proposal.update(attributes)
+      notify_both("Pagamento confirmado para a proposta '#{@proposal.subject.name}'.")
+      flash[:notice] = "Pagamento simulado com sucesso!"
+    else
+      flash[:alert] = "Não foi possível realizar o pagamento."
+    end
+    redirect_to proposal_path(@proposal)
+  end
+
+  def schedule
+    if @proposal.closed? && @proposal.paid? && current_user == @proposal.teacher
+      if params[:scheduled_at].present?
+        @proposal.update(scheduled_at: params[:scheduled_at])
+        notify_both("Aula de '#{@proposal.subject.name}' agendada para #{I18n.l(@proposal.scheduled_at.to_time, format: :short)}.")
+        flash[:notice] = "Aula agendada com sucesso."
+      else
+        flash[:alert] = "Selecione uma data e hora."
+      end
+    else
+      flash[:alert] = "Ação não permitida."
+    end
+    redirect_to proposal_path(@proposal)
+  end
+
+  def start_session
+    if @proposal.closed? && @proposal.paid? && current_user == @proposal.teacher
+      @proposal.update(started_at: Time.current)
+      notify_both("A aula de '#{@proposal.subject.name}' foi iniciada.")
+      flash[:notice] = "Aula iniciada. O chat e vídeo estão ativos."
+    else
+      flash[:alert] = "Ação não permitida."
+    end
+    redirect_to proposal_path(@proposal)
+  end
+
+  def finish_session
+    if @proposal.started_at.present? && @proposal.finished_at.nil? && current_user == @proposal.teacher
+      attributes = { finished_at: Time.current }
+      if @proposal.synchronous?
+        attributes[:recording_url] = "https://meet.jit.si/aprendeai-proposal-#{@proposal.id}#recording_#{Time.current.to_i}"
+      end
+      @proposal.update(attributes)
+      notify_both("A aula de '#{@proposal.subject.name}' foi finalizada.")
+      flash[:notice] = "Aula finalizada com sucesso."
+    else
+      flash[:alert] = "Ação não permitida."
+    end
+    redirect_to proposal_path(@proposal)
+  end
+
+  def rate
+    if @proposal.finished_at.present? && current_user == @proposal.student
+      if @proposal.update(rating: params[:rating], feedback: params[:feedback])
+        notify_both("O aluno avaliou a sessão de '#{@proposal.subject.name}'.")
+        flash[:notice] = "Avaliação enviada com sucesso!"
+      else
+        flash[:alert] = "Não foi possível enviar a avaliação."
+      end
     else
       flash[:alert] = "Ação não permitida."
     end
@@ -130,6 +224,8 @@ class ProposalsController < ApplicationController
         content: system_text,
         message_type: :regular
       )
+      
+      notify_both("#{current_user.name} fez uma contra-proposta de #{formatted_new} na proposta '#{@proposal.subject.name}'.")
 
       flash[:notice] = "Contra-proposta enviada com sucesso!"
     else
@@ -158,6 +254,16 @@ class ProposalsController < ApplicationController
 
   private
 
+  def notify_both(msg)
+    [@proposal.student, @proposal.teacher].each do |u|
+      Notification.create(
+        user: u,
+        message: msg,
+        url: "/proposals/#{@proposal.id}"
+      )
+    end
+  end
+
   def set_proposal
     @proposal = Proposal.where("student_id = ? OR teacher_id = ?", current_user.id, current_user.id).find_by(id: params[:id])
     unless @proposal
@@ -167,7 +273,7 @@ class ProposalsController < ApplicationController
   end
 
   def proposal_params
-    p = params.require(:proposal).permit(:teacher_id, :student_id, :subject_id, :price)
+    p = params.require(:proposal).permit(:teacher_id, :student_id, :subject_id, :price, :modality, :duration)
     if p[:price].is_a?(String)
       price_str = p[:price].gsub("R$ ", "").strip
       if price_str.include?(",")
@@ -176,6 +282,16 @@ class ProposalsController < ApplicationController
         p[:price] = price_str
       end
     end
+    
+    # Convert duration to int or nil based on modality
+    if p[:modality] == "knowledge_pill"
+      p[:duration] = nil
+    elsif p[:modality] == "express_session"
+      p[:duration] = 15
+    elsif p[:duration].present?
+      p[:duration] = p[:duration].to_i
+    end
+    
     p
   end
 end

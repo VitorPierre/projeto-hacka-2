@@ -2,9 +2,13 @@ class TeachersController < ApplicationController
   before_action :check_teacher_access
 
   def index
-    @teachers = User.certified_teachers.includes(:subjects)
+    base_teachers = User.certified_teachers.includes(:subjects)
     if params[:subject_id].present?
-      @teachers = @teachers.joins(:subjects).where(subjects: { id: params[:subject_id] }).distinct
+      base_teachers = base_teachers.joins(:subjects).where(subjects: { id: params[:subject_id] }).distinct
+    end
+
+    @teachers = base_teachers.sort_by do |teacher|
+      [-(teacher.average_rating || 0.0), -teacher.ratings_count]
     end
   end
 
@@ -12,6 +16,11 @@ class TeachersController < ApplicationController
     @teacher = User.teacher.find(params[:id])
     if current_user == @teacher
       @proposals = current_user.received_proposals.includes(:student, :subject).order(created_at: :desc)
+      @scheduled_proposals = current_user.proposals_as_teacher
+                                          .where.not(scheduled_at: nil)
+                                          .where(finished_at: nil)
+                                          .includes(:student, :subject)
+                                          .order(scheduled_at: :asc)
     end
   end
 

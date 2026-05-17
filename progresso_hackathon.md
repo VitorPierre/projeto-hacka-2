@@ -317,3 +317,51 @@ Leia o markdown `progresso_hackathon.md` e continue de onde parou. Faça apenas 
   5. **Interface Premium (`show.html.erb`):** Adicionado um componente `<details>` discreto com animação CSS suave de rotação de chevron e formulário inline monetário estilizado sob os botões CTAs principais.
   6. **Testes de Integração Independentes de Locale (`proposals_flow_test.rb`):** Desenvolvida e integrada uma suíte de 5 testes de integração que atestam a robustez do fluxo bidirecional, restrição de acesso a terceiros, bloqueio a autopropostas e verificação de pisos salariais por categoria profissional. Todos os testes passam com 100% de sucesso.
 
+
+## 📚 Novas Estruturas e Fases Implementadas
+
+### Modalidades de Interação (Fase 2)
+A plataforma suporta três modalidades, permitindo ao aluno escolher a melhor forma de interagir com o professor:
+- **Gravações e Avaliação:** Após o término de uma Sessão Expressa ou Mentoria Focada, o sistema gera e armazena automaticamente a gravação da videoconferência. Simultaneamente, o painel da sessão exibe um formulário para que o aluno avalie o professor com nota (1 a 5) e comentário. Esses dados ficam atrelados à proposta, construindo o banco de dados necessário para futuros ranqueamentos e indicações algorítmicas de professores.
+- **Pílula de Conhecimento:** Dúvida assíncrona focada em respostas rápidas por texto ou anexo. O aluno pode enviar sua dúvida com anexos pelo chat da negociação independentemente de pagamento. O fluxo começa após o pagamento e o professor tem um prazo/timer regressivo de 24 horas. O encerramento da pílula não é mais automático: o professor conta com um botão "Encerrar Pílula" para fechar a sessão. Possui um checkbox de tentativa gratuita que define o valor para R$ 0,00. Quando a Pílula é gratuita, ela pula a etapa de pagamento completamente e ativa a sessão no mesmo momento em que a proposta é fechada (o ato de fechar a proposta é exclusivo do professor). Não possui videochamada nem gravação em vídeo.
+- **Sessão Expressa:** Videochamada síncrona curta de **15 minutos**.
+- **Mentoria Focada:** Videochamada síncrona mais longa, configurável para **30, 45 ou 60 minutos**.
+
+### Comunicação Avançada (Fase 3)
+O ambiente de interação da proposta foi refinado para suportar educação de ponta a ponta:
+- **Chat Nativo:** Transmissão em tempo real (Turbo Streams) suportando formatação Markdown (ideal para blocos de código) e envio de anexos de arquivo/imagem.
+- **Sala Virtual Integrada:** Para sessões síncronas, o **Jitsi Meet** é embutido diretamente na plataforma através de um iFrame seguro na tela da proposta.
+- **Cronômetro e Avisos:** Um relógio acompanha a sessão síncrona, alertando os usuários sobre o encerramento iminente.
+
+### Monetização e Taxas (Fase 4)
+Os valores transacionados são modelados no momento de criação da proposta (Bounty definido pelo aluno ou baseado na duração recomendada). O sistema possui regras estritas de negócios que dividem os rendimentos:
+- **Taxa da Plataforma:** Uma taxa fixa e transparente de **20%** é recolhida pela plataforma para manter os custos operacionais (Jitsi, hospedagem, IA).
+- **Apresentação Justa:** O professor sempre sabe quanto a aula renderá em valores líquidos, e a negociação mínima de R$ 50 para professores certificados foi preservada e acoplada às modalidades maiores.
+
+### Divisão de Regras por Perfil (Fase 5)
+- **Aluno:** Inicia interações, seleciona duração e modalidades, oferece *bounties* e submete resoluções das *atividades* elaboradas.
+- **Professor:** Decide os rumos da proposta (aceite/contra-proposta), lança atividades para fixação e garante a qualidade do encontro síncrono.
+
+## 🔔 Sistema de Notificações (Sino) e Feed de Ações
+- **Causa Raiz/Necessidade:** Havia a necessidade de alertar usuários sobre eventos críticos e manter um histórico (feed) das interações no relacionamento professor-aluno. Originalmente, o sistema só notificava o "recebedor" da ação.
+- **Modelagem Enxuta:** Foi criado o model `Notification` e controller `NotificationsController`.
+- **Notificação Bilateral (Feed):** Alteramos a estrutura de envio nos Controllers e Models. Agora, **todas as ações da proposta** (Criação, Aceite, Recusa, Fechamento, Pagamento, Agendamento, Início, Fim e Contra-proposta) bem como o **envio de novas mensagens no chat** iteram sobre o par `[student, teacher]` e criam a notificação idêntica para ambos simultaneamente. Isso transforma o sino em um Feed real de auditoria do relacionamento, onde cada um enxerga "A aula foi iniciada" ou "Nova mensagem enviada".
+- **Interface (Sino):** A Navbar recebeu um ícone de sino com contador (badge vermelho) visível para todos os perfis em tempo real.
+- **Correção de Erro (Missing Host):** As notificações lançavam um erro fatal no background (WebSocket) por usarem `url_helpers.proposal_path` (que exige hostname web). A solução adotada foi substituir para URL relativa explícita (`"/proposals/#{@proposal.id}"`), sanando a causa raiz e reativando as notificações.
+
+## 📅 Calendário, Início de Sessão e Chat Bilateral
+- **Causa Raiz/Necessidade:** As salas abriam sozinhas, os pagamentos eram teóricos e o chat de WebSocket renderizava apenas de um lado. Faltava também uma visão de calendário/agendamentos centralizada para o professor.
+- **Campos adicionados:** A tabela `proposals` ganhou as colunas `paid`, `scheduled_at`, `started_at` e `finished_at`.
+- **Painel do Professor (Meus Agendamentos):** Adicionada a seção central no painel do professor listando as aulas ativas e agendadas em destaque. Isso vincula e mostra claramente com qual aluno será a aula, o tema, data/hora. A UI diferencia visualmente aulas que já estão em andamento.
+- **Fluxo Condicional Real:** 
+  1. A proposta fecha e aguarda **Pagamento** (simulado via botão do Pix/Cartão, visível e acionável estritamente pelo aluno).
+  2. O professor então tem dois caminhos paralelos na interface: **Agendar a Aula** para uma data futura (que fica visível no painel "Meus Agendamentos") ou clicar no botão **"Iniciar Aula Agora"** para aulas expressas/on-demand.
+  3. Ao clicar em **Iniciar Aula** (seja agora ou na data agendada), o Chat de Vídeo (Jitsi integrado) é destravado para ambos. O **timer inteligente** na tela rastreia automaticamente a duração com base na modalidade (15 minutos para Sessão Expressa, ou 30-60 minutos para Mentoria Focada), alterando a cor para amarelo e vermelho no final.
+  4. O professor clica em **Finalizar Aula/Mentoria** e o Jitsi se encerra.
+- **Bilateralidade Dinâmica (WebSockets vs CSS):** A view `_message.html.erb` foi purificada de checagens de `current_user` (que vêm nulas do WebSocket/Background Job). Em vez disso, a view de Proposta injeta CSS puramente reativo no navegador (via pseudo tag `<style>`) que cruza o `data-sender-id` da mensagem com o ID do visualizador e aciona um `flex-row-reverse`. Nenhuma linha de JS complexo ou views duplicadas foi necessária, a UI responde nativamente, resolvendo a arquitetura de chat bilateral perfeitamente.
+- **Regras de Negociação e Mídia no Chat:** O campo de texto do chat fica disponível desde a criação da proposta (permitindo negociação livre e contra-propostas) até o término da aula. No entanto, o envio de **anexos e acesso à videochamada** permanecem desativados visualmente (e funcionalmente) até que o status da proposta conste como `paid?` (pago), reforçando o fluxo de monetização.
+
+## 🔜 Próximos Passos Evolutivos
+- Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
+- Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.
+- Sistema de feedback/rating pós-sessão para ranquear professores e refinar indicações algorítmicas.
