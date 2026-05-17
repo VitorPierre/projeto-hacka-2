@@ -39,13 +39,16 @@ class User < ApplicationRecord
 
   before_validation :normalize_cpf_and_phone
 
-  validates :name, presence: { message: "não pode ficar em branco" }
+  validates :name, presence: { message: "não pode ficar em branco" }, inappropriate_text: true
   validates :email, presence: { message: "não pode ficar em branco" }
   validates :email, uniqueness: { message: "já está cadastrado em outra conta" }, if: :email_changed?
   validates :phone, presence: { message: "não pode ficar em branco" }
   validates :cpf, presence: { message: "não pode ficar em branco" }
   validates :cpf, uniqueness: { message: "já está cadastrado em outra conta" }, if: :cpf_changed?
   validates :certificate_url, presence: { message: "não pode ficar em branco" }, if: :teacher?
+  validates :availability, inappropriate_text: true
+  validates :experience, inappropriate_text: true
+  validates :preferences, inappropriate_text: true
 
   private
 

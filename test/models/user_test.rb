@@ -24,4 +24,31 @@ class UserTest < ActiveSupport::TestCase
     assert_includes teachers, users(:uncertified_teacher)
     assert_not_includes teachers, users(:student)
   end
+
+  test "should block inappropriate name" do
+    user = User.new(name: "bobo", email: "test@test.com", password: "password")
+    assert_not user.valid?
+    assert_includes user.errors[:name], "não pode conter termos impróprios ou ofensivos"
+  end
+
+  test "should block inappropriate availability" do
+    user = users(:student)
+    user.availability = "Disponível apenas para vai se foder"
+    assert_not user.valid?
+    assert_includes user.errors[:availability], "não pode conter termos impróprios ou ofensivos"
+  end
+
+  test "should block inappropriate experience" do
+    user = users(:teacher)
+    user.experience = "Tenho experiência em ser um idiota completo"
+    assert_not user.valid?
+    assert_includes user.errors[:experience], "não pode conter termos impróprios ou ofensivos"
+  end
+
+  test "should block inappropriate preferences" do
+    user = users(:student)
+    user.preferences = "Prefiro aulas com um filho da puta"
+    assert_not user.valid?
+    assert_includes user.errors[:preferences], "não pode conter termos impróprios ou ofensivos"
+  end
 end

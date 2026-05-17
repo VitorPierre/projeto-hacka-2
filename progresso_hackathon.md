@@ -384,7 +384,22 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
      - Implementado um callback de `before_destroy` para impedir a remoção de especialidades que possuam propostas de aula ativas ou históricas associadas, blindando a integridade referencial do banco.
   5. **Cobertura de Testes Sólida:** Criado o teste de integração `test/integration/subjects_management_test.rb` que garante 100% de cobertura nos fluxos de criação, recusa de duplicidade, atualização, remoção permitida e impedimento de remoção proibida.
 
+## 🛡️ Sistema de Moderação de Conteúdo Inadequado
+- **Causa Raiz/Necessidade:** Bloquear nomes, frases e cadastros impróprios/ofensivos na plataforma de forma pragmática, impedindo o salvamento de conteúdo inadequado e frustrando tentativas comuns de burlar filtros (letras repetidas, espaços, símbolos, homóglifos Unicode, leetspeak).
+- **Implementação Realizada:**
+  1. **Lista de Bloqueio Configurável (`config/moderation_blacklist.yml`):** Criada uma estrutura YAML contendo termos e frases inadequadas agrupadas por gravidade (ofensas leves para teste, palavras de baixo calão, frases ofensivas e termos sensíveis). Facilmente expansível por qualquer administrador sem alterar código.
+  2. **ModerationService Avançado (`app/services/moderation_service.rb`):** 
+     - **Normalização Robusta:** Downcase, remoção de acentos via transliteração, substituição direta de números/caracteres especiais (leetspeak: 3->e, 4->a, etc.) e mapeamento de homóglifos Unicode (caracteres cirílicos/gregos idênticos aos latinos).
+     - **Compressão de Repetições:** Reduz letras repetidas seguidas a apenas uma ocorrência (ex: "booooboooo" -> "bobo").
+     - **Regex Dinâmica com Word Boundary:** Gera expressões regulares sob demanda que toleram espaços ou símbolos entre os caracteres (ex: "b.o_b-o" ou "b o b o"), exigindo limites de palavra para evitar o efeito Scunthorpe (ex: "Marcus" não bloqueia por "cu").
+     - **Validação de Token e Substring:** Trata termos curtos como tokens inteiros e termos longos como substring no texto unificado.
+  3. **Custom Validator do Rails (`app/validators/inappropriate_text_validator.rb`):** Desenvolvido `InappropriateTextValidator` herdando de `ActiveModel::EachValidator` para validações limpas nos modelos com erro amigável: `"não pode conter termos impróprios ou ofensivos"`.
+  4. **Modelação nos Campos Sensíveis (`app/models/user.rb`):** Validação aplicada nos campos sensíveis de cadastro do usuário: `name`, `availability`, `experience` e `preferences`.
+  5. **Auditoria de Tentativas:** Registra logs detalhados via `Rails.logger.warn` contendo a tentativa bloqueada, termo infringido e a estratégia de captura utilizada, útil para análise futura e detecção de padrões de abuso.
+  6. **Suíte Completa de Testes:** Desenvolvido `test/services/moderation_service_test.rb` cobrindo 9 cenários complexos (leetspeak, homóglifos, espaços, símbolos, substrings válidas, plurais) e testes em `test/models/user_test.rb` validando o bloqueio e erro nos 4 campos do modelo `User`. Todos os testes passam 100%.
+
 ## 🔜 Próximos Passos Evolutivos
+- Implementar alertas dinâmicos de termos impróprios em tempo real no frontend com JavaScript antes mesmo da submissão do formulário.
 - Realizar deploy e testar o envio de mídias e atualização de perfis no Render.
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
 - Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.

@@ -1,0 +1,80 @@
+# Lista de palavras e frases bloqueadas pela moderação do aprendeAI
+# Este arquivo é lido dinamicamente pelo ModerationService.
+# Você pode adicionar ou remover termos para ajustar o filtro de segurança.
+#
+# Dica: O sistema normaliza as buscas, então basta cadastrar o termo em minúsculas
+# e sem acentos. Variações com letras repetidas, leetspeak, homóglifos e símbolos
+# serão detectadas automaticamente pelo algoritmo de moderação.
+
+blocked_terms:
+  # Ofensas leves e moderadas (comuns para testes)
+  - bobo
+  - boba
+  - tonto
+  - tonta
+  - feio
+  - feia
+  - chato
+  - chata
+  - burro
+  - burra
+  - idiota
+  - imbecil
+  - babaca
+  - otario
+  - otaria
+  - canalha
+  - verme
+  - desgraçado
+  - desgraçada
+  - maldito
+  - maldita
+  - vagabundo
+  - vagabunda
+  - piranha
+  - safado
+  - safada
+  - retardado
+  - retardada
+  - demente
+
+  # Palavrões e termos obscenos/sexuais
+  - fdp
+  - merda
+  - porra
+  - caralho
+  - corno
+  - puta
+  - viado
+  - bicha
+  - sapatão
+  - traveco
+  - crioulo
+  - escroto
+  - escrota
+  - lixo
+  - cuzão
+  - cuzao
+  - bosta
+  - xereca
+  - xota
+  - grelo
+  - boquete
+  - punheta
+  - foder
+  - fodido
+  - fodida
+  - cacete
+  - caralhao
+  - mongol
+
+  # Frases curtas ofensivas / agressivas
+  - filho da puta
+  - enfiar no cu
+  - vai tomar no cu
+  - vai se foder
+  - chupa meu
+  - dar a bunda
+  - comer sua
+  - cala a boca
+  - cala boca
