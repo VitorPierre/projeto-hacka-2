@@ -88,6 +88,20 @@ A integração com IA no [AiService](file:///c:/Users/vitor/documents/hacka2/app
 
 ---
 
+## Imagens do projeto
+
+<img width="1920" height="1080" alt="Captura de tela 2026-05-16 120233" src="https://github.com/user-attachments/assets/af28e4a6-d9b3-4c22-9e3a-bd823afd936f" />
+<img width="1920" height="1080" alt="Captura de tela 2026-05-17 043412" src="https://github.com/user-attachments/assets/1ed93104-5cdb-49ce-b085-a485ff186254" />
+<img width="1920" height="1080" alt="Captura de tela 2026-05-17 043424" src="https://github.com/user-attachments/assets/93e252fd-3c10-4b85-9b9f-da5969d9d0cc" />
+<img width="1920" height="1080" alt="Captura de tela 2026-05-17 043439" src="https://github.com/user-attachments/assets/99fdd371-e745-45bc-997e-a2ce2cdef5ef" />
+<img width="1920" height="1080" alt="Captura de tela 2026-05-17 043455" src="https://github.com/user-attachments/assets/27402cd6-c76c-44b3-a6b7-065fc485a7b4" />
+<img width="1920" height="1080" alt="Captura de tela 2026-05-17 043617" src="https://github.com/user-attachments/assets/b5cab523-5097-4f63-b212-0dbe8de4ae17" />
+<img width="1920" height="1080" alt="Captura de tela 2026-05-17 043624" src="https://github.com/user-attachments/assets/5147bea9-e30b-4962-b0f5-d1b7e38866f8" />
+<img width="1920" height="1080" alt="Captura de tela 2026-05-17 043633" src="https://github.com/user-attachments/assets/4abda891-1f1e-42a4-aec7-16602a77aaa5" />
+
+
+
+
 ## Como executar o projeto
 
 Siga o passo a passo prático para rodar o **aprendeAI** localmente em sua máquina de desenvolvimento.
