@@ -26,7 +26,7 @@ Rails.application.configure do
 
   # Proxy uploaded files through the Rails application instead of redirecting.
   # This avoids SSL/domain/port mismatch issues and mixed content errors in production.
-  config.active_storage.resolve_model_to_route = :proxy
+  config.active_storage.resolve_model_to_route = :rails_storage_proxy
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
