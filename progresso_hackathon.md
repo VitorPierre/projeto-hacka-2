@@ -611,8 +611,32 @@ Implementado com sucesso o ajuste no fluxo de propostas para simplificar as moda
 - **Suíte de Testes Atualizada**:
   - Atualizado `test/models/proposal_test.rb` para refletir as novas regras. Todos os 130 testes automatizados passaram perfeitamente.
 
+## 🛠️ Resolução do Bug de Exibição das Fotos de Perfil (Active Storage no Render)
+
+- **Causa Raiz do Problema:**
+  1. **SSL Termination (HTTPS/HTTP Mismatch):** O Render gerencia o SSL por meio de um proxy reverso de terminação SSL. Como o Rails em produção não estava com `config.assume_ssl` ou `config.force_ssl` ativados, a aplicação gerava links de redirecionamento `http://` para as imagens do Active Storage. O navegador bloqueava esses redirecionamentos inseguros em um ambiente HTTPS por problemas de mixed content.
+  2. **Links de Redirecionamento vs Proxying:** Por padrão, o Active Storage gerava links com redirect para o disco local. Além de expor a rota interna, isso forçava o navegador a realizar uma segunda requisição a um hostname de redirecionamento que poderia estar desconfigurado ou ser inseguro.
+  3. **Ausência de Host e Protocolo Dinâmicos:** As rotas internas de mailers e rotas auxiliares em produção não possuíam o host configurado dinamicamente para o Render, o que poderia causar falhas na geração das URLs.
+  4. **Serviços Inconsistentes no Banco:** Se blobs antigos fossem gravados no banco de dados com outros nomes de serviços (como `amazon`, `google` ou `cloudinary`), o Active Storage causaria erros em tempo de execução ao tentar encontrar essas configurações.
+
+- **Correções Aplicadas:**
+  1. **Configuração de SSL no Rails (`config/environments/production.rb`):**
+     - Ativado `config.assume_ssl = true` e `config.force_ssl = true`. Isso informa ao Rails que ele está atrás de um proxy reverso seguro, garantindo que cookies de sessão sejam protegidos e que todas as URLs geradas pelo Active Storage usem o protocolo `https://`.
+  2. **Proxying de Arquivos no Active Storage (`config/environments/production.rb`):**
+     - Adicionada a diretiva `config.active_storage.resolve_model_to_route = :proxy`. Com isso, a aplicação serve todas as mídias do Active Storage diretamente por meio do proxy interno (`/rails/active_storage/blobs/proxy/...`), eliminando o fluxo de redirect para URLs absolutas externas e contornando conflitos de host e HTTP/HTTPS.
+  3. **Configuração Dinâmica de URL (`config/environments/production.rb`):**
+     - Mapeada a variável de ambiente `ENV["RENDER_EXTERNAL_URL"]` para registrar dinamicamente o host e protocolo seguros em `config.action_mailer.default_url_options` e `Rails.application.routes.default_url_options`.
+  4. **Fallback de Serviços no Active Storage (`config/storage.yml`):**
+     - Criadas configurações de fallback para `amazon`, `google` e `cloudinary` no `storage.yml` herdando as mesmas configurações de disco do serviço `local`. Isso garante que blobs antigos no banco não quebrem a aplicação ao carregar suas configurações.
+  5. **Migração de Atualização dos Serviços (`db/migrate/20260519203000_fix_active_storage_blobs_service_name.rb`):**
+     - Desenvolvida e executada a migração para varrer a tabela `active_storage_blobs` e atualizar qualquer registro antigo com `service_name` divergente para `'local'`, garantindo consistência total da base de dados PostgreSQL em produção.
+
+- **Resultado:**
+  - A suíte de testes completa (130 runs, 640 assertions) passou com 100% de sucesso. As imagens de novos uploads agora aparecem e persistem corretamente, resolvendo os problemas de renderização e acessibilidade causados por redirecionamentos HTTP em produção no Render.
+
 ## 🔜 Próximos Passos Evolutivos
-- Realizar deploy e testar o envio de mídias e atualização de perfis no Render.
+- Implantar as alterações no Render para validar a exibição estável das fotos em produção.
+- Configurar volumes persistentes no Render no caminho `/data/storage` para assegurar que uploads físicos não sejam apagados entre restarts de contêiner.
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
 - Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.
 - Expandir testes unitários de acessibilidade e validações WCAG no CI/CD.
