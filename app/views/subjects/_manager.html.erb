@@ -6,7 +6,7 @@
         <div class="absolute left-4 text-aprende-muted group-focus-within:text-aprende-primary transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
         </div>
-        <%= f.select :subject_id, Subject.all.order(:name).map { |s| [s.name, s.id] }, { include_blank: blank_label, selected: params[:subject_id] }, { onchange: "this.form.submit()", class: "w-full pl-11 pr-4 py-3 bg-white border border-aprende-secondary rounded-full text-sm text-aprende-text focus:outline-none focus:ring-4 focus:ring-aprende-primary/10 focus:border-aprende-primary appearance-none transition-all shadow-sm cursor-pointer hover:border-aprende-primary/50" } %>
+        <%= f.select :subject_id, Subject.all.order(:name).map { |s| [s.name, s.id] }, { include_blank: blank_label, selected: params[:subject_id] }, { onchange: "this.form.submit()", aria: { label: "Filtrar por especialidade" }, class: "w-full pl-11 pr-4 py-3 bg-white border border-aprende-secondary rounded-full text-sm text-aprende-text focus:outline-none focus:ring-4 focus:ring-aprende-primary/10 focus:border-aprende-primary appearance-none transition-all shadow-sm cursor-pointer hover:border-aprende-primary/50" } %>
         <div class="absolute right-4 pointer-events-none text-aprende-muted">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
@@ -15,7 +15,7 @@
   </div>
 
   <!-- Manage Button (Outside the filter form) -->
-  <button type="button" onclick="toggleSpecialtyManager()" class="flex-shrink-0 bg-aprende-primary hover:bg-[#159b3f] text-white p-3 rounded-full hover:scale-105 transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-aprende-primary/10 flex items-center justify-center cursor-pointer" title="Gerenciar Especialidades">
+  <button type="button" id="specialty-manager-toggle" onclick="toggleSpecialtyManager()" class="flex-shrink-0 bg-aprende-primary hover:bg-[#159b3f] text-white p-3 rounded-full hover:scale-105 transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-aprende-primary/10 flex items-center justify-center cursor-pointer" aria-label="Gerenciar Especialidades" title="Gerenciar Especialidades">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
   </button>
 
@@ -23,7 +23,7 @@
   <div id="specialty-manager-panel" class="hidden absolute right-0 md:right-0 top-full mt-3 w-80 bg-white border border-aprende-secondary rounded-[1.5rem] p-4 shadow-lg z-50 transition-all">
     <div class="flex items-center justify-between mb-3 border-b border-aprende-secondary pb-2">
       <h4 class="text-sm font-semibold text-aprende-text">Gerenciar Especialidades</h4>
-      <button type="button" onclick="toggleSpecialtyManager()" class="text-aprende-muted hover:text-aprende-text">
+      <button type="button" onclick="toggleSpecialtyManager()" class="text-aprende-muted hover:text-aprende-text" aria-label="Fechar painel de especialidades">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
       </button>
     </div>
@@ -32,7 +32,7 @@
     <%= form_with model: Subject.new, url: subjects_path, local: true, class: "mb-4" do |sf| %>
       <%= hidden_field_tag :redirect_to, request.original_fullpath %>
       <div class="flex gap-1.5">
-        <%= sf.text_field :name, required: true, placeholder: "Nova especialidade...", class: "flex-1 border border-aprende-secondary rounded-xl py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text text-xs" %>
+        <%= sf.text_field :name, id: "new-specialty-name", required: true, placeholder: "Nova especialidade...", aria: { label: "Nome da nova especialidade" }, class: "flex-1 border border-aprende-secondary rounded-xl py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text text-xs" %>
         <%= sf.submit "Adicionar", class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium px-3 py-1.5 rounded-xl text-xs transition-colors cursor-pointer" %>
       </div>
     <% end %>
@@ -52,7 +52,7 @@
             <div class="hidden flex-1" id="subject-edit-<%= subject.id %>">
               <%= form_with model: subject, url: subject_path(subject), method: :patch, local: true, class: "flex gap-1" do |ef| %>
                 <%= hidden_field_tag :redirect_to, request.original_fullpath %>
-                <%= ef.text_field :name, required: true, class: "w-full border border-aprende-secondary rounded-lg py-1 px-2 bg-white text-aprende-text text-[11px] focus:outline-none focus:ring-1 focus:ring-aprende-primary" %>
+                <%= ef.text_field :name, required: true, aria: { label: "Editar nome da especialidade" }, class: "w-full border border-aprende-secondary rounded-lg py-1 px-2 bg-white text-aprende-text text-[11px] focus:outline-none focus:ring-1 focus:ring-aprende-primary" %>
                 <button type="submit" class="bg-aprende-primary text-white p-1 rounded hover:bg-[#159b3f] flex items-center justify-center cursor-pointer" title="Salvar">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 </button>
@@ -85,7 +85,20 @@
   function toggleSpecialtyManager() {
     const panel = document.getElementById('specialty-manager-panel');
     if (panel) {
-      panel.classList.toggle('hidden');
+      const isHidden = panel.classList.contains('hidden');
+      if (isHidden) {
+        panel.classList.remove('hidden');
+        const input = document.getElementById('new-specialty-name');
+        if (input) {
+          setTimeout(() => input.focus(), 50);
+        }
+      } else {
+        panel.classList.add('hidden');
+        const toggleBtn = document.getElementById('specialty-manager-toggle');
+        if (toggleBtn) {
+          toggleBtn.focus();
+        }
+      }
     }
   }
 
@@ -104,11 +117,24 @@
   // Close specialty manager if clicked outside
   document.addEventListener('click', function(event) {
     const panel = document.getElementById('specialty-manager-panel');
-    const toggleBtn = event.target.closest('[onclick="toggleSpecialtyManager()"]');
-    const isClickInside = panel && (panel.contains(event.target) || toggleBtn);
+    const toggleBtn = document.getElementById('specialty-manager-toggle');
+    const isClickInside = panel && (panel.contains(event.target) || (toggleBtn && toggleBtn.contains(event.target)));
     
     if (panel && !isClickInside && !panel.classList.contains('hidden')) {
       panel.classList.add('hidden');
+    }
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      const panel = document.getElementById('specialty-manager-panel');
+      if (panel && !panel.classList.contains('hidden')) {
+        panel.classList.add('hidden');
+        const toggleBtn = document.getElementById('specialty-manager-toggle');
+        if (toggleBtn) {
+          toggleBtn.focus();
+        }
+      }
     }
   });
 </script>

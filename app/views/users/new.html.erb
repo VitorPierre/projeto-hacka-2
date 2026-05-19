@@ -2,6 +2,15 @@
   <h1 class="text-2xl font-medium text-aprende-text mb-6 text-center">Criar sua conta</h1>
 
   <%= form_with model: @user, local: true, class: "space-y-4" do |f| %>
+    <% if @user.errors.any? %>
+      <div role="alert" class="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 mb-4 text-sm font-medium">
+        <div class="flex items-center gap-2 mb-1">
+          <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <span>Ops! Por favor, corrija os <%= @user.errors.count %> erro(s) abaixo para prosseguir:</span>
+        </div>
+      </div>
+    <% end %>
+
     <div>
       <%= f.label :role, "O que você deseja ser?", for: "role_select", class: "block text-sm font-medium text-aprende-text mb-1" %>
       <%= f.select :role, [["Quero Aprender (Aluno)", "student"], ["Quero Ensinar (Professor)", "teacher"]], { selected: @role }, id: "role_select", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 bg-white text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary", aria: @user.errors[:role].any? ? { describedby: "user_role_error" } : {} %>

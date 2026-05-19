@@ -119,4 +119,31 @@ class UsersEditTest < ActionDispatch::IntegrationTest
     @teacher.reload
     assert_not_equal "Hackeado", @teacher.name
   end
+
+  test "teacher can add and edit presentation video url" do
+    post login_path, params: { email: @teacher.email, password: "senha123" }
+    
+    # 1. First, make sure the video is not present on show page
+    get teacher_path(@teacher)
+    assert_response :success
+    assert_select "iframe[src*='youtube.com']", 0
+    assert_select "h3", text: "Vídeo de Apresentação", count: 0
+
+    # 2. Add the video URL
+    patch user_path(@teacher), params: {
+      user: {
+        presentation_video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      }
+    }
+    
+    assert_redirected_to teacher_path(@teacher)
+    @teacher.reload
+    assert_equal "https://www.youtube.com/watch?v=dQw4w9WgXcQ", @teacher.presentation_video_url
+    
+    # 3. Follow redirect and check that iframe is rendered
+    follow_redirect!
+    assert_response :success
+    assert_select "iframe[src='https://www.youtube.com/embed/dQw4w9WgXcQ']"
+    assert_select "h3", text: "Vídeo de Apresentação"
+  end
 end

@@ -63,8 +63,37 @@ class User < ApplicationRecord
   validates :availability, inappropriate_text: true, if: :availability_changed?
   validates :experience, inappropriate_text: true, if: :experience_changed?
   validates :preferences, inappropriate_text: true, if: :preferences_changed?
+  validate :valid_presentation_video_url, if: -> { teacher? && presentation_video_url.present? }
+
+  def youtube_video_id
+    return nil if presentation_video_url.blank?
+    
+    require 'cgi'
+    uri = URI.parse(presentation_video_url.strip) rescue nil
+    return nil unless uri
+    
+    if uri.host&.include?("youtu.be")
+      uri.path.delete_prefix("/")
+    elsif uri.host&.include?("youtube.com")
+      if uri.path.include?("/embed/")
+        uri.path.split("/embed/").last&.split("?")&.first
+      elsif uri.path.include?("/shorts/")
+        uri.path.split("/shorts/").last&.split("?")&.first
+      else
+        params = CGI.parse(uri.query || "")
+        params["v"]&.first
+      end
+    end
+  end
 
   private
+
+  def valid_presentation_video_url
+    video_id = youtube_video_id
+    if video_id.blank? || video_id.length != 11 || video_id !~ /\A[a-zA-Z0-9\-_]{11}\z/
+      errors.add(:presentation_video_url, "deve ser um link válido do YouTube")
+    end
+  end
 
   def normalize_cpf_and_phone
     self.cpf = cpf.gsub(/\D/, "") if cpf.present?

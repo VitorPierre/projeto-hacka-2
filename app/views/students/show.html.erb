@@ -137,9 +137,13 @@
           </details>
         <% end %>
       <% else %>
-        <div class="bg-white border border-aprende-secondary rounded-xl p-8 text-center shadow-sm">
-          <p class="text-aprende-muted mb-4">Você ainda não tem propostas.</p>
-          <%= link_to "Encontrar Professores", teachers_path, class: "inline-block bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-full transition-transform hover:scale-[1.02] shadow-sm text-sm" %>
+        <div class="bg-white border border-aprende-secondary border-dashed rounded-[1.5rem] p-10 text-center shadow-sm flex flex-col items-center justify-center gap-3">
+          <div class="w-12 h-12 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-aprende-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <p class="text-aprende-text font-semibold text-sm">Nenhuma proposta ativa</p>
+          <p class="text-aprende-muted text-xs max-w-sm leading-relaxed mb-1">Não há registros de propostas enviadas ou recebidas em seu perfil.</p>
+          <%= link_to "Encontrar Professores", teachers_path, class: "inline-block bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-xl transition-all hover:scale-[1.02] shadow-sm text-sm cursor-pointer" %>
         </div>
       <% end %>
     </div>

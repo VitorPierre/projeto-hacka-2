@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_17_232200) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_19_174308) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -127,6 +127,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_17_232200) do
     t.string "password_digest"
     t.string "phone"
     t.text "preferences"
+    t.string "presentation_video_url"
     t.integer "role", default: 0
     t.integer "status", default: 0
     t.datetime "updated_at", null: false

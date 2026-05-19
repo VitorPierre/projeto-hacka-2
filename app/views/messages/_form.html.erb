@@ -2,11 +2,11 @@
   <% if current_user.teacher? %>
     <%= f.hidden_field :message_type, value: "regular", id: "message_type_field" %>
     
-    <div class="flex border-b border-aprende-secondary mb-3 gap-2">
-      <button type="button" id="tab-message" onclick="switchTab('message')" class="px-4 py-2 text-sm font-medium border-b-2 border-aprende-primary text-aprende-text focus:outline-none transition-all cursor-pointer">
+    <div class="flex border-b border-aprende-secondary mb-3 gap-2" role="tablist" aria-label="Tipo de mensagem">
+      <button type="button" id="tab-message" onclick="switchTab('message')" role="tab" aria-selected="true" aria-controls="message_content_area" class="px-4 py-2 text-sm font-medium border-b-2 border-aprende-primary text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary rounded-t-lg transition-all cursor-pointer">
         Mensagem Normal
       </button>
-      <button type="button" id="tab-activity" onclick="switchTab('activity')" class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-aprende-muted hover:text-aprende-text focus:outline-none transition-all cursor-pointer">
+      <button type="button" id="tab-activity" onclick="switchTab('activity')" role="tab" aria-selected="false" aria-controls="activity-controls" class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-aprende-muted hover:text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary rounded-t-lg transition-all cursor-pointer">
         Nova Atividade
       </button>
     </div>
@@ -71,9 +71,11 @@
         if (type === 'activity') {
           tabAct.classList.add('border-aprende-primary', 'text-aprende-text');
           tabAct.classList.remove('border-transparent', 'text-aprende-muted');
+          tabAct.setAttribute('aria-selected', 'true');
           
           tabMsg.classList.remove('border-aprende-primary', 'text-aprende-text');
           tabMsg.classList.add('border-transparent', 'text-aprende-muted');
+          tabMsg.setAttribute('aria-selected', 'false');
 
           messageTypeField.value = 'activity';
           activityControls.classList.remove('hidden');
@@ -83,9 +85,11 @@
         } else {
           tabMsg.classList.add('border-aprende-primary', 'text-aprende-text');
           tabMsg.classList.remove('border-transparent', 'text-aprende-muted');
+          tabMsg.setAttribute('aria-selected', 'true');
           
           tabAct.classList.remove('border-aprende-primary', 'text-aprende-text');
           tabAct.classList.add('border-transparent', 'text-aprende-muted');
+          tabAct.setAttribute('aria-selected', 'false');
 
           messageTypeField.value = 'regular';
           activityControls.classList.add('hidden');

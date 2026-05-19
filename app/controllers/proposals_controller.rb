@@ -286,8 +286,6 @@ class ProposalsController < ApplicationController
     # Convert duration to int or nil based on modality
     if p[:modality] == "knowledge_pill"
       p[:duration] = nil
-    elsif p[:modality] == "express_session"
-      p[:duration] = 15
     elsif p[:duration].present?
       p[:duration] = p[:duration].to_i
     end

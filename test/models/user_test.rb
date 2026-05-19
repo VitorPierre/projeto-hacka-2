@@ -51,4 +51,39 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.valid?
     assert_includes user.errors[:preferences], "não pode conter termos impróprios ou ofensivos"
   end
+
+  test "validates correct youtube presentation video url formats" do
+    teacher = users(:teacher)
+    
+    valid_urls = [
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://youtu.be/dQw4w9WgXcQ",
+      "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      "https://youtube.com/shorts/dQw4w9WgXcQ?feature=share",
+      "https://www.youtube.com/watch?feature=shared&v=dQw4w9WgXcQ"
+    ]
+    
+    valid_urls.each do |url|
+      teacher.presentation_video_url = url
+      assert teacher.valid?, "Expected #{url} to be valid"
+      assert_equal "dQw4w9WgXcQ", teacher.youtube_video_id
+    end
+  end
+
+  test "invalidates incorrect presentation video urls" do
+    teacher = users(:teacher)
+    
+    invalid_urls = [
+      "https://www.google.com",
+      "random_string",
+      "https://youtube.com",
+      "https://youtu.be"
+    ]
+    
+    invalid_urls.each do |url|
+      teacher.presentation_video_url = url
+      assert_not teacher.valid?, "Expected #{url} to be invalid"
+      assert_includes teacher.errors[:presentation_video_url], "deve ser um link válido do YouTube"
+    end
+  end
 end

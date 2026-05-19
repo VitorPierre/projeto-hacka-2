@@ -58,7 +58,7 @@
           <div class="flex items-center gap-4">
              <!-- Notificações (Desktop) -->
              <div class="relative hidden md:block" data-controller="dropdown">
-               <button type="button" onclick="document.getElementById('notif-dropdown').classList.toggle('hidden')" aria-label="Ver notificações" aria-haspopup="true" class="relative p-2 text-aprende-muted hover:text-aprende-primary transition-colors cursor-pointer">
+               <button type="button" id="notif-toggle" onclick="toggleNotifications()" aria-label="Ver notificações" aria-haspopup="true" class="relative p-2 text-aprende-muted hover:text-aprende-primary transition-colors cursor-pointer">
                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                  <% unread_count = current_user.notifications.unread.count %>
                  <% if unread_count > 0 %>
@@ -66,7 +66,7 @@
                  <% end %>
                </button>
               
-              <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-aprende-secondary overflow-hidden z-50">
+              <div id="notif-dropdown" role="dialog" aria-label="Menu de notificações" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-aprende-secondary overflow-hidden z-50">
                 <div class="px-4 py-3 border-b border-aprende-secondary bg-aprende-bg font-medium text-aprende-text text-sm">
                   Notificações
                 </div>
@@ -159,18 +159,71 @@
   </header>
 
     <% if flash[:notice] %>
-      <div id="flash-notice" role="status" class="bg-aprende-secondary text-aprende-text px-6 py-3 border-b border-aprende-primary text-center font-medium">
-        <%= flash[:notice] %>
+      <div id="flash-notice" role="status" class="bg-aprende-bg text-aprende-text px-6 py-3.5 border border-aprende-primary/40 flex items-center justify-between font-medium max-w-7xl mx-auto rounded-xl mt-4 shadow-sm">
+        <span><%= flash[:notice] %></span>
+        <button type="button" onclick="this.parentElement.remove()" aria-label="Fechar mensagem" class="text-aprende-muted hover:text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary rounded p-1 transition-colors cursor-pointer ml-4">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
       </div>
     <% end %>
     <% if flash[:alert] %>
-      <div id="flash-alert" role="alert" class="bg-red-50 text-red-700 px-6 py-3 border-b border-red-200 text-center font-semibold">
-        <%= flash[:alert] %>
+      <div id="flash-alert" role="alert" class="bg-red-50 text-red-800 px-6 py-3.5 border border-red-200 flex items-center justify-between font-semibold max-w-7xl mx-auto rounded-xl mt-4 shadow-sm">
+        <span><%= flash[:alert] %></span>
+        <button type="button" onclick="this.parentElement.remove()" aria-label="Fechar alerta" class="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1 transition-colors cursor-pointer ml-4">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
       </div>
     <% end %>
 
     <main class="flex-1 w-full max-w-7xl mx-auto p-6">
       <%= yield %>
     </main>
+
+    <script>
+      function toggleNotifications() {
+        const dropdown = document.getElementById('notif-dropdown');
+        if (dropdown) {
+          const isHidden = dropdown.classList.contains('hidden');
+          if (isHidden) {
+            dropdown.classList.remove('hidden');
+            // Focus the first action inside the dropdown
+            const firstAction = dropdown.querySelector('button, a');
+            if (firstAction) {
+              setTimeout(() => firstAction.focus(), 50);
+            }
+          } else {
+            dropdown.classList.add('hidden');
+            const toggleBtn = document.getElementById('notif-toggle');
+            if (toggleBtn) {
+              toggleBtn.focus();
+            }
+          }
+        }
+      }
+
+      document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('notif-dropdown');
+        const toggleBtn = document.getElementById('notif-toggle');
+        if (dropdown && toggleBtn && !dropdown.classList.contains('hidden')) {
+          const isClickInside = dropdown.contains(event.target) || toggleBtn.contains(event.target);
+          if (!isClickInside) {
+            dropdown.classList.add('hidden');
+          }
+        }
+      });
+
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          const dropdown = document.getElementById('notif-dropdown');
+          if (dropdown && !dropdown.classList.contains('hidden')) {
+            dropdown.classList.add('hidden');
+            const toggleBtn = document.getElementById('notif-toggle');
+            if (toggleBtn) {
+              toggleBtn.focus();
+            }
+          }
+        }
+      });
+    </script>
   </body>
 </html>

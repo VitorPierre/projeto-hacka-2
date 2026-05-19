@@ -537,10 +537,83 @@ Implementada com 100% de sucesso a segunda fase de acessibilidade e semântica n
 - **Textos Alternativos para Imagens (`alt`):** Imagens críticas do sistema, tais como a foto de perfil nas views de edição de conta e as imagens enviadas como anexos nas mensagens do chat, receberam o atributo `alt` dinamicamente contendo a descrição correta.
 - **Alinhamento da Suíte de Testes:** As asserções de integração em todos os arquivos de teste (`ListingFlowTest`, `AdminVisibilityPreventionTest`, `BannedUsersVisibilityTest`) foram atualizadas para verificar a nova e altamente acessível estrutura de cabeçalhos semânticos. Todos os 124 testes da plataforma estão passando perfeitamente (`0 failures, 0 errors`).
 
+### Acessibilidade e Inclusão (Fase 3 - Concluída)
+Finalizada com excelência a terceira fase de acessibilidade e inclusão, focada em tornar acessíveis os fluxos interativos mais complexos e utilizados da plataforma (Formulários, Mensagens/Chat, Agendamentos e Painel Administrativo):
+- **Formulários Acessíveis e Mensagens de Erro Legíveis:**
+  - Adicionado o atributo `role="alert"` ao container geral de erros de validação da página de edição de perfil (`app/views/users/edit.html.erb`), garantindo sinalização sonora imediata para tecnologias assistivas.
+  - Todos os campos de edição de perfil foram rigorosamente associados às suas `<label>` e vinculados às mensagens de erro de cada campo específico através do atributo `aria-describedby` dinâmico.
+- **Navegação por Teclado e Foco Visível Premium:**
+  - Inclusão dos estilos de foco monocromáticos premium (`focus:outline-none focus:ring-2 focus:ring-aprende-primary focus:border-aprende-primary`) no menu de seleção de nível acadêmico de professores e demais inputs críticos.
+- **Chat, Mensagens e Sessão Acessível:**
+  - O painel de abas para alternar tipos de mensagens (Mensagem Normal vs Atividades) no chat (`app/views/messages/_form.html.erb`) foi aperfeiçoado com semânticas de navegação oficiais (`role="tablist"` e `role="tab"`), juntamente com a manipulação dinâmica de `aria-selected` controlada por JavaScript e vínculo com o container via `aria-controls`.
+  - Correção na acessibilidade do sistema de avaliação por estrelas: Substituição da classe `hidden` nos botões de rádio (que quebrava a navegação por teclado) pela classe acessível `peer sr-only` (screen-reader only). Adicionados anéis de foco dinâmicos premium no SVG das estrelas (`peer-focus-visible:ring-2 peer-focus-visible:ring-aprende-primary peer-focus-visible:ring-offset-2 rounded-full`).
+  - Associação explícita entre a etiqueta de agendamento de aulas futuras e seu input através do atributo `for="scheduled_at"` e respectivo `id: "scheduled_at"`.
+- **Filtros e Moderação Acessível:**
+  - Implementação de atributos `aria-label` descritivos e claros nos filtros de busca de especialidades e nos checkboxes de seleção em lote de usuários flagrados no painel administrativo (`app/views/admin/moderation/index.html.erb`).
+  - O formulário corretivo inline para edição de nome recebeu associação explícita de `label` e `input` com a atribuição de IDs dinâmicos únicos (`corrective_name_#{user.id}`).
+- **Conformidade de Testes:** Garantida a integridade total do ecossistema de testes automatizados com sucesso absoluto de execução (`124 runs, 593 assertions, 0 failures, 0 errors`).
+
+### Acessibilidade e Inclusão (Fase 4 - Concluída)
+Finalizada com sucesso absoluto a quarta e última fase de acessibilidade e inclusão, focada no aprimoramento de componentes dinâmicos, feedback interativo do sistema, estados vazios estruturados e experiência completa de navegação:
+- **Feedbacks Acessíveis, Closeable Flashes e Toasts Premium:**
+  - Substituição dos blocos simples de aviso no layout principal (`app/views/layouts/application.html.erb`) por banners e toasts flutuantes contendo botões de fechamento interativos (`aria-label="Fechar mensagem"` e `aria-label="Fechar alerta"`). Os avisos são 100% controláveis e dismissíveis via teclado ou mouse.
+- **Gerenciamento de Foco e Eventos de Fechamento por Teclado:**
+  - O dropdown de notificações desktop (`#notif-dropdown`) e o gerenciador de especialidades (`#specialty-manager-panel` em `app/views/subjects/_manager.html.erb`) receberam comportamento de focus-trap e navegação guiada. Ao abrir, o foco é transferido instantaneamente para o primeiro elemento de interação interna (`button` ou `input`), evitando perda de contexto pelo usuário.
+  - Implementado retorno automático do foco para o botão de ativação correspondente (`#notif-toggle` ou `#specialty-manager-toggle`) no momento em que o componente é ocultado.
+  - Adicionado suporte a fechamento intuitivo imediato ao pressionar a tecla `Escape` ou clicar fora do elemento ativo.
+- **Acessibilidade Dinâmica na Moderação em Tempo Real:**
+  - Inserção do atributo `role="alert"` no container dinâmico gerado em tempo real (`warningBox` em `app/javascript/application.js`) para termos sensíveis/impróprios, instruindo leitores de tela a reportar avisos de moderação no instante em que o usuário digita nos campos.
+- **Redesenho dos Estados Vazios com UX/UI Premium:**
+  - Redesenho completo das telas de listagem (`teachers/index.html.erb` e `students/index.html.erb`) adotando cards estruturados com cabeçalho semântico `h2`, ícones ilustrativos SVG e botões interativos para limpar filtros e retornar à listagem original.
+  - Renovação de todos os blocos vazios ("Meus Agendamentos", "Alunos lecionados" e "Minhas Propostas") nas dashboards do estudante e professor (`teachers/show.html.erb` e `students/show.html.erb`) por cartões com bordas tracejadas elegantes e layout limpo, mantendo a consistência visual monocromática verde `#15803D`.
+- **Validação com Testes Automatizados:** Suíte completa executada com sucesso, garantindo 100% de estabilidade e integridade funcional (`124 runs, 593 assertions, 0 failures, 0 errors`).
+
+### Melhoria de UX no Fluxo de Anexos: Propostas (Pílula de Conhecimento)
+Corrigida com sucesso a falta de feedback visual na seleção de anexos durante o envio de novas propostas de pílulas de conhecimento:
+- **Habilitação de Múltiplos Arquivos:** O campo de upload foi atualizado para suportar `multiple: true`, oferecendo total liberdade e flexibilidade ao usuário na escolha de múltiplos arquivos.
+- **Confirmação Visual Inteligente:** Adicionado o container `#attachment-preview` e evento JavaScript escutando modificações no input.
+  - Ao selecionar um único arquivo: Mostra um badge com o ícone de arquivo `📄`, o nome do arquivo truncado e o tamanho em KB.
+  - Ao selecionar múltiplos arquivos: Exibe uma caixa de aviso amarela amigável listando o nome de todos os arquivos individualmente e indicando claramente que apenas o primeiro arquivo será enviado (respeitando a regra de negócio `has_one_attached` do backend), mantendo a experiência previsível e confiável.
+- **Compatibilidade:** Mantida a integridade total do envio de propostas e a harmonia visual com o restante do sistema.
+
+### 🎥 Vídeo de Apresentação no Perfil do Professor
+Implementada com sucesso absoluto a opção de vídeo de apresentação no perfil do professor, melhorando a confiança e conexão com alunos de forma simples e pragmática:
+- **Modelagem e Banco:** Adicionado o campo `presentation_video_url` à tabela `users` via migração.
+- **Validação Inteligente e Robusta:** Implementada validação customizada e método auxiliar `youtube_video_id` (com suporte automático à biblioteca nativa `CGI` para todos os ambientes) para validar e extrair de forma robusta o ID de 11 caracteres do YouTube a partir de múltiplos formatos (vídeos regulares, youtu.be, embeds e shorts).
+- **Interface e Acessibilidade:**
+  - Adicionado o campo de cadastro de vídeo sob a seção exclusiva de professores no formulário de edição de perfil (`edit.html.erb`) com instruções claras.
+  - Exibição de um player embutido discreto e de alta fidelidade visual (com a paleta monocromática verde `#15803D` e cantos arredondados) no perfil público do professor (`teachers/show.html.erb`) se a URL estiver presente.
+- **Suíte de Testes Automatizados:** Adicionados 2 novos testes de modelo (verificando URLs válidas e inválidas do YouTube) e 1 teste de integração (validando o ciclo completo de cadastro, edição e renderização do player no perfil). Todos os 127 testes da aplicação rodaram e passaram perfeitamente.
+
+### 🎓 Ajuste no Fluxo de Proposta e Modalidades de Ensino
+Implementado com sucesso o ajuste no fluxo de propostas para simplificar as modalidades de ensino e esclarecer as informações de duração:
+- **Remoção da Modalidade Expressa**: Removido por completo o tipo "Sessão Expressa" do formulário de criação de propostas, mantendo apenas "Pílula de Conhecimento" e "Mentoria Focada" como escolhas válidas e ativas. O modelo rejeita qualquer nova proposta de Sessão Expressa.
+- **Mentoria Focada por Horas**: Quando "Mentoria Focada" é selecionada, o formulário agora exibe dinamicamente o campo para informar a "Quantidade de Horas" (mínimo 1 hora). O campo de minutos desapareceu.
+- **Pílula sem Horas/Duração**: Quando a "Pílula de Conhecimento" é selecionada, o campo de duração é ocultado por completo e seu valor é limpo no banco de dados.
+- **Piso Salarial por Hora**: Flexibilizado para servir como orientação visual em vez de validação rígida de bloqueio.
+- **Adequação nas Salas Virtuais e Detalhes**:
+  - A tela de visualização de propostas (`show.html.erb`) exibe a modalidade e a duração humanizadas em horas (ex: "2 horas").
+  - O botão de início de aula e o timer regressivo da sala virtual (Jitsi) convertem as horas da proposta de volta em minutos para alimentar o iframe Jitsi de forma transparente (ex: 2 horas ativam 120 minutos de cronômetro).
+- **Suíte de Testes e Validação**: Suíte de testes expandida para cobrir as novas validações e limites. Todos os 130 testes automatizados da aplicação passaram perfeitamente.
+
+## 🎓 Nova Regra de Preço de Propostas (Flexibilização e Recomendação)
+- **Causa Raiz/Necessidade**: O bloqueio rígido de envio de propostas abaixo de um valor fixo (piso) reduzia a flexibilidade e impedia negociações livres entre aluno e professor, principalmente em mentorias personalizadas.
+- **Remoção de Bloqueio Rígido**:
+  - Removida a validação impeditiva `price_respects_floor` em `app/models/proposal.rb` que restringia valores abaixo do piso salarial. O aluno agora pode enviar propostas com qualquer valor positivo.
+- **Valores Recomendados de Referência**:
+  - Implementado o método `recommended_price` e helper `has_recommended_price?` no model `Proposal` para estimar um valor recomendado com base na formação do professor (R$ 15,00 para Pílula de Conhecimento, R$ 50,00/hora para Mentoria Focada).
+- **Interface e Orientação Clara (Avisos de Preço)**:
+  - Adicionado banner informativo no topo do formulário de propostas (`new.html.erb`) esclarecendo a "Negociação Livre".
+  - Desenvolvida caixa de alerta dinâmica (`#price-recommendation-box` via JS vanilla) que exibe instantaneamente se o valor proposto está de acordo ou abaixo da recomendação, sem interromper nem travar o fluxo de submissão.
+- **Suíte de Testes Atualizada**:
+  - Atualizado `test/models/proposal_test.rb` para refletir as novas regras. Todos os 130 testes automatizados passaram perfeitamente.
+
 ## 🔜 Próximos Passos Evolutivos
 - Realizar deploy e testar o envio de mídias e atualização de perfis no Render.
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
 - Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.
-- Sistema de feedback/rating pós-sessão para ranquear professores e refinar indicações algorítmicas.
+- Expandir testes unitários de acessibilidade e validações WCAG no CI/CD.
+
+
 
 

@@ -31,5 +31,3 @@ areas.each do |area|
   Subject.find_or_create_by!(name: area)
 end
 puts "   #{Subject.count} áreas cadastradas/verificadas."
-
-puts "Carga de catálogos concluída com sucesso!"

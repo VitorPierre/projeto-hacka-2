@@ -60,6 +60,7 @@ function showWarning(input) {
   let warningBox = input.nextElementSibling;
   if (!warningBox || !warningBox.classList.contains('moderation-warning-box')) {
     warningBox = document.createElement('div');
+    warningBox.setAttribute('role', 'alert');
     warningBox.className = 'moderation-warning-box bg-amber-50 text-amber-800 border border-amber-200 rounded-xl p-3.5 mt-2 text-xs font-semibold flex items-start gap-2 shadow-sm transition-all animate-fadeIn';
     warningBox.innerHTML = `
       <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
