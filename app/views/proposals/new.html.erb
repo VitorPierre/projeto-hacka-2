@@ -1,5 +1,5 @@
 <div class="max-w-2xl mx-auto w-full flex flex-col gap-6">
-  <h2 class="text-2xl md:text-3xl font-medium text-aprende-text px-2">Enviar Proposta de Aula</h2>
+  <h1 class="text-2xl md:text-3xl font-medium text-aprende-text px-2">Enviar Proposta de Aula</h1>
 
   <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm border border-aprende-secondary flex flex-col gap-6">
     <%# Determine counterpart based on who is creating the proposal %>
@@ -14,7 +14,7 @@
     <% end %>
 
     <div class="pb-6 border-b border-aprende-secondary">
-      <h3 class="font-medium text-aprende-muted text-sm uppercase tracking-wider mb-2">Detalhes do <%= counterpart_label %></h3>
+      <h2 class="font-medium text-aprende-muted text-sm uppercase tracking-wider mb-2">Detalhes do <%= counterpart_label %></h2>
       <p class="text-xl font-medium text-aprende-text"><%= counterpart.name %></p>
       <% if counterpart.teacher? %>
         <p class="text-aprende-primary font-medium mt-1">Escolaridade: <%= counterpart.education_level_human %></p>
@@ -40,27 +40,31 @@
       <% end %>
       
       <div class="flex flex-col gap-1">
-        <%= f.label :subject_id, "Selecione a Especialidade", class: "text-sm font-medium text-aprende-text" %>
-        <%= f.collection_select :subject_id, counterpart_subjects, :id, :name, { prompt: "Escolha uma especialidade..." }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text" %>
+        <%= f.label :subject_id, "Selecione a Especialidade", for: "proposal_subject_id", class: "text-sm font-medium text-aprende-text" %>
+        <%= f.collection_select :subject_id, counterpart_subjects, :id, :name, { prompt: "Escolha uma especialidade..." }, id: "proposal_subject_id", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text", aria: @proposal.errors[:subject_id].any? ? { describedby: "proposal_subject_id_error" } : {} %>
+        <%= field_error(@proposal, :subject_id) %>
       </div>
 
       <div class="flex flex-col gap-1">
-        <%= f.label :modality, "Modalidade de Ensino", class: "text-sm font-medium text-aprende-text" %>
-        <%= f.select :modality, [["Pílula de Conhecimento (Dúvida Assíncrona)", "knowledge_pill"], ["Sessão Expressa (15 min Síncrono)", "express_session"], ["Mentoria Focada (Síncrono)", "focused_mentoring"]], {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text", id: "modality-select" %>
+        <%= f.label :modality, "Modalidade de Ensino", for: "modality-select", class: "text-sm font-medium text-aprende-text" %>
+        <%= f.select :modality, [["Pílula de Conhecimento (Dúvida Assíncrona)", "knowledge_pill"], ["Sessão Expressa (15 min Síncrono)", "express_session"], ["Mentoria Focada (Síncrono)", "focused_mentoring"]], {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text", id: "modality-select", aria: @proposal.errors[:modality].any? ? { describedby: "proposal_modality_error" } : {} %>
+        <%= field_error(@proposal, :modality) %>
       </div>
 
       <div class="flex flex-col gap-1 hidden" id="duration-container">
-        <%= f.label :duration, "Duração (Minutos)", class: "text-sm font-medium text-aprende-text" %>
-        <%= f.select :duration, [["30 Minutos", 30], ["45 Minutos", 45], ["60 Minutos", 60]], {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text", id: "duration-select" %>
+        <%= f.label :duration, "Duração (Minutos)", for: "duration-select", class: "text-sm font-medium text-aprende-text" %>
+        <%= f.select :duration, [["30 Minutos", 30], ["45 Minutos", 45], ["60 Minutos", 60]], {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text", id: "duration-select", aria: @proposal.errors[:duration].any? ? { describedby: "proposal_duration_error" } : {} %>
+        <%= field_error(@proposal, :duration) %>
       </div>
 
       <div class="flex flex-col gap-1">
         <div class="flex justify-between items-end">
-          <%= f.label :price, "Valor da Proposta (R$)", class: "text-sm font-medium text-aprende-text" %>
+          <%= f.label :price, "Valor da Proposta (R$)", for: "price-input", class: "text-sm font-medium text-aprende-text" %>
           <span id="price-hint" class="text-xs text-aprende-muted"></span>
         </div>
         <% initial_price = (@teacher.technical? || @teacher.higher?) ? "50,00" : "" %>
-        <%= f.text_field :price, value: initial_price, data: { controller: "mask", mask_type_value: "money" }, placeholder: "R$ 0,00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text text-lg placeholder-aprende-muted", id: "price-input" %>
+        <%= f.text_field :price, value: initial_price, data: { controller: "mask", mask_type_value: "money" }, placeholder: "R$ 0,00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text text-lg placeholder-aprende-muted", id: "price-input", aria: @proposal.errors[:price].any? ? { describedby: "proposal_price_error" } : {} %>
+        <%= field_error(@proposal, :price) %>
       </div>
 
       <div id="free-trial-container" class="hidden flex items-center gap-2">
@@ -69,16 +73,16 @@
       </div>
 
       <div id="knowledge-pill-message-container" class="hidden flex flex-col gap-3 p-4 bg-aprende-bg rounded-xl border border-aprende-secondary mt-2">
-        <label class="text-sm font-medium text-aprende-text">Sua Dúvida / Pergunta</label>
+        <%= label_tag :message_content, "Sua Dúvida / Pergunta", for: "message-content-input", class: "text-sm font-medium text-aprende-text" %>
         <p class="text-xs text-aprende-muted">Descreva sua dúvida com clareza. Você também pode anexar um arquivo.</p>
         
-        <%= text_area_tag :message_content, "", rows: 4, placeholder: "Escreva sua dúvida detalhadamente aqui...", class: "w-full p-3 rounded-lg border border-aprende-secondary bg-white text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary resize-none" %>
+        <%= text_area_tag :message_content, "", rows: 4, placeholder: "Escreva sua dúvida detalhadamente aqui...", id: "message-content-input", class: "w-full p-3 rounded-lg border border-aprende-secondary bg-white text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary resize-none" %>
         
         <div class="flex items-center gap-2">
-          <label class="cursor-pointer bg-white border border-aprende-secondary hover:bg-gray-50 text-aprende-text py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+          <label for="attachment-input" class="cursor-pointer bg-white border border-aprende-secondary hover:bg-gray-50 text-aprende-text py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
             <svg class="w-4 h-4 text-aprende-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
             Anexar Arquivo
-            <%= file_field_tag :attachment, class: "hidden" %>
+            <%= file_field_tag :attachment, id: "attachment-input", class: "hidden" %>
           </label>
         </div>
       </div>

@@ -19,7 +19,7 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
     # Visitante na home
     get root_path
     assert_response :success
-    assert_select "h3", text: @banned_teacher.name, count: 0
+    assert_select "h2", text: @banned_teacher.name, count: 0
 
     # Aluno logado na lista de professores
     post "/login", params: { email: @student.email, password: "senha123" }
@@ -27,14 +27,14 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
 
     get teachers_path
     assert_response :success
-    assert_select "h3", text: @banned_teacher.name, count: 0
+    assert_select "h2", text: @banned_teacher.name, count: 0
   end
 
   test "banned student is hidden from students list and home page" do
     # Visitante na home
     get root_path
     assert_response :success
-    assert_select "h3", text: @banned_student.name, count: 0
+    assert_select "h2", text: @banned_student.name, count: 0
 
     # Professor logado na lista de alunos
     post "/login", params: { email: @teacher.email, password: "senha123" }
@@ -42,7 +42,7 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
 
     get students_path
     assert_response :success
-    assert_select "h3", text: @banned_student.name, count: 0
+    assert_select "h2", text: @banned_student.name, count: 0
   end
 
   test "public show pages of banned users return 404 RecordNotFound for ordinary users or visitors" do
@@ -67,11 +67,11 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
 
     get teacher_path(@banned_teacher)
     assert_response :success
-    assert_select "h2", text: /Perfil/
+    assert_select "h1", text: /Perfil/
 
     get student_path(@banned_student)
     assert_response :success
-    assert_select "h2", text: /Perfil/
+    assert_select "h1", text: /Perfil/
   end
 
   test "cannot initiate new proposals involving banned users" do

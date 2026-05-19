@@ -40,10 +40,10 @@
       <% if @proposal.closed? && !@proposal.paid? %>
         <% if current_user == @proposal.student %>
           <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col gap-4 mt-2">
-            <h3 class="font-medium text-blue-900 text-lg flex items-center gap-2">
+            <h2 class="font-medium text-blue-900 text-lg flex items-center gap-2">
               <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
               Métodos de Pagamento
-            </h3>
+            </h2>
             <p class="text-sm text-blue-800">Esta proposta foi fechada. Para liberar os recursos ou finalizar a etapa, confirme o pagamento simulado:</p>
             <div class="flex flex-wrap gap-3 mt-2">
               <%= button_to pay_proposal_path(@proposal), method: :patch, class: "bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors cursor-pointer shadow-sm text-sm" do %>
@@ -62,10 +62,10 @@
       <% if @proposal.paid? && !@proposal.scheduled_at? && !@proposal.knowledge_pill? && !@proposal.started_at? %>
         <% if current_user == @proposal.teacher %>
           <div class="bg-aprende-bg border border-aprende-secondary rounded-xl p-6 flex flex-col gap-4 mt-2">
-            <h3 class="font-medium text-aprende-text text-lg flex items-center gap-2">
+            <h2 class="font-medium text-aprende-text text-lg flex items-center gap-2">
               <svg class="w-6 h-6 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
               Agendar ou Iniciar Aula
-            </h3>
+            </h2>
             
             <div class="flex flex-col md:flex-row gap-6 items-start">
               <%= form_with url: schedule_proposal_path(@proposal), method: :patch, class: "flex items-end gap-3 flex-1 w-full" do |f| %>
@@ -140,7 +140,7 @@
 
           <% if current_user == @proposal.student && @proposal.rating.nil? %>
             <div class="bg-white border border-yellow-200 rounded-lg p-4">
-              <h4 class="font-medium text-aprende-text mb-2">Como foi a aula com <%= @proposal.teacher.name %>?</h4>
+              <h3 class="font-medium text-aprende-text mb-2">Como foi a aula com <%= @proposal.teacher.name %>?</h3>
               <%= form_with url: rate_proposal_path(@proposal), method: :patch, class: "flex flex-col gap-3" do |f| %>
                 <div class="flex gap-2">
                   <% 5.downto(1) do |i| %>

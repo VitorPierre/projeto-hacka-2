@@ -85,7 +85,7 @@
         <% if message.attachment.attached? %>
           <div class="mt-2 <%= message.content.present? ? 'pt-2 border-t border-aprende-secondary/20' : '' %>">
             <% if message.attachment.image? %>
-              <%= image_tag message.attachment, class: "max-w-full rounded-lg shadow-sm" %>
+              <%= image_tag message.attachment, alt: "Imagem anexada no chat por #{message.user.name}", class: "max-w-full rounded-lg shadow-sm" %>
             <% else %>
               <%= link_to message.attachment.filename.to_s, rails_blob_path(message.attachment, disposition: "attachment"), class: "flex items-center gap-2 underline text-xs font-medium" %>
             <% end %>

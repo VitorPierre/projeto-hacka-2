@@ -1,20 +1,20 @@
 <div class="mb-6 md:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
   <div>
-    <h2 class="text-2xl md:text-3xl font-medium text-aprende-text">Alunos Disponíveis</h2>
+    <h1 class="text-2xl md:text-3xl font-medium text-aprende-text">Alunos Disponíveis</h1>
     <p class="text-aprende-muted mt-2">Conheça os alunos que buscam aprendizado na plataforma.</p>
   </div>
   <%= render 'subjects/manager', url: students_path, blank_label: "Todas as Áreas" %>
 </div>
 
 <% if @students.any? %>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+  <section aria-label="Alunos listados" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
     <% @students.each do |student| %>
       <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-6 md:p-8 flex flex-col h-full gap-4">
         <div class="flex-1 flex flex-col gap-4">
           <div class="flex items-center gap-3">
             <%= user_avatar(student, size: "w-14 h-14", text_size: "text-xl") %>
             <div>
-              <h3 class="text-xl font-medium text-aprende-text"><%= student.name %></h3>
+              <h2 class="text-xl font-medium text-aprende-text"><%= student.name %></h2>
             </div>
           </div>
           
@@ -55,7 +55,7 @@
         </div>
       </div>
     <% end %>
-  </div>
+  </section>
 <% else %>
   <div class="bg-white border border-aprende-secondary rounded-xl p-8 text-center shadow-sm">
     <p class="text-aprende-muted"><%= params[:subject_id].present? ? "Nenhum aluno encontrado para esta área." : "Nenhum aluno cadastrado ainda." %></p>

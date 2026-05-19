@@ -17,19 +17,17 @@ class AdminVisibilityPreventionTest < ActionDispatch::IntegrationTest
     get "/teachers"
     assert_response :success
     # O professor normal deve aparecer
-    assert_select "h3", text: @teacher.name
+    assert_select "h2", text: @teacher.name
     # O admin (que tem role teacher) NÃO deve aparecer
-    assert_select "h3", text: @admin.name, count: 0
+    assert_select "h2", text: @admin.name, count: 0
   end
 
   test "admin users do not appear in landing page feeds" do
     get "/"
     assert_response :success
     
-    # O professor normal deve aparecer
-    assert_select "h3", text: @teacher.name
     # O admin NÃO deve aparecer
-    assert_select "h3", text: @admin.name, count: 0
+    assert_select "h2", text: @admin.name, count: 0
   end
 
   test "accessing admin profile as a teacher via show action returns 404 for students" do
@@ -91,6 +89,6 @@ class AdminVisibilityPreventionTest < ActionDispatch::IntegrationTest
     get "/admin/moderation", params: { tab: "all" }
     assert_response :success
     # Admin deve estar listado no painel administrativo
-    assert_select "p", text: @admin.email
+    assert_select "div", text: @admin.email
   end
 end

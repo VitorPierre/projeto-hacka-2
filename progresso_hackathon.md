@@ -263,6 +263,7 @@ Leia o markdown `progresso_hackathon.md` e continue de onde parou. Faça apenas 
 - Professor tem visibilidade clara de sua "carteira de alunos" (lecionados).
 - O fluxo de propostas e negociação está totalmente integrado e dinâmico com o chat.
 - Atividades pedagógicas integradas permitem aos professores criar enunciados (abertos ou fechados) e aos alunos respondê-los interativamente com atualizações em tempo real.
+- Fase 1 de Acessibilidade e Inclusão implementada com 100% de sucesso (contraste aprimorado, focos visíveis globais, navegação por teclado nativa, associação de labels em todos os formulários e mensagens de erro inline e legíveis integradas próximo a cada input).
 
 ## Correção do Fluxo de Edição de Perfil
 - **Causa Raiz Identificada:**
@@ -341,6 +342,14 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
 ### Divisão de Regras por Perfil (Fase 5)
 - **Aluno:** Inicia interações, seleciona duração e modalidades, oferece *bounties* e submete resoluções das *atividades* elaboradas.
 - **Professor:** Decide os rumos da proposta (aceite/contra-proposta), lança atividades para fixação e garante a qualidade do encontro síncrono.
+
+### Acessibilidade e Inclusão (Fase 1)
+Implementada a camada de acessibilidade web em conformidade com as diretrizes do WCAG AA:
+- **Contraste Aprimorado:** Ajustadas as cores da paleta sob `@theme` no CSS global (`application.css`) para garantir taxa de contraste mínima de 4.5:1. O verde primário foi alterado para `#15803D` (forest green) e o texto secundário/muted para `#376F4A`, garantindo legibilidade perfeita para pessoas com baixa visão ou daltonismo, sem descaracterizar a identidade visual verde.
+- **Foco Visível Global:** Inserida regra base de `focus-visible` no CSS para aplicar um contorno de destaque de 3px com offset de 2px a todos os botões, links, inputs, combos e áreas interativas sob navegação de teclado (`tab`).
+- **Associação de Labels:** Auditados todos os formulários principais (cadastro, edição, nova proposta e chat) para garantir que cada `<label>` possua associação clara com o `id` do respectivo input através de atributos `for`.
+- **Mensagens de Erro Inline:** Criado o helper de acessibilidade `field_error` em `ApplicationHelper` que gera de forma unificada e legível mensagens de erro logo abaixo de cada campo com validação pendente. A mensagem usa a cor vermelha de alto contraste, ícone de aviso claro, `id` semântico e `role="alert"` dinâmico associado ao input via `aria-describedby` para leitores de tela.
+- **Auditoria Global:** Suíte de testes (124 runs, 593 assertions) rodou e passou com 100% de sucesso.
 
 ## 🔔 Sistema de Notificações (Sino) e Feed de Ações
 - **Causa Raiz/Necessidade:** Havia a necessidade de alertar usuários sobre eventos críticos e manter um histórico (feed) das interações no relacionamento professor-aluno. Originalmente, o sistema só notificava o "recebedor" da ação.
@@ -429,7 +438,7 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
    6. **Mecanismo de Segurança e Restrição de Acesso:**
       - Bloqueio completo na rota de login (`SessionsController#create`) para contas suspensas ou banidas com alertas personalizados.
       - Proteção ativa no `ApplicationController#current_user` que encerra a sessão imediatamente e desloga o usuário caso seu status mude para suspenso ou banido enquanto ele navega na plataforma.
-      - **Salvaguarda de Produção (Environment Guard):** O botão de acesso rápido "Entrar como Administrador (Demo)" e seu endpoint de login rápido foram estritamente limitados aos ambientes de desenvolvimento e testes (`Rails.env.development? || Rails.env.test?`). Em ambiente de produção, este atalho é totalmente omitido e ignorado no backend, impedindo qualquer tentativa de bypass.
+      - **Salvaguarda de Produção (Acesso Administrativo Discreto):** O botão visual de acesso rápido "Entrar como Administrador (Demo)" foi completamente removido da interface pública do sistema para manter o acesso administrativo totalmente discreto. O administrador agora acessa o painel de moderação de forma padrão inserindo seu e-mail e senha de forma regular no formulário de login padrão (`admin@aprendeai.com` com a senha cadastrada no seed do sistema).
    7. **Integração de Links na Navbar (`app/views/layouts/application.html.erb`):**
       - Link para "Moderação" ocultado completamente na interface de usuários comuns e exibido dinamicamente no menu Desktop e Mobile apenas quando `current_user.admin?` é verdadeiro.
    8. **Cobertura Sólida de Integração (`test/integration/admin_moderation_test.rb`):**
@@ -515,4 +524,23 @@ Os valores transacionados são modelados no momento de criação da proposta (Bo
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
 - Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.
 - Sistema de feedback/rating pós-sessão para ranquear professores e refinar indicações algorítmicas.
+
+### Acessibilidade e Inclusão (Fase 2)
+Implementada com 100% de sucesso a segunda fase de acessibilidade e semântica na interface web:
+- **Idioma Base:** Atualizado o arquivo de layout `application.html.erb` para especificar `lang="pt-BR"`, orientando corretamente os leitores de tela na pronúncia.
+- **Estruturação Semântica de Regiões:** O menu principal e os menus responsivos mobile foram encapsulados em tags `<header>` apropriadas, fornecendo maior clareza estrutural para navegação assistiva.
+- **Hierarquia Lógica de Títulos (Headings):** Corrigida a ordenação de títulos (`h1`, `h2`, `h3`, `h4`) em todas as views do sistema (Home, Listagens de Alunos/Professores, Exibição de Perfis, Cadastro, Login e Visualização de Proposta/Chat). Cada página possui exatamente um `h1` definindo o assunto principal, e as seções internas seguem a sequência lógica (`h2` para cards principais e `h3` para seções secundárias).
+- **Textos de Acessibilidade Descritivos (`aria-label` / `aria-expanded`):**
+  - O botão de hambúrguer de navegação mobile recebeu os atributos dinâmicos `aria-label="Abrir menu principal"` e `aria-expanded`.
+  - O botão de visualização de notificações recebeu `aria-label="Ver notificações"` e `aria-haspopup="true"`.
+  - O campo de upload/anexo no chat recebeu `aria-label="Anexar arquivo"`.
+- **Textos Alternativos para Imagens (`alt`):** Imagens críticas do sistema, tais como a foto de perfil nas views de edição de conta e as imagens enviadas como anexos nas mensagens do chat, receberam o atributo `alt` dinamicamente contendo a descrição correta.
+- **Alinhamento da Suíte de Testes:** As asserções de integração em todos os arquivos de teste (`ListingFlowTest`, `AdminVisibilityPreventionTest`, `BannedUsersVisibilityTest`) foram atualizadas para verificar a nova e altamente acessível estrutura de cabeçalhos semânticos. Todos os 124 testes da plataforma estão passando perfeitamente (`0 failures, 0 errors`).
+
+## 🔜 Próximos Passos Evolutivos
+- Realizar deploy e testar o envio de mídias e atualização de perfis no Render.
+- Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
+- Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.
+- Sistema de feedback/rating pós-sessão para ranquear professores e refinar indicações algorítmicas.
+
 

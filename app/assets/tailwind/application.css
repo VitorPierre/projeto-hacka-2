@@ -1,11 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --color-aprende-primary: #1DB84E;
-  --color-aprende-primary-hover: #179B40;
+  --color-aprende-primary: #15803D;
+  --color-aprende-primary-hover: #126630;
   --color-aprende-bg: #F4FBF6;
   --color-aprende-secondary: #C2E8CF;
   --color-aprende-text: #0F2E1A;
-  --color-aprende-muted: #5A9E70;
+  --color-aprende-muted: #376F4A;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+@layer base {
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex="0"]:focus-visible {
+    outline: 3px solid var(--color-aprende-primary);
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+  }
 }

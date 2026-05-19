@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
   <head>
     <title><%= content_for(:title) || "aprendeAI" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -20,17 +20,18 @@
   </head>
 
   <body class="bg-aprende-bg text-aprende-text font-sans min-h-screen flex flex-col">
-    <nav class="bg-white/80 backdrop-blur-md border-b border-aprende-secondary px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50 transition-all">
-      <div class="flex items-center gap-3">
-        <!-- Hamburger Button (Mobile Only) -->
-        <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="md:hidden p-2 -ml-2 text-aprende-text hover:text-aprende-primary transition-colors cursor-pointer">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
+    <header class="bg-white/80 backdrop-blur-md border-b border-aprende-secondary sticky top-0 z-50 transition-all">
+      <nav class="px-4 md:px-8 py-4 flex justify-between items-center max-w-7xl mx-auto" aria-label="Navegação principal">
+        <div class="flex items-center gap-3">
+          <!-- Hamburger Button (Mobile Only) -->
+          <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" aria-label="Abrir menu principal" aria-expanded="false" class="md:hidden p-2 -ml-2 text-aprende-text hover:text-aprende-primary transition-colors cursor-pointer">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
 
-        <%= link_to root_path, class: "font-medium text-2xl tracking-tight hover:opacity-80 transition-opacity" do %>
-          <span class="text-aprende-text">aprende</span><span class="text-aprende-primary font-bold">AI</span>
-        <% end %>
-      </div>
+          <%= link_to root_path, class: "font-medium text-2xl tracking-tight hover:opacity-80 transition-opacity" do %>
+            <span class="text-aprende-text">aprende</span><span class="text-aprende-primary font-bold">AI</span>
+          <% end %>
+        </div>
       
       <div class="flex items-center gap-6">
         <div class="hidden md:flex items-center gap-6">
@@ -55,15 +56,15 @@
         
         <% if current_user %>
           <div class="flex items-center gap-4">
-            <!-- Notificações (Desktop) -->
-            <div class="relative hidden md:block" data-controller="dropdown">
-              <button type="button" onclick="document.getElementById('notif-dropdown').classList.toggle('hidden')" class="relative p-2 text-aprende-muted hover:text-aprende-primary transition-colors cursor-pointer">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                <% unread_count = current_user.notifications.unread.count %>
-                <% if unread_count > 0 %>
-                  <span class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center"><%= unread_count %></span>
-                <% end %>
-              </button>
+             <!-- Notificações (Desktop) -->
+             <div class="relative hidden md:block" data-controller="dropdown">
+               <button type="button" onclick="document.getElementById('notif-dropdown').classList.toggle('hidden')" aria-label="Ver notificações" aria-haspopup="true" class="relative p-2 text-aprende-muted hover:text-aprende-primary transition-colors cursor-pointer">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                 <% unread_count = current_user.notifications.unread.count %>
+                 <% if unread_count > 0 %>
+                   <span class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center"><%= unread_count %></span>
+                 <% end %>
+               </button>
               
               <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-aprende-secondary overflow-hidden z-50">
                 <div class="px-4 py-3 border-b border-aprende-secondary bg-aprende-bg font-medium text-aprende-text text-sm">
@@ -153,17 +154,17 @@
               <%= link_to "Cadastrar", new_user_path, class: "text-center bg-aprende-primary text-white font-medium py-2.5 rounded-xl w-full" %>
             </div>
           <% end %>
-        </div>
       </div>
     </nav>
+  </header>
 
     <% if flash[:notice] %>
-      <div class="bg-aprende-secondary text-aprende-text px-6 py-3 border-b border-aprende-primary text-center font-medium">
+      <div id="flash-notice" role="status" class="bg-aprende-secondary text-aprende-text px-6 py-3 border-b border-aprende-primary text-center font-medium">
         <%= flash[:notice] %>
       </div>
     <% end %>
     <% if flash[:alert] %>
-      <div class="bg-red-50 text-red-700 px-6 py-3 border-b border-red-200 text-center font-medium">
+      <div id="flash-alert" role="alert" class="bg-red-50 text-red-700 px-6 py-3 border-b border-red-200 text-center font-semibold">
         <%= flash[:alert] %>
       </div>
     <% end %>

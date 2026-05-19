@@ -31,7 +31,7 @@
       <div class="relative group">
         <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-aprende-secondary shadow-md bg-slate-50 flex items-center justify-center">
           <% if @user.avatar.attached? %>
-            <%= image_tag @user.avatar, class: "w-full h-full object-cover" %>
+            <%= image_tag @user.avatar, alt: "Foto de perfil de #{@user.name}", class: "w-full h-full object-cover" %>
           <% else %>
             <div class="text-4xl text-aprende-primary font-bold"><%= @user.name&.first&.upcase || "?" %></div>
           <% end %>
@@ -39,61 +39,71 @@
         <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer">
           <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
         </div>
-        <%= f.file_field :avatar, class: "absolute inset-0 opacity-0 cursor-pointer w-full h-full", accept: "image/*" %>
+        <%= f.file_field :avatar, aria: { label: "Foto de perfil" }, class: "absolute inset-0 opacity-0 cursor-pointer w-full h-full", accept: "image/*" %>
       </div>
       <p class="text-sm text-aprende-muted font-medium">Clique para alterar sua foto de perfil</p>
+      <%= field_error(@user, :avatar) %>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <%= f.label :name, "Nome Completo", class: "block text-sm font-medium text-aprende-text mb-1" %>
-        <%= f.text_field :name, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+        <%= f.text_field :name, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50", aria: @user.errors[:name].any? ? { describedby: "user_name_error" } : {} %>
+        <%= field_error(@user, :name) %>
       </div>
 
       <div>
         <%= f.label :email, "E-mail", class: "block text-sm font-medium text-aprende-text mb-1" %>
-        <%= f.email_field :email, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+        <%= f.email_field :email, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50", aria: @user.errors[:email].any? ? { describedby: "user_email_error" } : {} %>
+        <%= field_error(@user, :email) %>
       </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <%= f.label :cpf, "CPF", class: "block text-sm font-medium text-aprende-text mb-1" %>
-        <%= f.text_field :cpf, data: { controller: "mask", mask_type_value: "cpf" }, placeholder: "000.000.000-00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+        <%= f.text_field :cpf, data: { controller: "mask", mask_type_value: "cpf" }, placeholder: "000.000.000-00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50", aria: @user.errors[:cpf].any? ? { describedby: "user_cpf_error" } : {} %>
+        <%= field_error(@user, :cpf) %>
       </div>
 
       <div>
         <%= f.label :phone, "Telefone", class: "block text-sm font-medium text-aprende-text mb-1" %>
-        <%= f.text_field :phone, data: { controller: "mask", mask_type_value: "phone" }, placeholder: "(00) 00000-0000", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+        <%= f.text_field :phone, data: { controller: "mask", mask_type_value: "phone" }, placeholder: "(00) 00000-0000", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50", aria: @user.errors[:phone].any? ? { describedby: "user_phone_error" } : {} %>
+        <%= field_error(@user, :phone) %>
       </div>
     </div>
 
     <div>
       <%= f.label :preferences, "Preferências e Objetivos", class: "block text-sm font-medium text-aprende-text mb-1" %>
-      <%= f.text_area :preferences, placeholder: "O que você busca na plataforma?", rows: 4, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      <%= f.text_area :preferences, placeholder: "O que você busca na plataforma?", rows: 4, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50", aria: @user.errors[:preferences].any? ? { describedby: "user_preferences_error" } : {} %>
       <p class="text-xs text-aprende-muted mt-1 italic">Ex: Prefiro aulas online à noite, foco em certificações, etc.</p>
+      <%= field_error(@user, :preferences) %>
     </div>
 
     <div>
       <%= f.label :availability, "Pretensão de Horários", class: "block text-sm font-medium text-aprende-text mb-1" %>
-      <%= f.text_area :availability, placeholder: "Ex: Manhãs de segunda a quarta, sábados à tarde...", rows: 2, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+      <%= f.text_area :availability, placeholder: "Ex: Manhãs de segunda a quarta, sábados à tarde...", rows: 2, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50", aria: @user.errors[:availability].any? ? { describedby: "user_availability_error" } : {} %>
+      <%= field_error(@user, :availability) %>
     </div>
 
     <% if @user.teacher? %>
       <div>
         <%= f.label :experience, "Experiência e Currículo", class: "block text-sm font-medium text-aprende-text mb-1" %>
-        <%= f.text_area :experience, placeholder: "Conte um pouco sobre sua trajetória profissional e acadêmica...", rows: 4, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+        <%= f.text_area :experience, placeholder: "Conte um pouco sobre sua trajetória profissional e acadêmica...", rows: 4, data: { moderation_check: true }, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50", aria: @user.errors[:experience].any? ? { describedby: "user_experience_error" } : {} %>
+        <%= field_error(@user, :experience) %>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <%= f.label :education_level, "Nível de Escolaridade", class: "block text-sm font-medium text-aprende-text mb-1" %>
-          <%= f.select :education_level, User::EDUCATION_LEVEL_NAMES.invert.to_a, {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 bg-slate-50 text-aprende-text" %>
+          <%= f.select :education_level, User::EDUCATION_LEVEL_NAMES.invert.to_a, {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 bg-slate-50 text-aprende-text", aria: @user.errors[:education_level].any? ? { describedby: "user_education_level_error" } : {} %>
+          <%= field_error(@user, :education_level) %>
         </div>
 
         <div>
           <%= f.label :certificate_url, "URL do Certificado", class: "block text-sm font-medium text-aprende-text mb-1" %>
-          <%= f.url_field :certificate_url, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50" %>
+          <%= f.url_field :certificate_url, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-slate-50", aria: @user.errors[:certificate_url].any? ? { describedby: "user_certificate_url_error" } : {} %>
+          <%= field_error(@user, :certificate_url) %>
         </div>
       </div>
 
@@ -107,6 +117,7 @@
             </div>
           <% end %>
         </div>
+        <%= field_error(@user, :subject_ids) %>
       </div>
     <% else %>
       <div>
@@ -119,6 +130,7 @@
             </div>
           <% end %>
         </div>
+        <%= field_error(@user, :subject_ids) %>
       </div>
     <% end %>
 

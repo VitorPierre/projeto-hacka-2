@@ -13,8 +13,8 @@ class ListingFlowTest < ActionDispatch::IntegrationTest
 
     get teachers_path
     assert_response :success
-    assert_select "h2", text: /Professores Disponíveis/
-    assert_select "h3", text: @teacher.name
+    assert_select "h1", text: /Professores Disponíveis/
+    assert_select "h2", text: @teacher.name
     assert_select "a", text: "Fazer Proposta"
   end
 
@@ -32,8 +32,8 @@ class ListingFlowTest < ActionDispatch::IntegrationTest
 
     get students_path
     assert_response :success
-    assert_select "h2", text: /Alunos Disponíveis/
-    assert_select "h3", text: @student.name
+    assert_select "h1", text: /Alunos Disponíveis/
+    assert_select "h2", text: @student.name
     assert_select "a", text: "Fazer Proposta"
   end
 
@@ -52,7 +52,7 @@ class ListingFlowTest < ActionDispatch::IntegrationTest
 
     get teachers_path
     assert_response :success
-    assert_select "h3", text: uncertified.name
+    assert_select "h2", text: uncertified.name
   end
 
   # === PERFIS INDIVIDUAIS ===
@@ -70,7 +70,7 @@ class ListingFlowTest < ActionDispatch::IntegrationTest
 
     get new_proposal_path(teacher_id: @teacher.id)
     assert_response :success
-    assert_select "h2", text: /Enviar Proposta/
+    assert_select "h1", text: /Enviar Proposta/
   end
 
   # === VISITANTE ===

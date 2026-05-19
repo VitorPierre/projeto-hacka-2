@@ -13,24 +13,24 @@
 
     <div id="activity-controls" class="hidden flex flex-col gap-3 mb-2 p-4 bg-aprende-bg rounded-xl border border-aprende-secondary">
       <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-medium text-aprende-text">Tipo de Atividade</label>
+        <label for="question_type_select" class="text-xs font-medium text-aprende-text">Tipo de Atividade</label>
         <%= f.select :question_type, [["Pergunta Aberta (resposta textual)", "open"], ["Pergunta Fechada (múltipla escolha)", "closed"]], {}, id: "question_type_select", onchange: "toggleQuestionType(this.value)", class: "w-full p-2.5 text-sm rounded-lg border border-aprende-secondary bg-white text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary cursor-pointer" %>
       </div>
 
       <div id="options-container" class="hidden flex flex-col gap-1.5">
-        <label class="text-xs font-medium text-aprende-text">Opções de Seleção (uma por linha)</label>
+        <label for="options_field" class="text-xs font-medium text-aprende-text">Opções de Seleção (uma por linha)</label>
         <%= f.text_area :options, id: "options_field", placeholder: "Opção A\nOpção B\nOpção C", rows: 3, class: "w-full p-2.5 text-sm rounded-lg border border-aprende-secondary bg-white text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary resize-none" %>
       </div>
     </div>
   <% end %>
 
   <div class="relative">
-    <%= f.text_area :content, id: "message_content_area", placeholder: "Escreva sua mensagem...", rows: 3, class: "w-full p-4 pb-12 rounded-xl border border-aprende-secondary bg-aprende-bg text-aprende-text placeholder-aprende-muted focus:outline-none focus:ring-2 focus:ring-aprende-primary transition-all resize-none" %>
+    <%= f.text_area :content, id: "message_content_area", placeholder: "Escreva sua mensagem...", rows: 3, class: "w-full p-4 pb-12 rounded-xl border border-aprende-secondary bg-aprende-bg text-aprende-text placeholder-aprende-muted focus:outline-none focus:ring-2 focus:ring-aprende-primary transition-all resize-none", aria: { label: "Conteúdo da mensagem ou atividade" } %>
     
     <% if proposal.paid? || proposal.knowledge_pill? %>
       <div id="attachment-btn-container" class="absolute left-3 bottom-3 flex items-center gap-2">
         <label class="cursor-pointer text-aprende-muted hover:text-aprende-primary p-1.5 rounded-lg transition-colors" title="Anexar Arquivo">
-          <%= f.file_field :attachment, class: "hidden", onchange: "this.form.requestSubmit();" %>
+          <%= f.file_field :attachment, class: "hidden", onchange: "this.form.requestSubmit();", aria: { label: "Anexar arquivo" } %>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
         </label>
         <% if proposal.started_at? && !proposal.finished_at? && proposal.synchronous? %>
