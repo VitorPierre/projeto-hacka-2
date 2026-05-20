@@ -1,132 +1,207 @@
 <div class="w-full max-w-4xl mx-auto mt-4 bg-white p-6 md:p-10 rounded-[1.5rem] shadow-sm border border-aprende-secondary/60">
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-aprende-secondary/60 pb-6 mb-8 gap-4">
     <div>
-      <h1 class="text-3xl font-bold text-aprende-text tracking-tight">Política de Privacidade / LGPD</h1>
-      <p class="text-sm text-aprende-muted mt-1">Última atualização: 20 de maio de 2026</p>
+      <h1 class="text-3xl font-bold text-aprende-text tracking-tight">Política de Privacidade e LGPD</h1>
+      <p class="text-sm text-aprende-muted mt-1">Versão ativa: <%= User::CURRENT_PRIVACY_VERSION %> | Última atualização: 20 de maio de 2026</p>
     </div>
     <div>
-      <%= link_to "Voltar", :back, class: "inline-flex items-center justify-center bg-white border border-aprende-secondary hover:border-aprende-primary text-aprende-text font-medium py-2 px-5 rounded-full transition-all text-sm cursor-pointer shadow-sm w-full sm:w-auto" %>
+      <%= link_to "Voltar", :back, class: "inline-flex items-center justify-center bg-white border border-aprende-secondary hover:border-aprende-primary text-aprende-text font-medium py-2 px-5 rounded-full transition-all text-sm cursor-pointer shadow-sm w-full sm:w-auto focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-aprende-primary" %>
     </div>
   </div>
 
   <div class="text-aprende-text space-y-8 leading-relaxed">
-    <p class="text-lg font-medium text-aprende-muted">
-      A privacidade e a proteção dos seus dados pessoais são fundamentais para o <strong>aprendeAI</strong>. Esta Política de Privacidade foi elaborada em estrita conformidade com a **Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018)** e explica com total transparência como seus dados são coletados, utilizados, compartilhados e protegidos em nosso sistema.
-    </p>
+    <div class="bg-aprende-bg p-5 rounded-2xl border border-aprende-secondary/50 text-sm text-aprende-text mb-6">
+      <span class="font-bold text-aprende-primary">Compromisso de Transparência:</span> A privacidade e a proteção de dados são prioridades absolutas para o <strong>aprendeAI</strong>. Esta Política de Privacidade descreve, sob as diretrizes da **Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018)**, como coletamos, estruturamos, armazenamos, compartilhamos e salvaguardamos as suas informações pessoais ao utilizar nossa plataforma.
+    </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">1. Quais dados coletamos e tratamos?</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">1. Categorias de Titulares Envolvidos</h2>
       <p>
-        Para que a plataforma funcione de maneira realista, segura e eficaz, tratamos os seguintes dados a depender da sua interação:
+        O tratamento de dados na plataforma restringe-se a duas categorias principais de titulares de dados:
       </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          <strong>Dados de Identificação e Cadastro:</strong> Nome completo, e-mail de contato, CPF, telefone (celular), papel na plataforma (Aluno ou Professor) e senha de acesso criptografada (hash via BCrypt).
+          <strong>Alunos:</strong> Usuários que buscam professores, negociam valores pedagógicos, realizam pagamentos de custódia e participam de mentorias síncronas ou assíncronas.
         </li>
         <li>
-          <strong>Dados Acadêmicos e Profissionais (Exclusivos de Professores):</strong> Nível de escolaridade e link/URL de comprovante/certificado escolar ou acadêmico.
-        </li>
-        <li>
-          <strong>Dados Operacionais e Pedagógicos:</strong> Áreas de ensino/interesse de sua escolha, propostas criadas (incluindo valores, agendamento de datas e históricos de contrapropostas) e notificações do sistema.
-        </li>
-        <li>
-          <strong>Dados de Interação:</strong> Históricos de mensagens de chat trocadas na tela de negociação, arquivos e imagens anexadas pelos participantes e respostas dadas às atividades pedagógicas formuladas.
-        </li>
-        <li>
-          <strong>Dados de Mídia e Audiovisual:</strong> Gravações de vídeo e áudio provenientes dos encontros virtuais realizados por meio do servidor de videoconferência embutido (Jitsi Meet).
-        </li>
-        <li>
-          <strong>Dados de Pagamento:</strong> Informações de status de pagamento (pago/não pago) associadas a cada proposta e valores transacionados para fins de auditoria e cálculo da taxa de 20% da plataforma.
-        </li>
-        <li>
-          <strong>Avaliações e Feedback:</strong> Notas atribuídas de 1 a 5 estrelas e comentários qualitativos registrados após a conclusão das mentorias.
+          <strong>Professores:</strong> Usuários autônomos que oferecem mentorias, pílulas de conhecimento, preenchem dados curriculares, vídeo de apresentação e disponibilizam chaves ou informações de recebimento.
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">2. Para quais finalidades os dados são tratados?</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">2. Dados Pessoais Coletados e Tratados</h2>
       <p>
-        O tratamento de dados pessoais no aprendeAI possui finalidades bem delimitadas:
+        Para assegurar o funcionamento real do marketplace educacional aprendeAI, coletamos e armazenamos as seguintes informações:
       </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          <strong>Execução dos Serviços (Base Legal: Execução de Contrato):</strong> Viabilizar a criação de contas, a troca de mensagens, o agendamento de sessões expressas ou mentorias, o envio de pílulas de conhecimento assíncronas e a realização de videoaulas.
+          <strong>Dados Cadastrais Básicos:</strong> Nome completo, endereço de e-mail de contato, senha criptografada (hash unidirecional via BCrypt), número de CPF (normalizado apenas para dígitos visando a unicidade da conta) e número de telefone celular (normalizado apenas para dígitos).
         </li>
         <li>
-          <strong>Segurança da Informação e Moderação (Base Legal: Legítimo Interesse):</strong> Detectar fraudes, contas falsas e aplicar a moderação eletrônica contra o uso de termos impróprios ou ofensivos no chat e nos perfis.
+          <strong>Dados de Perfil e Apresentação:</strong> Área de atuação pedagógica (Matérias/Assuntos de interesse selecionados), foto de perfil/avatar (processado por meio do ActiveStorage do Rails), biografia/experiência profissional, disponibilidade de horários e preferências de aprendizado.
         </li>
         <li>
-          <strong>Processamento de Pagamentos (Base Legal: Execução de Contrato e Cumprimento de Obrigação Legal):</strong> Assegurar a integridade dos depósitos de custódia e faturamento de taxas.
+          <strong>Dados Curriculares (Exclusivo para Professores):</strong> Nível de escolaridade autodeclarado (Médio, Técnico ou Bacharel), URL do certificado de formação para auditoria de autenticidade acadêmica e link do vídeo de apresentação opcional do YouTube.
         </li>
         <li>
-          <strong>Melhoria e Auditoria (Base Legal: Legítimo Interesse):</strong> Analisar o desempenho pedagógico com base nas avaliações e nas respostas de atividades fornecidas de forma interativa.
+          <strong>Dados de Propostas e Negociações:</strong> Histórico de propostas criadas, valores em reais negociados, propostas aceitas, contrapropostas ofertadas, datas e horários dos agendamentos síncronos e status de execução.
+        </li>
+        <li>
+          <strong>Dados de Comunicação (Chat Integrado):</strong> Histórico completo de mensagens de texto trocadas na tela interna de negociação e arquivos ou documentos de suporte pedagógico (PDFs, planilhas, imagens) anexados livremente pelos participantes.
+        </li>
+        <li>
+          <strong>Dados de Pagamento e Pix:</strong> Históricos de transações efetuadas (status de pagamento, data da transação Pix e controle da taxa de 20% retida pela plataforma para fins fiscais e de faturamento).
+        </li>
+        <li>
+          <strong>Dados de Sessão e Uso da Plataforma:</strong> Endereço IP do dispositivo, tipo de navegador, logs de erro, logs de auditoria das ações administrativas e cookies de sessão essenciais para manter o usuário autenticado de forma estável.
+        </li>
+        <li>
+          <strong>Dados de Avaliações e Feedback:</strong> Notas numéricas (1 a 5 estrelas) atribuídas aos professores e feedbacks textuais qualitativos preenchidos de forma voluntária ao fim dos encontros.
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">3. Com quem compartilhamos os seus dados?</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">3. Finalidades e Bases Legais do Tratamento</h2>
       <p>
-        O aprendeAI não comercializa listas de e-mails ou dados pessoais em hipótese alguma. O compartilhamento ocorre de forma restrita e estritamente necessária:
+        Cada operação de tratamento de dados pessoais no aprendeAI está rigidamente vinculada a uma finalidade legítima e a uma base legal expressa prevista na LGPD:
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-aprende-secondary/60 text-sm mt-2 text-left">
+          <thead>
+            <tr class="bg-aprende-bg text-aprende-text font-bold">
+              <th class="p-3 border border-aprende-secondary/60">Operação de Tratamento</th>
+              <th class="p-3 border border-aprende-secondary/60">Finalidade Específica</th>
+              <th class="p-3 border border-aprende-secondary/60">Base Legal Aplicável</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-aprende-secondary/60">
+            <tr>
+              <td class="p-3 border border-aprende-secondary/60 font-medium">Cadastro, login, perfil e exibição pública de professores.</td>
+              <td class="p-3 border border-aprende-secondary/60">Identificar usuários de forma unívoca, permitir login seguro e viabilizar a busca pedagógica.</td>
+              <td class="p-3 border border-aprende-secondary/60 text-xs font-semibold text-aprende-primary">Execução de Contrato (Art. 7º, V, LGPD)</td>
+            </tr>
+            <tr>
+              <td class="p-3 border border-aprende-secondary/60 font-medium">Troca de mensagens no chat, uploads de arquivos e salas de vídeo.</td>
+              <td class="p-3 border border-aprende-secondary/60">Viabilizar a comunicação na negociação e ministrar as aulas contratadas.</td>
+              <td class="p-3 border border-aprende-secondary/60 text-xs font-semibold text-aprende-primary">Execução de Contrato (Art. 7º, V, LGPD)</td>
+            </tr>
+            <tr>
+              <td class="p-3 border border-aprende-secondary/60 font-medium">Processamento de pagamentos, cobrança de taxas e controle Pix.</td>
+              <td class="p-3 border border-aprende-secondary/60">Garantir a retenção em custódia e efetuar o repasse correto do valor líquido.</td>
+              <td class="p-3 border border-aprende-secondary/60 text-xs font-semibold text-aprende-primary">Execução de Contrato e Obrigação Legal (Art. 7º, II e V)</td>
+            </tr>
+            <tr>
+              <td class="p-3 border border-aprende-secondary/60 font-medium">Moderação automática de termos no chat e análise de fraudes cadastrais.</td>
+              <td class="p-3 border border-aprende-secondary/60">Garantir um ecossistema seguro contra spam, termos ofensivos e desintermediação.</td>
+              <td class="p-3 border border-aprende-secondary/60 text-xs font-semibold text-aprende-primary">Legítimo Interesse do Controlador (Art. 7º, IX)</td>
+            </tr>
+            <tr>
+              <td class="p-3 border border-aprende-secondary/60 font-medium">Armazenamento das assinaturas/aceites de versão de termos de uso.</td>
+              <td class="p-3 border border-aprende-secondary/60">Constituir prova jurídica da anuência do usuário às normas e conformidade legal.</td>
+              <td class="p-3 border border-aprende-secondary/60 text-xs font-semibold text-aprende-primary">Exercício Regular de Direitos em Contrato (Art. 7º, VI)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">4. Compartilhamento de Dados com Terceiros</h2>
+      <p>
+        O aprendeAI compromete-se a **nunca vender, comercializar ou ceder** suas listas de contatos ou informações a terceiros para fins publicitários. Contudo, compartilhamentos estritamente operacionais são indispensáveis para manter o app no ar:
       </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          <strong>Entre Alunos e Professores:</strong> Para viabilizar a conexão educacional, os perfis públicos e as áreas de ensino de professores ficam expostos à busca de alunos. Durante a negociação, o chat e as mensagens da proposta ficam visíveis exclusivamente para as duas partes envolvidas.
+          <strong>Provedores de Nuvem e Hospedagem (Render / AWS):</strong> Onde toda a infraestrutura física da aplicação Rails (código, logs e base de dados SQLite) está hospedada de forma protegida.
         </li>
         <li>
-          <strong>Provedores de Infraestrutura e Tecnologia:</strong> Parceiros de hospedagem, servidores de videoconferência (Jitsi Meet iframe de comunicação direta) e gateways de pagamento para processamento de transações financeiras sob padrões rígidos de criptografia.
+          <strong>ActiveStorage / Armazenamento Físico:</strong> Arquivos PDFs e imagens anexadas no chat pedagógico e fotos de perfil dos usuários são persistidos no sistema de arquivos local ou em buckets de armazenamento seguro com controle restrito de acesso.
         </li>
         <li>
-          <strong>Autoridades Judiciais ou Administrativas:</strong> Somente quando houver requisição legal, ordem judicial ou para cumprir obrigações fiscais e regulatórias.
+          <strong>Infraestrutura de Videoconferência (Jitsi Meet):</strong> Para a transmissão direta de áudio e vídeo em tempo real na modalidade síncrona. Os dados de mídia trafegam no canal criptografado do Jitsi, sem gravação ou armazenamento contínuo por parte do aprendeAI, exceto se houver consentimento explícito futuro dos envolvidos.
+        </li>
+        <li>
+          <strong>Parceiro Processador de Pix (Gateway de Pagamentos):</strong> Envio de dados mínimos do pagador (Nome, CPF e valor) para emissão do QR Code Pix de pagamento de custódia e conciliação do status financeiro.
+        </li>
+        <li>
+          <strong>Cumprimento Legal ou Ordem Judicial:</strong> Revelação pontual de dados a autoridades públicas brasileiras apenas sob requisição oficial respaldada pela legislação vigente.
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">4. Armazenamento, Segurança e Retenção</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">5. Retenção e Exclusão de Dados Pessoais</h2>
       <p>
-        Todos os dados pessoais são mantidos em servidores seguros, estruturados com tecnologias modernas de controle de acesso:
+        As suas informações pessoais são retidas de forma ativa no sistema unicamente enquanto a sua conta estiver cadastrada:
       </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          <strong>Segurança:</strong> As senhas são gravadas utilizando algoritmos de criptografia unidirecional (hasheamento BCrypt). O tráfego de dados é protegido por conexões HTTPS/TLS seguras.
+          <strong>Solicitação de Exclusão:</strong> O usuário possui o direito de pleitear a eliminação de seu cadastro a qualquer momento. Nesse caso, as informações associadas ao perfil serão permanentemente excluídas ou devidamente anonimizadas em nossa base de dados SQLite em até 15 (quinze) dias úteis.
         </li>
         <li>
-          <strong>Retenção:</strong> Os dados são conservados enquanto a conta do usuário estiver ativa na plataforma. Caso o usuário solicite a exclusão de sua conta, as informações pessoais serão permanentemente deletadas ou devidamente anonimizadas em até 15 dias úteis, exceto dados que necessitem ser retidos por obrigações legais, fiscais ou regulatórias.
+          <strong>Retenção Excepcional Obrigatória:</strong> De acordo com o Art. 16 da LGPD, determinados dados cadastrais, logs de acesso a aplicações (cuja guarda de 6 meses é imposta pelo Marco Civil da Internet - Lei nº 12.965/2014) e registros históricos de transações financeiras Pix não serão eliminados imediatamente, sendo conservados de forma isolada para fins de cumprimento de obrigações fiscais, fiscais-contábeis e exercício de defesa em eventuais demandas judiciais.
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">5. Quais são os seus direitos como titular?</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">6. Medidas Gerais de Segurança da Informação</h2>
       <p>
-        De acordo com o artigo 18 da LGPD, você tem plenos direitos sobre as suas informações, podendo a qualquer momento solicitar:
+        Empregamos medidas técnicas e organizacionais condizentes com o ecossistema MVP para proteger suas informações contra acessos não autorizados ou destruições acidentais:
       </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          <strong>Acesso e Confirmação:</strong> Saber se tratamos dados seus e quais são eles.
+          Criptografia unidirecional forte (hasheamento de senha via BCrypt) que impede a leitura de senhas em texto puro, mesmo por administradores do banco de dados.
         </li>
         <li>
-          <strong>Correção e Retificação:</strong> Corrigir dados incompletos, inexatos ou desatualizados. Isso pode ser feito de forma rápida pelo próprio usuário na página de **Editar Perfil**.
+          Uso obrigatório do protocolo HTTPS para tráfego seguro de dados entre o navegador do usuário e o servidor Rails.
         </li>
         <li>
-          <strong>Exclusão ou Anonimização:</strong> Solicitar a eliminação dos seus dados tratados sob seu consentimento.
-        </li>
-        <li>
-          <strong>Portabilidade:</strong> Obter a transferência dos seus dados para outro fornecedor de serviços.
+          Controle de acesso autenticado a todas as rotas e funções do painel de administração da plataforma aprendeAI.
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">6. Contato com o Encarregado de Proteção de Dados (DPO)</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">7. Direitos dos Titulares de Dados</h2>
       <p>
-        Caso tenha qualquer dúvida referente a esta Política de Privacidade ou precise exercer algum dos seus direitos previstos na LGPD, entre em contato diretamente com o nosso Encarregado de Dados (DPO) através do e-mail de atendimento exclusivo:
+        O aprendeAI garante aos seus usuários a facilidade para exercer plenamente os direitos previstos na LGPD (Art. 18):
       </p>
-      <div class="bg-aprende-bg p-5 rounded-2xl border border-aprende-secondary text-center">
-        <p class="font-bold text-aprende-text text-lg">lgpd@aprendeai.com.br</p>
-        <p class="text-sm text-aprende-muted mt-1">Canal direto de privacidade do aprendeAI</p>
+      <ul class="list-disc pl-5 space-y-2">
+        <li>
+          <strong>Confirmação e Acesso:</strong> Direito de obter a confirmação da existência de tratamento e de acessar as informações coletadas.
+        </li>
+        <li>
+          <strong>Correção Facilitada (Retificação):</strong> Direito de atualizar ou retificar seus dados cadastrais. Isso pode ser feito a qualquer instante de forma imediata acessando a funcionalidade **Editar Perfil** em sua conta.
+        </li>
+        <li>
+          <strong>Eliminação dos Dados (Exclusão):</strong> Solicitar a remoção definitiva dos dados coletados sob a base do consentimento.
+        </li>
+        <li>
+          <strong>Revogação do Consentimento:</strong> Revogar anuências fornecidas a qualquer momento.
+        </li>
+      </ul>
+    </div>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">8. Versionamento, Atualização e Aceite Prévio</h2>
+      <p>
+        Esta Política de Privacidade poderá passar por atualizações visando incorporar melhorias de segurança ou adequações a novas normas da Autoridade Nacional de Proteção de Dados (ANPD).
+      </p>
+      <p>
+        Qualquer modificação substantiva será refletida com a mudança da versão ativa cadastrada no código da aplicação. Ao efetuar login, usuários cadastrados com versões de aceite anteriores serão redirecionados automaticamente para a tela de visualização dos novos termos, necessitando manifestar seu reaceite de forma livre e explícita no sistema por meio de checkbox antes de retomar as atividades pedagógicas regulares.
+      </p>
+    </div>
+
+    <div class="pt-6 border-t border-aprende-secondary/60">
+      <div class="bg-aprende-bg p-5 rounded-2xl border border-aprende-secondary text-center space-y-2">
+        <p class="font-bold text-aprende-text text-lg">Central de Contato com Encarregado de Proteção de Dados (DPO)</p>
+        <p class="text-sm text-aprende-muted">
+          Caso tenha dúvidas sobre como seus dados são tratados, queira registrar solicitações de exclusão de conta ou falar com o nosso encarregado DPO, envie um e-mail para:
+        </p>
+        <p class="font-bold text-aprende-primary text-md">lgpd@aprendeai.com.br</p>
       </div>
     </div>
   </div>

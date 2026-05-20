@@ -1,136 +1,255 @@
 <div class="w-full max-w-4xl mx-auto mt-4 bg-white p-6 md:p-10 rounded-[1.5rem] shadow-sm border border-aprende-secondary/60">
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-aprende-secondary/60 pb-6 mb-8 gap-4">
     <div>
-      <h1 class="text-3xl font-bold text-aprende-text tracking-tight">Termos de Uso</h1>
-      <p class="text-sm text-aprende-muted mt-1">Última atualização: 20 de maio de 2026</p>
+      <h1 class="text-3xl font-bold text-aprende-text tracking-tight">Termos de Uso da Plataforma</h1>
+      <p class="text-sm text-aprende-muted mt-1">Versão ativa: <%= User::CURRENT_TERMS_VERSION %> | Última atualização: 20 de maio de 2026</p>
     </div>
     <div>
-      <%= link_to "Voltar", :back, class: "inline-flex items-center justify-center bg-white border border-aprende-secondary hover:border-aprende-primary text-aprende-text font-medium py-2 px-5 rounded-full transition-all text-sm cursor-pointer shadow-sm w-full sm:w-auto" %>
+      <%= link_to "Voltar", :back, class: "inline-flex items-center justify-center bg-white border border-aprende-secondary hover:border-aprende-primary text-aprende-text font-medium py-2 px-5 rounded-full transition-all text-sm cursor-pointer shadow-sm w-full sm:w-auto focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-aprende-primary" %>
     </div>
   </div>
 
   <div class="text-aprende-text space-y-8 leading-relaxed">
-    <p class="text-lg font-medium text-aprende-muted">
-      Bem-vindo ao <strong>aprendeAI</strong>! Estes Termos de Uso regem o acesso e a utilização de nossa plataforma educacional. Ao criar uma conta e utilizar nossos serviços, você concorda integralmente com as condições descritas abaixo.
-    </p>
+    <div class="bg-aprende-bg p-5 rounded-2xl border border-aprende-secondary/50 text-sm text-aprende-text mb-6">
+      <span class="font-bold text-aprende-primary">Atenção Titular:</span> Leia estes Termos de Uso com atenção antes de criar sua conta no <strong>aprendeAI</strong>. Ao aceitar eletronicamente este documento no momento do cadastro ou ao prosseguir após uma nova atualização de versão, você concorda expressamente e sem reservas com todas as cláusulas e condições estipuladas a seguir. Caso não concorde com qualquer disposição aqui presente, você não deverá utilizar a plataforma ou poderá encerrar sua conta a qualquer momento.
+    </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">1. Natureza da Plataforma</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">1. Apresentação da Plataforma aprendeAI</h2>
       <p>
-        O <strong>aprendeAI</strong> é um espaço pedagógico de intermediação e conexão direta entre **Alunos** (que buscam esclarecer dúvidas e adquirir conhecimento) e **Professores** (que ofertam serviços de mentoria, explicações e avaliações pedagógicas). A plataforma fornece a tecnologia para a negociação de valores (propostas), troca de arquivos, mensagens de chat em tempo real, videochamadas virtuais integradas e envio de atividades para fixação.
+        O <strong>aprendeAI</strong> é um marketplace e ecossistema tecnológico educacional desenvolvido em Ruby on Rails, concebido para aproximar e facilitar a conexão direta entre <strong>Alunos</strong> (interessados em esclarecer dúvidas e reforçar o aprendizado acadêmico) e <strong>Professores</strong> (profissionais ou estudantes qualificados dedicados a ministrar aulas, mentorias e responder questionamentos).
+      </p>
+      <p>
+        A plataforma atua unicamente como **provedora de infraestrutura tecnológica**, disponibilizando ferramentas digitais integradas como: cadastro de perfis específicos, sistema bidirecional de propostas pedagógicas, chat interativo com moderação automatizada, suporte para anexo de arquivos, videochamadas virtuais nativas (através de integração segura via iFrame do Jitsi Meet) e relatórios de fluxo financeiro sob custódia temporária.
       </p>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">2. Cadastro e Responsabilidade dos Usuários</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">2. Elegibilidade e Quem Pode Usar (Capacidade Civil)</h2>
+      <p>
+        Para se cadastrar e interagir na plataforma de forma válida, o usuário deve:
+      </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          <strong>Informações Verdadeiras:</strong> Ambos os perfis (Alunos e Professores) comprometem-se a registrar dados cadastrais verídicos, incluindo Nome Completo, CPF e Telefone de contato.
+          Ter no mínimo 18 (dezoito) anos de idade completos e gozar de plena capacidade civil segundo a legislação brasileira para celebrar contratos e realizar transações financeiras.
         </li>
         <li>
-          <strong>Perfil do Professor:</strong> Professores devem obrigatoriamente preencher seu nível de escolaridade (Médio, Técnico ou Bacharel) e disponibilizar a URL de seu certificado de formação acadêmica ou técnica. O aprendeAI reserva-se o direito de auditar essas informações.
-        </li>
-        <li>
-          <strong>Capacidade Civil:</strong> Alunos menores de idade devem ser supervisionados por seus responsáveis legais para a realização de contratações financeiras na plataforma.
+          <strong>Menores de Idade:</strong> Indivíduos com idade inferior a 18 anos apenas poderão utilizar a plataforma sob a supervisão, responsabilidade direta e acompanhamento contínuo de seus pais ou representantes legais. O cadastro, o aceite dos termos e a realização de qualquer transação financeira (contratação de propostas via Pix) de menores de idade devem ser obrigatoriamente efetuados pelo responsável legal.
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">3. Modalidades de Aprendizado e Propostas</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">3. Regras de Cadastro, Responsabilidade e Segurança</h2>
       <p>
-        As interações pedagógicas acontecem através de propostas comerciais enviadas e negociadas de maneira bidirecional na plataforma. Existem três modalidades oficiais de ensino:
+        A criação de contas exige o preenchimento de informações cadastrais verídicas e atualizadas:
       </p>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-        <div class="bg-aprende-bg p-4 rounded-2xl border border-aprende-secondary/45">
-          <h3 class="font-bold text-aprende-text mb-1">Sessão Expressa</h3>
-          <p class="text-sm text-aprende-muted">Videochamada síncrona curta de exatamente 15 minutos, focada em resolver dúvidas pontuais e urgentes.</p>
+      <ul class="list-disc pl-5 space-y-2">
+        <li>
+          <strong>Exatidão dos Dados:</strong> O usuário é o único responsável pela veracidade e precisão de seus dados (Nome Completo, E-mail, Telefone e CPF). A plataforma realiza a normalização de caracteres para CPF e telefone visando à padronização do banco de dados, reservando-se o direito de suspender cadastros que contenham informações manifestamente falsas ou CPFs repetidos.
+        </li>
+        <li>
+          <strong>Unicidade do Cadastro:</strong> Cada usuário poderá manter apenas um único cadastro ativo na plataforma associado ao seu número de CPF.
+        </li>
+        <li>
+          <strong>Segurança das Credenciais:</strong> A senha é protegida por criptografia unidirecional segura (hash gerado pelo algoritmo BCrypt). O usuário compromete-se a guardar suas credenciais em sigilo absoluto, sendo integralmente responsável por quaisquer atividades realizadas em sua conta. Caso suspeite de acesso não autorizado, deve notificar imediatamente o suporte do aprendeAI.
+        </li>
+      </ul>
+    </div>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">4. Perfis de Usuário e Deveres Específicos</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-aprende-bg p-5 rounded-2xl border border-aprende-secondary/50">
+          <h3 class="font-bold text-aprende-primary mb-2 flex items-center gap-2">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            Perfil do Aluno
+          </h3>
+          <p class="text-sm text-aprende-text mb-2">
+            O Aluno compromete-se a buscar auxílio acadêmico de forma ética, negociar propostas com seriedade, manter postura respeitosa nas interações e efetuar os pagamentos de custódia via Pix nas propostas acordadas.
+          </p>
+          <span class="text-xs text-aprende-muted font-medium">* Proibido solicitar a resolução integral de provas avaliativas oficiais ou trapaças acadêmicas.</span>
         </div>
-        <div class="bg-aprende-bg p-4 rounded-2xl border border-aprende-secondary/45">
-          <h3 class="font-bold text-aprende-text mb-1">Mentoria Focada</h3>
-          <p class="text-sm text-aprende-muted">Videochamada síncrona estruturada, configurável para durações de 30, 45 ou 60 minutos.</p>
-        </div>
-        <div class="bg-aprende-bg p-4 rounded-2xl border border-aprende-secondary/45">
-          <h3 class="font-bold text-aprende-text mb-1">Pílula de Conhecimento</h3>
-          <p class="text-sm text-aprende-muted">Dúvida assíncrona focada em respostas rápidas por texto/anexo de arquivos. O professor tem 24h para responder sob pena de expiração.</p>
+        <div class="bg-aprende-bg p-5 rounded-2xl border border-aprende-secondary/50">
+          <h3 class="font-bold text-aprende-primary mb-2 flex items-center gap-2">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Perfil do Professor
+          </h3>
+          <p class="text-sm text-aprende-text mb-2">
+            O Professor deve declarar seu nível de escolaridade real (Médio, Técnico ou Bacharel), fornecer a URL de um certificado válido de formação e um vídeo de apresentação opcional do YouTube estruturado de forma condizente com a plataforma.
+          </p>
+          <span class="text-xs text-aprende-muted font-medium">* O Professor responde civil e tecnicamente pelo teor das explicações ministradas e deve cumprir os horários agendados.</span>
         </div>
       </div>
-      <p class="mt-2 text-sm text-aprende-muted">
-        *Nota:* A modalidade **Pílula de Conhecimento** pode ser ofertada como teste gratuito (R$ 0,00) pelo professor.
-      </p>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">4. Pagamentos, Repasses e Taxas da Plataforma</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">5. Funcionamento das Propostas e Negociação Bidirecional</h2>
       <p>
-        Toda a intermediação financeira ocorre de forma integrada e segura para garantir a entrega mútua dos serviços:
+        As contratações de suporte pedagógico ocorrem por meio de **Propostas** criadas e negociadas de forma transparente diretamente entre Alunos e Professores.
       </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          <strong>Taxa Operacional:</strong> A plataforma retém uma taxa fixa de **20%** sobre o valor bruto de cada proposta contratada. Esse percentual destina-se a manter os custos de hospedagem, servidores de videochamada (Jitsi Meet), recursos de Inteligência Artificial e processamento financeiro.
+          <strong>Negociação Flexível:</strong> Qualquer uma das partes envolvidas pode sugerir alterações de preços ou horários através do mecanismo de contraproposta no sistema.
         </li>
         <li>
-          <strong>Transparência:</strong> O professor sempre visualiza em sua tela o valor líquido a receber antes de aceitar qualquer proposta ou contraproposta.
-        </li>
-        <li>
-          <strong>Garantia de Entrega:</strong> O pagamento é efetuado pelo aluno no ato de aceite da proposta e fica retido sob a custódia segura da plataforma. O repasse é liberado ao professor mediante a conclusão da aula ou resposta da pílula.
+          <strong>Ciclo de Status:</strong> O fluxo de propostas passa por estágios claros e auditáveis: `iniciada` (negociação), `aceita` (aguardando pagamento), `paga` (em custódia/agendada), `em_andamento` (execução da aula ou resposta da pílula), `concluída` (repasse e avaliação) ou `recusada`/`cancelada` (estorno ou encerramento).
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">5. Regras de Conduta e Segurança</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">6. Modalidades de Aprendizado e Regras Gerais</h2>
       <p>
-        Para assegurar um ecossistema educacional inclusivo e acolhedor, é estritamente proibido:
+        Para adaptar-se às necessidades dos usuários, a plataforma suporta exatamente três modalidades de interação, não sendo permitidas negociações fora deste escopo técnico:
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+        <div class="bg-white p-5 rounded-2xl border border-aprende-secondary/60 shadow-xs">
+          <span class="text-xs font-bold text-aprende-primary uppercase tracking-wide">Modalidade Síncrona Curta</span>
+          <h3 class="font-bold text-lg text-aprende-text mt-1 mb-2">Sessão Expressa</h3>
+          <p class="text-sm text-aprende-muted leading-relaxed">
+            Videochamada de exatamente **15 minutos** de duração, voltada para dúvidas extremamente pontuais e resolução imediata de gargalos de aprendizado.
+          </p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-aprende-secondary/60 shadow-xs">
+          <span class="text-xs font-bold text-aprende-primary uppercase tracking-wide">Modalidade Síncrona Estruturada</span>
+          <h3 class="font-bold text-lg text-aprende-text mt-1 mb-2">Mentoria Focada</h3>
+          <p class="text-sm text-aprende-muted leading-relaxed">
+            Encontro virtual com duração flexível de **30, 45 ou 60 minutos** (totalizados na modelagem do banco em minutos), planejado para revisões profundas de conteúdo.
+          </p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-aprende-secondary/60 shadow-xs">
+          <span class="text-xs font-bold text-aprende-primary uppercase tracking-wide">Modalidade Assíncrona</span>
+          <h3 class="font-bold text-lg text-aprende-text mt-1 mb-2">Pílula de Conhecimento</h3>
+          <p class="text-sm text-aprende-muted leading-relaxed">
+            Envio de dúvidas por texto e anexo de arquivos de suporte. O Professor tem um prazo contratual rígido de **24 horas** para enviar a resolução, sob pena de cancelamento automático da proposta e estorno dos valores ao aluno.
+          </p>
+        </div>
+      </div>
+      <p class="text-sm text-aprende-muted bg-aprende-bg p-3 rounded-xl border border-aprende-secondary/30 mt-2">
+        <strong>Nota sobre Sessão Gratuita:</strong> Professores possuem a prerrogativa técnica de ofertar a modalidade **Pílula de Conhecimento** sob o valor de R$ 0,00 como uma sessão de demonstração gratuita ("free trial") para captação de alunos.
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">7. Fluxo Financeiro, Custódia e Taxa da Plataforma</h2>
+      <p>
+        A intermediação de valores financeiros visa garantir a justa entrega do serviço pedagógico para ambas as partes:
       </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          Praticar assédio, discriminação, proferir ofensas ou utilizar linguajar inapropriado. A plataforma possui um **sistema automático de moderação de conteúdo** que monitora e sinaliza o uso de termos impróprios no chat e nos perfis.
+          <strong>Modelo de Custódia (Escrow):</strong> O valor da proposta contratada é pago pelo Aluno no ato do aceite da proposta e fica **retido sob a guarda segura do aprendeAI**. O repasse financeiro ao saldo do Professor apenas ocorre quando a aula síncrona for efetivamente concluída ou a resposta da pílula for entregue.
         </li>
         <li>
-          Trocar dados de contato pessoal (como número de WhatsApp ou chaves Pix pessoais) ou realizar pagamentos por fora da plataforma. Qualquer tentativa de burlar a intermediação financeira do aprendeAI acarretará punições graves.
+          <strong>Taxa Operacional de Intermediação:</strong> O aprendeAI retém uma taxa administrativa correspondente a **20% (vinte por cento)** sobre o valor bruto de cada proposta paga com sucesso. Essa taxa é destinada à manutenção dos servidores da aplicação Rails, hospedagem do banco de dados, provedor das salas de videochamada criptografadas e custos de processamento financeiro.
         </li>
         <li>
-          Compartilhar material de cunho comercial, plagiado, malicioso ou sem direitos autorais no upload de arquivos de suporte pedagógico.
+          <strong>Visualização Transparente:</strong> O sistema exibe de forma clara ao Professor o valor líquido a receber (já descontados os 20%) antes de qualquer confirmação ou formulação de contraproposta.
+        </li>
+        <li>
+          <strong>Proibição de Desintermediação (Pagamento por Fora):</strong> É terminantemente proibido realizar acertos, transferências financeiras diretas ou trocas de chaves Pix pessoais nas mensagens do chat. Qualquer tentativa comprovada de desintermédio resultará no banimento imediato de ambos os usuários envolvidos.
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">6. Suspensão, Banimento e Moderação</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">8. Comunicação, Envio de Arquivos e Moderação de Conteúdo</h2>
       <p>
-        Qualquer violação a estes Termos de Uso resultará em sanções administrativas, aplicadas a critério exclusivo da administração do aprendeAI:
+        O canal de chat integrado permite mensagens de texto e envio de arquivos para fins pedagógicos:
       </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          <strong>Sinalização automática:</strong> Perfis ou mensagens identificados com conteúdo impróprio serão imediatamente sinalizados na moderação central.
+          <strong>Propriedade do Conteúdo:</strong> O usuário declara possuir todos os direitos autorais ou licenças necessárias sobre quaisquer imagens, arquivos PDF, planilhas ou documentos de texto que venha a enviar pelo chat, eximindo o aprendeAI de qualquer responsabilidade sobre violações de direitos autorais de terceiros.
         </li>
         <li>
-          <strong>Bloqueios:</strong> Usuários reincidentes ou infratores de regras financeiras/de conduta serão **suspensos temporariamente** ou **banidos de forma permanente** do sistema, perdendo acesso a históricos de aulas e saldos, sem prejuízo das medidas judiciais cabíveis.
+          <strong>Moderação Automatizada:</strong> A plataforma utiliza um serviço automatizado de varredura que analisa termos ofensivos, obscenos, violentos ou tentativas de compartilhamento de contatos externos (como números de telefone em formatos suspeitos). Mensagens em desacordo com as políticas de segurança serão sinalizadas no painel administrativo e poderão acarretar suspensão imediata da conta.
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">7. Limitação de Responsabilidade</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">9. Condutas Proibidas e Política de Tolerância Zero</h2>
       <p>
-        O <strong>aprendeAI</strong> disponibiliza a infraestrutura tecnológica para aproximar alunos e professores e facilitar a fixação do conhecimento. Sendo assim:
+        Não serão tolerados desvios de conduta dentro do ecossistema do aprendeAI. São práticas proibidas:
       </p>
       <ul class="list-disc pl-5 space-y-2">
         <li>
-          A plataforma não é empregadora nem representante de nenhum professor, sendo este o único responsável civil, penal e técnico pelo conteúdo ministrado nas mentorias e atividades.
+          Qualquer manifestação de preconceito, discurso de ódio, assédio moral ou sexual, humilhação, racismo, homofobia ou discriminação de qualquer natureza.
         </li>
         <li>
-          O aprendeAI não assegura aprovações escolares, notas em exames públicos ou resultados acadêmicos específicos decorrentes da contratação dos encontros pedagógicos.
+          Tolerância zero para uso da plataforma para fins de fraude, engenharia social, falsidade ideológica ou lavagem de capitais.
+        </li>
+        <li>
+          Extrair dados pessoais, coletar informações em massa ou tentar violar a segurança técnica da aplicação.
         </li>
       </ul>
     </div>
 
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">8. Foro e Legislação Aplicável</h2>
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">10. Medidas Disciplinares: Suspensão, Bloqueio e Banimento</h2>
       <p>
-        Estes Termos de Uso são regidos e interpretados conforme as leis da República Federativa do Brasil. Fica eleito o Foro da Comarca da sede da plataforma para dirimir quaisquer controvérsias oriundas deste documento.
+        O descumprimento de qualquer disposição destes Termos de Uso poderá resultar, a critério exclusivo dos administradores do aprendeAI, nas seguintes penalidades:
       </p>
+      <ul class="list-disc pl-5 space-y-2">
+        <li>
+          <strong>Advertência formal</strong> com sinalização no painel administrativo.
+        </li>
+        <li>
+          <strong>Suspensão temporária:</strong> Bloqueio temporário do acesso à conta por prazo determinado (por exemplo, 7 a 30 dias), período no qual o usuário não poderá negociar propostas.
+        </li>
+        <li>
+          <strong>Banimento definitivo (Exclusão da Conta):</strong> Encerramento sumário do cadastro e bloqueio permanente do CPF no banco de dados. Usuários banidos por fraudes financeiras graves ou assédio perderão o acesso a históricos e saldo retido pendente de repasse, sem prejuízo da responsabilização judicial civil e criminal.
+        </li>
+      </ul>
+    </div>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">11. Limites de Responsabilidade da Plataforma</h2>
+      <p>
+        Dadas as características do MVP e a natureza de intermediação da plataforma, o aprendeAI esclarece que:
+      </p>
+      <ul class="list-disc pl-5 space-y-2">
+        <li>
+          <strong>Relação de Trabalho:</strong> Não há qualquer relação de subordinação, vínculo empregatício ou representação societária entre os Professores cadastrados e o aprendeAI. Os Professores atuam de forma totalmente autônoma e independente.
+        </li>
+        <li>
+          <strong>Garantias Educacionais:</strong> O aprendeAI não garante resultados pedagógicos, aprovações em exames (vestibulares, concursos, Enem), notas mínimas em avaliações escolares ou qualquer benefício acadêmico decorrente do uso da plataforma.
+        </li>
+        <li>
+          <strong>Qualidade dos Encontros:</strong> A qualidade técnica da conexão de internet e os equipamentos (câmera, microfone) utilizados nas videochamadas são de total responsabilidade individual de cada Aluno e Professor.
+        </li>
+      </ul>
+    </div>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">12. Versionamento e Alterações nos Termos</h2>
+      <p>
+        Estes Termos de Uso são dinâmicos e podem ser atualizados periodicamente para refletir melhorias técnicas, novas ferramentas ou adequações legislativas.
+      </p>
+      <p>
+        Sempre que houver alteração material, a versão global cadastrada no código da aplicação será atualizada. O sistema bloqueará temporariamente a navegação de usuários logados que possuam termos defasados no banco de dados, exigindo a concordância expressa com as novas cláusulas por meio de uma página dedicada de reaceite antes de liberar o uso normal do sistema.
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold text-aprende-text border-l-4 border-aprende-primary pl-3">13. Foro e Legislação Aplicável</h2>
+      <p>
+        Este documento é integralmente regido pela legislação vigente da República Federativa do Brasil. Para dirimir eventuais controvérsias decorrentes da interpretação ou execução deste instrumento, as partes elegem o Foro da Comarca da sede da empresa administradora do aprendeAI, com renúncia expressa a qualquer outro, por mais privilegiado que seja.
+      </p>
+    </div>
+
+    <div class="pt-6 border-t border-aprende-secondary/60">
+      <div class="bg-aprende-bg p-5 rounded-2xl border border-aprende-secondary text-center space-y-2">
+        <p class="font-bold text-aprende-text text-lg">Central de Contato e Dúvidas</p>
+        <p class="text-sm text-aprende-muted">
+          Caso tenha dúvidas sobre estes Termos de Uso, entre em contato diretamente com o nosso time de suporte pedagógico ou envie mensagem para o DPO pelo e-mail:
+        </p>
+        <p class="font-bold text-aprende-primary text-md">lgpd@aprendeai.com.br</p>
+      </div>
     </div>
   </div>
 </div>
