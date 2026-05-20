@@ -95,6 +95,15 @@
       </div>
     </div>
 
+    <div class="flex items-start mt-4 bg-aprende-bg/40 p-3 rounded-xl border border-aprende-secondary/60">
+      <div class="flex items-center h-5">
+        <%= f.check_box :pcd, class: "h-4 w-4 text-aprende-primary focus:ring-aprende-primary border-aprende-secondary rounded bg-white" %>
+      </div>
+      <div class="ml-3 text-sm">
+        <%= f.label :pcd, "Sou pessoa com deficiência (PcD)", class: "text-aprende-text font-medium" %>
+      </div>
+    </div>
+
     <div class="flex items-start mt-4">
       <div class="flex items-center h-5">
         <%= f.check_box :terms_acceptance, class: "h-4 w-4 text-aprende-primary focus:ring-aprende-primary border-aprende-secondary rounded bg-white" %>

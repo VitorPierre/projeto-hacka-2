@@ -2,16 +2,9 @@
   <h1 class="text-2xl md:text-3xl font-medium text-aprende-text px-2">Enviar Proposta de Aula</h1>
 
   <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm border border-aprende-secondary flex flex-col gap-6">
-    <%# Determine counterpart based on who is creating the proposal %>
-    <% if current_user.student? %>
-      <% counterpart = @teacher || User.new(name: "Professor não encontrado") %>
-      <% counterpart_label = "Professor" %>
-      <% counterpart_subjects = @teacher&.subjects || [] %>
-    <% else %>
-      <% counterpart = @student || User.new(name: "Aluno não encontrado") %>
-      <% counterpart_label = "Aluno" %>
-      <% counterpart_subjects = @student&.subjects || [] %>
-    <% end %>
+    <% counterpart = @teacher || User.new(name: "Professor não encontrado") %>
+    <% counterpart_label = "Professor" %>
+    <% counterpart_subjects = @teacher&.subjects || [] %>
 
     <div class="pb-6 border-b border-aprende-secondary">
       <h2 class="font-medium text-aprende-muted text-sm uppercase tracking-wider mb-2">Detalhes do <%= counterpart_label %></h2>
@@ -33,11 +26,7 @@
     </div>
 
     <%= form_with model: @proposal, class: "flex flex-col gap-6", id: "proposal-form", multipart: true do |f| %>
-      <% if current_user.student? %>
-        <%= f.hidden_field :teacher_id, value: @teacher&.id %>
-      <% else %>
-        <%= f.hidden_field :student_id, value: @student&.id %>
-      <% end %>
+      <%= f.hidden_field :teacher_id, value: @teacher&.id %>
       
       <div class="flex flex-col gap-1">
         <%= f.label :subject_id, "Selecione a Especialidade", for: "proposal_subject_id", class: "text-sm font-medium text-aprende-text" %>
@@ -130,7 +119,7 @@
       </div>
 
       <div class="pt-2 flex flex-col sm:flex-row gap-4">
-        <% cancel_path = current_user.student? ? teachers_path : students_path %>
+        <% cancel_path = teachers_path %>
         <%= link_to "Cancelar", cancel_path, class: "w-full sm:flex-1 text-center bg-white border border-aprende-secondary hover:bg-aprende-bg text-aprende-muted font-medium py-3 rounded-xl transition-colors" %>
         <%= f.submit "Enviar Proposta", class: "w-full sm:flex-1 bg-aprende-primary hover:bg-aprende-primary-hover text-white font-medium py-3 rounded-xl transition-colors cursor-pointer" %>
       </div>

@@ -53,7 +53,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    p = params.require(:user).permit(:name, :email, :password, :role, :education_level, :certificate_url, :presentation_video_url, :preferences, :experience, :avatar, :phone, :cpf, :availability, :terms_acceptance, subject_ids: [])
+    p = params.require(:user).permit(:name, :email, :password, :role, :education_level, :certificate_url, :presentation_video_url, :preferences, :experience, :avatar, :phone, :cpf, :availability, :terms_acceptance, :pcd, subject_ids: [])
     p[:cpf] = p[:cpf].gsub(/\D/, "") if p[:cpf].present?
     p[:phone] = p[:phone].gsub(/\D/, "") if p[:phone].present?
     p

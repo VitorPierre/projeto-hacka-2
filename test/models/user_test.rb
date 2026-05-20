@@ -86,4 +86,11 @@ class UserTest < ActiveSupport::TestCase
       assert_includes teacher.errors[:presentation_video_url], "deve ser um link válido do YouTube"
     end
   end
+
+  test "pcd defaults to false and can be set to true" do
+    user = User.new(name: "Novo Usuario", email: "pcd@test.com", password: "password", phone: "11999999999", cpf: "12345678902")
+    assert_equal false, user.pcd
+    user.pcd = true
+    assert_equal true, user.pcd
+  end
 end

@@ -15,6 +15,14 @@
                 <% end %>
               <% end %>
             </div>
+            <% if @student.pcd? %>
+              <div class="mt-2">
+                <span class="inline-flex items-center gap-1.5 bg-[#e8f6ed] text-[#0f6b2e] px-3 py-1.5 rounded-full text-xs font-medium border border-[#c2e8cf]">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  Pessoa com Deficiência (PcD)
+                </span>
+              </div>
+            <% end %>
           </div>
         </div>
         
@@ -52,11 +60,6 @@
           <%= link_to proposal_path(active_proposal), class: "w-full md:w-auto text-center bg-white border-2 border-aprende-primary text-aprende-primary hover:bg-aprende-bg font-medium py-3 px-8 rounded-xl transition-colors flex items-center justify-center gap-2" do %>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
             Negociação em andamento
-          <% end %>
-        <% else %>
-          <%= link_to new_proposal_path(student_id: @student.id), class: "w-full md:w-auto text-center bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 px-8 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2" do %>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-            Fazer Proposta
           <% end %>
         <% end %>
       <% end %>

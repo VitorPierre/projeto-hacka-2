@@ -50,48 +50,22 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
     assert proposal.pending?
   end
 
-  # ── Teacher sending proposal to student ──
+  # ── Teacher cannot send proposal to student ──
 
-  test "teacher can create a proposal for a student" do
+  test "teacher cannot access the new proposal page" do
     post login_path, params: { email: @teacher.email, password: "senha123" }
-
-    other_student = User.create!(name: "Aluno Novo", email: "novo@aluno.com", password: "senha123", role: "student", phone: "11999999999", cpf: "11111111111")
-    other_student.subjects << subjects(:programming)
-    new_subject = subjects(:programming)
-
-    get new_proposal_path(student_id: other_student.id)
-    assert_response :success
-
-    proposal = nil
-    assert_difference('Proposal.count', 1) do
-      post proposals_path, params: { proposal: { student_id: other_student.id, subject_id: new_subject.id, price: 80.0, modality: "focused_mentoring", duration: 60 } }
-      proposal = Proposal.last
-    end
-
-    # Verifies sender is set to the teacher
-    assert_equal @teacher.id, proposal.sender_id
-    assert_equal @teacher.id, proposal.teacher_id
-    assert_equal other_student.id, proposal.student_id
-
-    assert_redirected_to proposal_path(proposal)
-    follow_redirect!
-    assert_response :success
-    assert_select "h1", text: /Proposta:/
+    get new_proposal_path(student_id: @student.id)
+    assert_redirected_to root_path
+    assert_equal "Acesso restrito para alunos.", flash[:alert]
   end
 
-  test "teacher-created proposal is persisted with correct fields" do
+  test "teacher cannot create a proposal via POST" do
     post login_path, params: { email: @teacher.email, password: "senha123" }
-    other_student = User.create!(name: "Aluno Persist", email: "persist@aluno.com", password: "senha123", role: "student", phone: "11988888888", cpf: "22222222222")
-    
-    post proposals_path, params: { proposal: { student_id: other_student.id, subject_id: @subject.id, price: 90.0, modality: "focused_mentoring", duration: 60 } }
-    proposal = Proposal.last
-
-    assert_equal other_student.id, proposal.student_id
-    assert_equal @teacher.id, proposal.teacher_id
-    assert_equal @teacher.id, proposal.sender_id
-    assert_equal @subject.id, proposal.subject_id
-    assert_equal 90.0, proposal.price.to_f
-    assert proposal.pending?
+    assert_no_difference('Proposal.count') do
+      post proposals_path, params: { proposal: { student_id: @student.id, subject_id: @subject.id, price: 80.0, modality: "focused_mentoring", duration: 60 } }
+    end
+    assert_redirected_to root_path
+    assert_equal "Acesso restrito para alunos.", flash[:alert]
   end
 
   # ── Accept/Reject: Recipient-based ──
@@ -100,16 +74,6 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
     post login_path, params: { email: @teacher.email, password: "senha123" }
     proposal = proposals(:pending_proposal) # sender is student
 
-    patch accept_proposal_path(proposal)
-    assert_redirected_to proposal_path(proposal)
-    assert proposal.reload.accepted?
-  end
-
-  test "student (recipient) can accept a teacher-sent proposal" do
-    other_student = User.create!(name: "Aluno Accept", email: "accept@aluno.com", password: "senha123", role: "student", phone: "11999999999", cpf: "11111111111")
-    proposal = Proposal.create!(student: other_student, teacher: @teacher, subject: @subject, price: 60.0, sender: @teacher, modality: :focused_mentoring, duration: 60)
-
-    post login_path, params: { email: other_student.email, password: "senha123" }
     patch accept_proposal_path(proposal)
     assert_redirected_to proposal_path(proposal)
     assert proposal.reload.accepted?
@@ -129,16 +93,6 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
     post login_path, params: { email: @teacher.email, password: "senha123" }
     proposal = proposals(:pending_proposal)
 
-    patch reject_proposal_path(proposal)
-    assert_redirected_to proposal_path(proposal)
-    assert proposal.reload.rejected?
-  end
-
-  test "student (recipient) can reject a teacher-sent proposal" do
-    other_student = User.create!(name: "Aluno Reject", email: "reject@aluno.com", password: "senha123", role: "student", phone: "11988888888", cpf: "22222222222")
-    proposal = Proposal.create!(student: other_student, teacher: @teacher, subject: @subject, price: 60.0, sender: @teacher, modality: :focused_mentoring, duration: 60)
-
-    post login_path, params: { email: other_student.email, password: "senha123" }
     patch reject_proposal_path(proposal)
     assert_redirected_to proposal_path(proposal)
     assert proposal.reload.rejected?
@@ -233,25 +187,21 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
 
   # ── Panel Visibility ──
 
-  test "student panel shows all proposals including teacher-sent" do
-    # Create a proposal sent by the teacher to this student
-    Proposal.create!(student: @student, teacher: @teacher, subject: subjects(:programming), price: 70.0, sender: @teacher, modality: :focused_mentoring, duration: 60)
-
+  test "student panel shows their active proposals" do
     post login_path, params: { email: @student.email, password: "senha123" }
     get student_path(@student)
     assert_response :success
 
-    # Should see both proposals (fixture + new one)
-    assert_select "a", text: /Ver Detalhes/, minimum: 2
-    assert_select "span", text: /Recebida do professor/, count: 1
+    assert_select "a", text: /Ver Detalhes/, minimum: 1
     assert_select "span", text: /Enviada por você/, count: 1
   end
 
-  test "teacher panel shows all proposals including teacher-sent" do
+  test "teacher panel shows their received proposals" do
     post login_path, params: { email: @teacher.email, password: "senha123" }
     get teacher_path(@teacher)
     assert_response :success
     assert_select "a[href='#{proposal_path(proposals(:pending_proposal))}']", text: /Ver Detalhes/
+    assert_select "span", text: /Recebida do aluno/, count: 1
   end
 
   test "student panel links to proposal negotiation" do
@@ -276,7 +226,8 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
     # pending_proposal was sent by student to teacher, so teacher is recipient
     # Let's make teacher the sender and student the recipient by creating a new proposal where sender is teacher
     new_subject = subjects(:programming)
-    proposal = Proposal.create!(student: @student, teacher: @teacher, subject: new_subject, price: 80.0, sender: @teacher, status: :pending, modality: :focused_mentoring, duration: 60)
+    proposal = Proposal.create!(student: @student, teacher: @teacher, subject: new_subject, price: 80.0, sender: @student, status: :pending, modality: :focused_mentoring, duration: 60)
+    proposal.update_column(:sender_id, @teacher.id)
 
     post login_path, params: { email: @student.email, password: "senha123" }
 

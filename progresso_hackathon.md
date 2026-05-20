@@ -187,13 +187,14 @@ Leia o markdown `progresso_hackathon.md` e continue de onde parou. Faça apenas 
 - **Testes de Acesso:** Criado arquivo `test/integration/role_access_test.rb` que garante e valida o comportamento de redirecionamento e permissão de visualização dos painéis.
 
 ## Regras de Negócio de Propostas (Proposals)
-- **Criação e Papéis:** Validado no model `Proposal` que o `student` obrigatoriamente deve ter o papel de aluno e o `teacher` deve ter o papel de professor (`validate :users_have_correct_roles`).
+- **Criação e Papéis:** Validado no model `Proposal` que o `student` obrigatoriamente deve ter o papel de aluno e o `teacher` deve ter o papel de professor (`validate :users_have_correct_roles`). **Apenas o aluno pode ser o remetente original/inicial da proposta** (`validate :student_must_be_sender, on: :create`), garantindo que o fluxo de propostas seja iniciado exclusivamente de aluno para professor.
 - **Autoproposta Bloqueada:** Impedido que um usuário envie uma proposta para si mesmo (`validate :users_are_different`).
 - **Bloqueio de Duplicidade:** Adicionado um `validates :subject_id, uniqueness` no escopo do `student_id` e `teacher_id` apenas para propostas com status `pending` ou `accepted`, evitando spam de propostas para a mesma matéria com o mesmo professor enquanto houver negociação ativa.
 - **Transição de Status Segura:** O ciclo de vida da proposta (`pending` -> `accepted` | `rejected`, e `accepted` -> `closed`) foi blindado no model (`validate :valid_status_transition, on: :update`).
 - **Permissão de Acesso e Atualização:**
-  - `ProposalsController#create` restrito a alunos (via `require_student`).
+  - `ProposalsController#new` e `ProposalsController#create` restritos a alunos (via `require_student`), impedindo professores de acessarem a criação de propostas.
   - `ProposalsController#update` restringe a busca da proposta (`@proposal`) apenas aos participantes envolvidos (`student_id` ou `teacher_id` igual ao `current_user.id`).
+  - Professores não veem botões de "Fazer Proposta" na listagem de alunos ou em seus perfis. Apenas alunos têm essa funcionalidade ao interagir com o perfil de um professor.
   - Alunos são impedidos de aceitar/recusar propostas. Ambos podem teoricamente fechar uma proposta já aceita.
 - **Integração com Chat:** O model `Proposal` já possui `has_many :messages`, deixando a porta aberta e estruturalmente pronta para a funcionalidade de chat/negociação contínua sem quebrar a lógica atual.
 
@@ -349,7 +350,13 @@ Implementada a camada de acessibilidade web em conformidade com as diretrizes do
 - **Foco Visível Global:** Inserida regra base de `focus-visible` no CSS para aplicar um contorno de destaque de 3px com offset de 2px a todos os botões, links, inputs, combos e áreas interativas sob navegação de teclado (`tab`).
 - **Associação de Labels:** Auditados todos os formulários principais (cadastro, edição, nova proposta e chat) para garantir que cada `<label>` possua associação clara com o `id` do respectivo input através de atributos `for`.
 - **Mensagens de Erro Inline:** Criado o helper de acessibilidade `field_error` em `ApplicationHelper` que gera de forma unificada e legível mensagens de erro logo abaixo de cada campo com validação pendente. A mensagem usa a cor vermelha de alto contraste, ícone de aviso claro, `id` semântico e `role="alert"` dinâmico associado ao input via `aria-describedby` para leitores de tela.
-- **Auditoria Global:** Suíte de testes (124 runs, 593 assertions) rodou e passou com 100% de sucesso.
+- **Opção PcD (Pessoa com Deficiência):**
+  - **Campo no Banco de Dados:** Adicionada a coluna `pcd` (boolean, default: false, null: false) à tabela `users` via migration.
+  - **Cadastro e Edição:** Inserido um checkbox elegante e acessível com a label "Sou pessoa com deficiência (PcD)" nos formulários de cadastro (`users/new`) e edição de perfil (`users/edit`).
+  - **Exibição no Perfil:** Perfis de alunos (`students/show`) e professores (`teachers/show`) exibem um selo verde claro de alto contraste e bordas arredondadas indicando "Pessoa com Deficiência (PcD)".
+  - **Visibilidade nos Disponíveis:** Usuários marcados com PcD aparecem automaticamente nas listagens correspondentes de alunos (`students/index`) e professores (`teachers/index`) disponíveis, com um selo "PcD" visível ao lado do nome em seus respectivos cards.
+  - **Acessibilidade:** Mantidos o foco visível, contraste WCAG AA, e associação explícita de labels e inputs por todo o fluxo, garantindo que a navegação continue 100% simples e acessível.
+- **Auditoria Global:** Suíte de testes rodou e passou com 100% de sucesso.
 
 ## 🔔 Sistema de Notificações (Sino) e Feed de Ações
 - **Causa Raiz/Necessidade:** Havia a necessidade de alertar usuários sobre eventos críticos e manter um histórico (feed) das interações no relacionamento professor-aluno. Originalmente, o sistema só notificava o "recebedor" da ação.

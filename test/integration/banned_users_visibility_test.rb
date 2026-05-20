@@ -82,12 +82,13 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
     get new_proposal_path(teacher_id: @banned_teacher.id)
     assert_response :not_found
 
-    # Professor tentando propor para aluno banido
+    # Professor tentando propor para aluno banido (bloqueado por não ser aluno)
     post "/login", params: { email: @teacher.email, password: "senha123" }
     follow_redirect!
 
     get new_proposal_path(student_id: @banned_student.id)
-    assert_response :not_found
+    assert_redirected_to root_path
+    assert_equal "Acesso restrito para alunos.", flash[:alert]
   end
 
   test "proposal model validation prevents saving proposals with banned users" do

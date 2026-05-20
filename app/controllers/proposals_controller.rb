@@ -1,34 +1,18 @@
 class ProposalsController < ApplicationController
   before_action :require_login
+  before_action :require_student, only: [:new, :create]
   before_action :set_proposal, only: [:show, :update, :accept, :reject, :close, :counter, :pay, :schedule, :start_session, :finish_session, :rate, :upload_videoaula]
 
   def new
-    if current_user.student?
-      @teacher = User.certified_teachers.find(params[:teacher_id])
-      @student = current_user
-    elsif current_user.teacher?
-      @student = User.student.public_view.find(params[:student_id])
-      @teacher = current_user
-    else
-      redirect_to root_path, alert: "Acesso não permitido."
-      return
-    end
+    @teacher = User.certified_teachers.find(params[:teacher_id])
+    @student = current_user
     @proposal = Proposal.new
   end
 
   def create
-    if current_user.student?
-      @proposal = Proposal.new(proposal_params)
-      @proposal.student = current_user
-      @proposal.teacher_id = proposal_params[:teacher_id]
-    elsif current_user.teacher?
-      @proposal = Proposal.new(proposal_params)
-      @proposal.teacher = current_user
-      @proposal.student_id = proposal_params[:student_id]
-    else
-      redirect_to root_path, alert: "Acesso não permitido."
-      return
-    end
+    @proposal = Proposal.new(proposal_params)
+    @proposal.student = current_user
+    @proposal.teacher_id = proposal_params[:teacher_id]
     @proposal.sender = current_user
     @proposal.status = :pending
     
@@ -50,13 +34,8 @@ class ProposalsController < ApplicationController
       redirect_to proposal_path(@proposal)
     else
       # Reload counterpart for re-rendering the form
-      if current_user.student?
-        @teacher = User.find_by(id: proposal_params[:teacher_id])
-        @student = current_user
-      else
-        @student = User.find_by(id: proposal_params[:student_id])
-        @teacher = current_user
-      end
+      @teacher = User.find_by(id: proposal_params[:teacher_id])
+      @student = current_user
       flash.now[:alert] = "Não foi possível enviar a proposta: " + @proposal.errors.full_messages.to_sentence
       render :new, status: :unprocessable_entity
     end

@@ -58,6 +58,7 @@ class Proposal < ApplicationRecord
   validate :sender_is_participant
   validate :users_are_not_banned
   validate :users_are_not_admins
+  validate :student_must_be_sender, on: :create
   validate :valid_status_transition, on: :update
   validate :videoaula_content_type_and_size
 
@@ -207,6 +208,12 @@ class Proposal < ApplicationRecord
 
     if videoaula.byte_size > 100.megabytes
       errors.add(:videoaula, "deve ter tamanho inferior a 100 MB")
+    end
+  end
+
+  def student_must_be_sender
+    if sender_id.present? && sender_id != student_id
+      errors.add(:sender, "Apenas o aluno pode iniciar uma proposta.")
     end
   end
 end

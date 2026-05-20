@@ -27,14 +27,15 @@ class ListingFlowTest < ActionDispatch::IntegrationTest
 
   # === PROFESSOR VÊ ALUNOS ===
   
-  test "teacher sees students list with Fazer Proposta button" do
+  test "teacher sees students list without Fazer Proposta button but with Ver Perfil" do
     post login_path, params: { email: @teacher.email, password: "senha123" }
 
     get students_path
     assert_response :success
     assert_select "h1", text: /Alunos Disponíveis/
     assert_select "h2", text: @student.name
-    assert_select "a", text: "Fazer Proposta"
+    assert_select "a", text: "Fazer Proposta", count: 0
+    assert_select "a", text: "Ver Perfil"
   end
 
   test "teacher is redirected away from teachers index" do

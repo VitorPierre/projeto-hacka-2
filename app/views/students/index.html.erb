@@ -14,7 +14,12 @@
           <div class="flex items-center gap-3">
             <%= user_avatar(student, size: "w-14 h-14", text_size: "text-xl") %>
             <div>
-              <h2 class="text-xl font-medium text-aprende-text"><%= student.name %></h2>
+              <h2 class="text-xl font-medium text-aprende-text flex items-center gap-2">
+                <%= student.name %>
+                <% if student.pcd? %>
+                  <span class="bg-[#e8f6ed] text-[#0f6b2e] text-[10px] px-2 py-0.5 rounded-full font-semibold border border-[#c2e8cf]" title="Pessoa com Deficiência">PcD</span>
+                <% end %>
+              </h2>
             </div>
           </div>
           
@@ -45,9 +50,7 @@
         </div>
 
         <div class="mt-auto pt-6 border-t border-aprende-secondary flex flex-col gap-3">
-          <% if current_user&.teacher? %>
-            <%= link_to "Fazer Proposta", new_proposal_path(student_id: student.id), class: "block w-full text-center bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 rounded-xl transition-colors" %>
-          <% elsif !current_user %>
+          <% if !current_user %>
             <%= link_to "Entrar para Ver Perfil", login_path, class: "block w-full text-center bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 rounded-xl transition-colors" %>
           <% else %>
             <%= link_to "Ver Perfil", student_path(student), class: "block w-full text-center bg-white border border-aprende-secondary hover:bg-aprende-bg text-aprende-text font-medium py-3 rounded-xl transition-colors" %>
