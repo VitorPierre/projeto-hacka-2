@@ -634,6 +634,23 @@ Implementado com sucesso o ajuste no fluxo de propostas para simplificar as moda
 - **Resultado:**
   - A suíte de testes completa (130 runs, 640 assertions) passou com 100% de sucesso. As imagens de novos uploads agora aparecem e persistem corretamente, resolvendo os problemas de renderização e acessibilidade causados por redirecionamentos HTTP em produção no Render.
 
+## 🛠️ Resolução do Bug de Criação de Proposta e Confirmação de Pix
+
+- **Causa Raiz do Problema:**
+  1. **Quebra na Re-renderização:** O template `new.html.erb` chamava propriedades em `@teacher` e `@student` sem safe-navigation (`&.`). Se a validação falhasse e o Rails tentasse renderizar novamente o formulário sob erro, causava um erro fatal 500 (`NoMethodError`) se estas variáveis não estivessem devidamente presentes ou fossem nulas.
+  2. **Atualização Cega e Silenciosa:** O controller em `pay`, `accept`, `reject` e `close` atualizava a proposta com `@proposal.update(attributes)` sem validar o retorno boolean. Se houvesse alguma falha silenciosa de integridade, o sistema informava sucesso falso ao usuário e não persistia a alteração no banco.
+  3. **Visual Inconsistente:** A caixa de pagamento Pix em `show.html.erb` usava tons azuis (`bg-blue-50`, `border-blue-200`) destoantes da identidade monocromática verde-floresta (`#15803D`) do MVP.
+  4. **Ausência de Feedback de Guia:** O aluno ficava sem instruções na tela quando o professor aceitava a proposta (`accepted`), gerando incerteza sobre o andamento do fluxo.
+
+- **Correções Aplicadas:**
+  1. **Safe-Navigation no Form:** Adicionado o operador `&.` em todas as referências diretas de id e escolaridade do `@teacher` e `@student` na view `new.html.erb`.
+  2. **Verificação nos Updates do Controller:** Refatoradas as actions `accept`, `reject`, `close` e `pay` em `ProposalsController` para verificar o retorno de `@proposal.update` e, caso falhe, exibir a mensagem detalhada em `flash[:alert]`.
+  3. **Visual Verde Premium:** Redesenhado o painel de Pix com as classes oficiais (`bg-aprende-bg`, `border-aprende-secondary`, `text-aprende-text`) e atualizado o botão "Simular Pagamento (Pix)" para a classe verde floresta (`bg-aprende-primary hover:bg-[#159b3f] text-white rounded-xl border-none`).
+  4. **Banners Informativos:** Criados banners explicativos para Aluno e Professor guiando as etapas no status `accepted`.
+
+- **Resultado:**
+  - A suíte de testes inteira (138 runs, 712 assertions) passou com 100% de sucesso. A negociação e o Pix estão funcionando perfeitamente do início ao fim com mensagens e design premium.
+
 ## 🔜 Próximos Passos Evolutivos
 - Implantar as alterações no Render para validar a exibição estável das fotos em produção.
 - Configurar volumes persistentes no Render no caminho `/data/storage` para assegurar que uploads físicos não sejam apagados entre restarts de contêiner.

@@ -5,6 +5,7 @@ class Proposal < ApplicationRecord
   belongs_to :sender, class_name: 'User'
 
   has_many :messages, dependent: :destroy
+  has_one_attached :videoaula
 
   enum :status, pending: 0, accepted: 1, rejected: 2, closed: 3
   enum :modality, knowledge_pill: 0, express_session: 1, focused_mentoring: 2
@@ -41,12 +42,15 @@ class Proposal < ApplicationRecord
   validate :users_are_not_banned
   validate :users_are_not_admins
   validate :valid_status_transition, on: :update
+  validate :videoaula_content_type_and_size
 
   validates :subject_id, uniqueness: { 
     scope: [:student_id, :teacher_id], 
     conditions: -> { where(status: [:pending, :accepted]) }, 
     message: "já possui uma proposta em andamento com este professor para esta matéria" 
-  }
+  }, if: -> { pending? || accepted? }
+
+  before_validation :set_default_modality
 
   # Returns the user who should decide on the proposal (the one who did NOT send it)
   def recipient
@@ -98,6 +102,13 @@ class Proposal < ApplicationRecord
   end
 
   private
+
+  def set_default_modality
+    if modality.blank? || modality == "express_session"
+      self.modality = :focused_mentoring
+      self.duration ||= 1
+    end
+  end
 
   def duration_respects_modality
     case modality
@@ -167,6 +178,18 @@ class Proposal < ApplicationRecord
       when 'rejected', 'closed'
         errors.add(:status, "não pode ser alterado após ser #{old_status}")
       end
+    end
+  end
+
+  def videoaula_content_type_and_size
+    return unless videoaula.attached?
+
+    unless videoaula.content_type.in?(%w[video/mp4 video/webm video/quicktime video/ogg video/x-matroska])
+      errors.add(:videoaula, "deve ser um arquivo de vídeo válido (MP4, WebM, MOV, OGG, MKV)")
+    end
+
+    if videoaula.byte_size > 100.megabytes
+      errors.add(:videoaula, "deve ter tamanho inferior a 100 MB")
     end
   end
 end

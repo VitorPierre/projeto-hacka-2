@@ -4,13 +4,13 @@
   <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm border border-aprende-secondary flex flex-col gap-6">
     <%# Determine counterpart based on who is creating the proposal %>
     <% if current_user.student? %>
-      <% counterpart = @teacher %>
+      <% counterpart = @teacher || User.new(name: "Professor não encontrado") %>
       <% counterpart_label = "Professor" %>
-      <% counterpart_subjects = @teacher.subjects %>
+      <% counterpart_subjects = @teacher&.subjects || [] %>
     <% else %>
-      <% counterpart = @student %>
+      <% counterpart = @student || User.new(name: "Aluno não encontrado") %>
       <% counterpart_label = "Aluno" %>
-      <% counterpart_subjects = @student.subjects %>
+      <% counterpart_subjects = @student&.subjects || [] %>
     <% end %>
 
     <div class="pb-6 border-b border-aprende-secondary">
@@ -20,7 +20,7 @@
         <p class="text-aprende-primary font-medium mt-1">Escolaridade: <%= counterpart.education_level_human %></p>
       <% end %>
       
-      <% if @teacher.technical? || @teacher.higher? %>
+      <% if @teacher&.technical? || @teacher&.higher? %>
         <div class="mt-4 bg-aprende-bg border border-aprende-secondary text-aprende-text p-4 rounded-xl text-sm flex gap-3 items-start animate-fadeIn">
           <svg class="w-5 h-5 text-aprende-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -34,9 +34,9 @@
 
     <%= form_with model: @proposal, class: "flex flex-col gap-6", id: "proposal-form", multipart: true do |f| %>
       <% if current_user.student? %>
-        <%= f.hidden_field :teacher_id, value: @teacher.id %>
+        <%= f.hidden_field :teacher_id, value: @teacher&.id %>
       <% else %>
-        <%= f.hidden_field :student_id, value: @student.id %>
+        <%= f.hidden_field :student_id, value: @student&.id %>
       <% end %>
       
       <div class="flex flex-col gap-1">
@@ -62,7 +62,7 @@
           <%= f.label :price, "Valor da Proposta (R$)", for: "price-input", class: "text-sm font-medium text-aprende-text" %>
           <span id="price-hint" class="text-xs text-aprende-muted"></span>
         </div>
-        <% initial_price = (@teacher.technical? || @teacher.higher?) ? "50,00" : "" %>
+        <% initial_price = (@teacher&.technical? || @teacher&.higher?) ? "50,00" : "" %>
         <%= f.text_field :price, value: initial_price, data: { controller: "mask", mask_type_value: "money" }, placeholder: "R$ 0,00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text text-lg placeholder-aprende-muted", id: "price-input", aria: @proposal.errors[:price].any? ? { describedby: "proposal_price_error" } : {} %>
         <%= field_error(@proposal, :price) %>
 
@@ -117,189 +117,219 @@
 </div>
 
 <script>
-  document.addEventListener("turbo:load", function() {
-    const modalitySelect = document.getElementById("modality-select");
-    const durationContainer = document.getElementById("duration-container");
-    const durationInput = document.getElementById("duration-input");
-    const priceInput = document.getElementById("price-input");
-    const priceHint = document.getElementById("price-hint");
-    const platformFeeEl = document.getElementById("platform-fee");
-    const teacherReceivesEl = document.getElementById("teacher-receives");
-    const freeTrialContainer = document.getElementById("free-trial-container");
-    const freeTrialCheckbox = document.getElementById("free-trial-checkbox");
-    const knowledgePillMessageContainer = document.getElementById("knowledge-pill-message-container");
+  (function() {
+    function initializeProposalForm() {
+      const modalitySelect = document.getElementById("modality-select");
+      if (!modalitySelect || modalitySelect.dataset.proposalFormAttached) return;
+      modalitySelect.dataset.proposalFormAttached = "true";
 
-    const isCertifiedTeacher = <%= (@teacher.technical? || @teacher.higher?) ? "true" : "false" %>;
-    const priceRecommendationBox = document.getElementById("price-recommendation-box");
-    const priceRecommendationIcon = document.getElementById("price-recommendation-icon");
-    const priceRecommendationText = document.getElementById("price-recommendation-text");
+      const durationContainer = document.getElementById("duration-container");
+      const durationInput = document.getElementById("duration-input");
+      const priceInput = document.getElementById("price-input");
+      const priceHint = document.getElementById("price-hint");
+      const platformFeeEl = document.getElementById("platform-fee");
+      const teacherReceivesEl = document.getElementById("teacher-receives");
+      const freeTrialContainer = document.getElementById("free-trial-container");
+      const freeTrialCheckbox = document.getElementById("free-trial-checkbox");
+      const knowledgePillMessageContainer = document.getElementById("knowledge-pill-message-container");
 
-    if (!modalitySelect) return;
+      const isCertifiedTeacher = <%= (@teacher&.technical? || @teacher&.higher?) ? "true" : "false" %>;
+      const priceRecommendationBox = document.getElementById("price-recommendation-box");
+      const priceRecommendationIcon = document.getElementById("price-recommendation-icon");
+      const priceRecommendationText = document.getElementById("price-recommendation-text");
 
-    function updateForm() {
-      const modality = modalitySelect.value;
-      
-      if (modality === "knowledge_pill") {
-        durationContainer.classList.add("hidden");
-        freeTrialContainer.classList.remove("hidden");
-        if (knowledgePillMessageContainer) knowledgePillMessageContainer.classList.remove("hidden");
-        priceHint.textContent = "Bounty: Defina sua recompensa pela dúvida";
-      } else {
-        freeTrialContainer.classList.add("hidden");
-        if (knowledgePillMessageContainer) knowledgePillMessageContainer.classList.add("hidden");
-        if (freeTrialCheckbox.checked) {
-          freeTrialCheckbox.checked = false;
-          restorePrice();
-        }
+      function updateForm() {
+        const modality = modalitySelect.value;
         
-        if (modality === "focused_mentoring") {
-          durationContainer.classList.remove("hidden");
-          if (!durationInput.value || parseInt(durationInput.value) < 1) {
-            durationInput.value = "1";
+        if (modality === "knowledge_pill") {
+          if (durationContainer) durationContainer.classList.add("hidden");
+          if (freeTrialContainer) freeTrialContainer.classList.remove("hidden");
+          if (knowledgePillMessageContainer) knowledgePillMessageContainer.classList.remove("hidden");
+          if (priceHint) priceHint.textContent = "Bounty: Defina sua recompensa pela dúvida";
+        } else {
+          if (durationContainer) durationContainer.classList.add("hidden");
+          if (freeTrialContainer) freeTrialContainer.classList.add("hidden");
+          if (knowledgePillMessageContainer) knowledgePillMessageContainer.classList.add("hidden");
+          if (freeTrialCheckbox && freeTrialCheckbox.checked) {
+            freeTrialCheckbox.checked = false;
+            restorePrice();
           }
-          priceHint.textContent = "Mentoria Focada: Negociação por hora (sugerido R$ 50/h)";
-        }
-      }
-
-      calculateFees();
-    }
-
-    function toggleFreeTrial() {
-      if (freeTrialCheckbox.checked) {
-        priceInput.dataset.previousValue = priceInput.value;
-        priceInput.value = "0,00";
-        priceInput.readOnly = true;
-        priceInput.classList.add("opacity-50", "bg-gray-100");
-      } else {
-        restorePrice();
-      }
-      calculateFees();
-    }
-    
-    function restorePrice() {
-      priceInput.value = priceInput.dataset.previousValue || "";
-      priceInput.readOnly = false;
-      priceInput.classList.remove("opacity-50", "bg-gray-100");
-    }
-
-    function updatePriceRecommendation() {
-      if (!isCertifiedTeacher || !priceRecommendationBox) return;
-
-      const modality = modalitySelect.value;
-      let rawVal = priceInput.value.replace("R$ ", "").replace(/\./g, "").replace(",", ".");
-      let val = parseFloat(rawVal);
-      if (isNaN(val)) val = 0.0;
-
-      let recommendedPrice = 15.0;
-      let labelDetail = "";
-
-      if (modality === "knowledge_pill") {
-        recommendedPrice = 15.0;
-        labelDetail = "R$ 15,00 por pílula";
-      } else if (modality === "focused_mentoring") {
-        const hours = parseInt(durationInput.value) || 1;
-        recommendedPrice = 50.0 * hours;
-        labelDetail = `R$ 50,00 por hora (Total recomendado: R$ ${recommendedPrice.toFixed(2).replace(".", ",")})`;
-      }
-
-      priceRecommendationBox.classList.remove("hidden");
-
-      if (val < recommendedPrice) {
-        priceRecommendationBox.className = "p-4 rounded-xl text-sm flex gap-3 items-start border mt-2 bg-amber-50 text-amber-800 border-amber-200 animate-fadeIn transition-all duration-300";
-        priceRecommendationIcon.innerHTML = `
-          <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-          </svg>
-        `;
-        priceRecommendationText.innerHTML = `Valor recomendado para este professor: <strong>R$ ${recommendedPrice.toFixed(2).replace(".", ",")}</strong> (${labelDetail}). O seu valor proposto está abaixo do recomendado, mas você é livre para negociar e enviar a proposta!`;
-      } else {
-        priceRecommendationBox.className = "p-4 rounded-xl text-sm flex gap-3 items-start border mt-2 bg-aprende-bg text-aprende-text border-aprende-secondary animate-fadeIn transition-all duration-300";
-        priceRecommendationIcon.innerHTML = `
-          <svg class="w-5 h-5 text-aprende-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        `;
-        priceRecommendationText.innerHTML = `Valor recomendado para este professor: <strong>R$ ${recommendedPrice.toFixed(2).replace(".", ",")}</strong> (${labelDetail}). Seu valor proposto está de acordo com a recomendação da plataforma!`;
-      }
-    }
-
-    function calculateFees() {
-      let rawVal = priceInput.value.replace("R$ ", "").replace(/\./g, "").replace(",", ".");
-      let val = parseFloat(rawVal);
-      if (isNaN(val) || val <= 0) {
-        platformFeeEl.textContent = "R$ 0,00";
-        teacherReceivesEl.textContent = "R$ 0,00";
-        updatePriceRecommendation();
-        return;
-      }
-      
-      let fee = val * 0.20;
-      let net = val - fee;
-      
-      platformFeeEl.textContent = fee.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      teacherReceivesEl.textContent = net.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      updatePriceRecommendation();
-    }
-
-    modalitySelect.addEventListener("change", updateForm);
-    if (durationInput) {
-      durationInput.addEventListener("input", function() {
-        calculateFees();
-      });
-    }
-    priceInput.addEventListener("input", calculateFees);
-    freeTrialCheckbox.addEventListener("change", toggleFreeTrial);
-
-    const attachmentInput = document.getElementById("attachment-input");
-    const attachmentPreview = document.getElementById("attachment-preview");
-
-    if (attachmentInput && attachmentPreview) {
-      attachmentInput.addEventListener("change", function() {
-        attachmentPreview.innerHTML = "";
-        const files = attachmentInput.files;
-        if (files && files.length > 0) {
-          attachmentPreview.classList.remove("hidden");
           
-          if (files.length === 1) {
-            const file = files[0];
-            const sizeKB = (file.size / 1024).toFixed(1);
-            attachmentPreview.innerHTML = `
-              <div class="flex items-center gap-2 text-xs font-semibold text-aprende-primary bg-aprende-bg border border-aprende-primary/30 p-2.5 rounded-lg animate-fadeIn">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span class="truncate font-medium">${file.name}</span>
-                <span class="text-[10px] text-aprende-muted flex-shrink-0">(${sizeKB} KB)</span>
-              </div>
-            `;
-          } else {
-            let listHTML = `
-              <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3.5 rounded-xl text-xs flex flex-col gap-2 shadow-sm animate-fadeIn">
-                <div class="flex items-center gap-2 font-bold text-amber-800">
-                  <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                  <span>${files.length} arquivos selecionados:</span>
-                </div>
-                <ul class="list-disc list-inside pl-1 flex flex-col gap-1 font-medium text-amber-800/80">
-            `;
-            
-            for (let i = 0; i < files.length; i++) {
-              listHTML += `<li class="truncate">${files[i].name}</li>`;
+          if (modality === "focused_mentoring") {
+            if (durationContainer) durationContainer.classList.remove("hidden");
+            if (durationInput && (!durationInput.value || parseInt(durationInput.value) < 1)) {
+              durationInput.value = "1";
             }
-            
-            listHTML += `
-                </ul>
-                <div class="pt-2 border-t border-amber-200/50 text-[10px] text-amber-700 font-semibold">
-                  Nota: Apenas o primeiro anexo listado será enviado na proposta.
-                </div>
-              </div>
-            `;
-            attachmentPreview.innerHTML = listHTML;
+            if (priceHint) priceHint.textContent = "Mentoria Focada: Negociação por hora (sugerido R$ 50/h)";
+          }
+        }
+
+        calculateFees();
+      }
+
+      function toggleFreeTrial() {
+        if (freeTrialCheckbox && freeTrialCheckbox.checked) {
+          if (priceInput) {
+            priceInput.dataset.previousValue = priceInput.value;
+            priceInput.value = "0,00";
+            priceInput.readOnly = true;
+            priceInput.classList.add("opacity-50", "bg-gray-100");
           }
         } else {
-          attachmentPreview.classList.add("hidden");
+          restorePrice();
         }
-      });
+        calculateFees();
+      }
+      
+      function restorePrice() {
+        if (priceInput) {
+          priceInput.value = priceInput.dataset.previousValue || "";
+          priceInput.readOnly = false;
+          priceInput.classList.remove("opacity-50", "bg-gray-100");
+        }
+      }
+
+      function updatePriceRecommendation() {
+        if (!isCertifiedTeacher || !priceRecommendationBox || !priceInput) return;
+
+        const modality = modalitySelect.value;
+        let rawVal = priceInput.value.replace("R$ ", "").replace(/\./g, "").replace(",", ".");
+        let val = parseFloat(rawVal);
+        if (isNaN(val)) val = 0.0;
+
+        let recommendedPrice = 15.0;
+        let labelDetail = "";
+
+        if (modality === "knowledge_pill") {
+          recommendedPrice = 15.0;
+          labelDetail = "R$ 15,00 por pílula";
+        } else if (modality === "focused_mentoring") {
+          const hours = durationInput ? (parseInt(durationInput.value) || 1) : 1;
+          recommendedPrice = 50.0 * hours;
+          labelDetail = `R$ 50,00 por hora (Total recomendado: R$ ${recommendedPrice.toFixed(2).replace(".", ",")})`;
+        }
+
+        priceRecommendationBox.classList.remove("hidden");
+
+        if (val < recommendedPrice) {
+          priceRecommendationBox.className = "p-4 rounded-xl text-sm flex gap-3 items-start border mt-2 bg-amber-50 text-amber-800 border-amber-200 animate-fadeIn transition-all duration-300";
+          if (priceRecommendationIcon) {
+            priceRecommendationIcon.innerHTML = `
+              <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            `;
+          }
+          if (priceRecommendationText) {
+            priceRecommendationText.innerHTML = `Valor recomendado para este professor: <strong>R$ ${recommendedPrice.toFixed(2).replace(".", ",")}</strong> (${labelDetail}). O seu valor proposto está abaixo do recomendado, mas você é livre para negociar e enviar a proposta!`;
+          }
+        } else {
+          priceRecommendationBox.className = "p-4 rounded-xl text-sm flex gap-3 items-start border mt-2 bg-aprende-bg text-aprende-text border-aprende-secondary animate-fadeIn transition-all duration-300";
+          if (priceRecommendationIcon) {
+            priceRecommendationIcon.innerHTML = `
+              <svg class="w-5 h-5 text-aprende-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            `;
+          }
+          if (priceRecommendationText) {
+            priceRecommendationText.innerHTML = `Valor recomendado para este professor: <strong>R$ ${recommendedPrice.toFixed(2).replace(".", ",")}</strong> (${labelDetail}). Seu valor proposto está de acordo com a recomendação da plataforma!`;
+          }
+        }
+      }
+
+      function calculateFees() {
+        if (!priceInput || !platformFeeEl || !teacherReceivesEl) return;
+        let rawVal = priceInput.value.replace("R$ ", "").replace(/\./g, "").replace(",", ".");
+        let val = parseFloat(rawVal);
+        if (isNaN(val) || val <= 0) {
+          platformFeeEl.textContent = "R$ 0,00";
+          teacherReceivesEl.textContent = "R$ 0,00";
+          updatePriceRecommendation();
+          return;
+        }
+        
+        let fee = val * 0.20;
+        let net = val - fee;
+        
+        platformFeeEl.textContent = fee.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        teacherReceivesEl.textContent = net.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        updatePriceRecommendation();
+      }
+
+      modalitySelect.addEventListener("change", updateForm);
+      if (durationInput) {
+        durationInput.addEventListener("input", calculateFees);
+      }
+      if (priceInput) {
+        priceInput.addEventListener("input", calculateFees);
+      }
+      if (freeTrialCheckbox) {
+        freeTrialCheckbox.addEventListener("change", toggleFreeTrial);
+      }
+
+      const attachmentInput = document.getElementById("attachment-input");
+      const attachmentPreview = document.getElementById("attachment-preview");
+
+      if (attachmentInput && attachmentPreview) {
+        attachmentInput.addEventListener("change", function() {
+          attachmentPreview.innerHTML = "";
+          const files = attachmentInput.files;
+          if (files && files.length > 0) {
+            attachmentPreview.classList.remove("hidden");
+            
+            if (files.length === 1) {
+              const file = files[0];
+              const sizeKB = (file.size / 1024).toFixed(1);
+              attachmentPreview.innerHTML = `
+                <div class="flex items-center gap-2 text-xs font-semibold text-aprende-primary bg-aprende-bg border border-aprende-primary/30 p-2.5 rounded-lg animate-fadeIn">
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  <span class="truncate font-medium">${file.name}</span>
+                  <span class="text-[10px] text-aprende-muted flex-shrink-0">(${sizeKB} KB)</span>
+                </div>
+              `;
+            } else {
+              let listHTML = `
+                <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3.5 rounded-xl text-xs flex flex-col gap-2 shadow-sm animate-fadeIn">
+                  <div class="flex items-center gap-2 font-bold text-amber-800">
+                    <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span>${files.length} arquivos selecionados:</span>
+                  </div>
+                  <ul class="list-disc list-inside pl-1 flex flex-col gap-1 font-medium text-amber-800/80">
+              `;
+              
+              for (let i = 0; i < files.length; i++) {
+                listHTML += `<li class="truncate">${files[i].name}</li>`;
+              }
+              
+              listHTML += `
+                  </ul>
+                  <div class="pt-2 border-t border-amber-200/50 text-[10px] text-amber-700 font-semibold">
+                    Nota: Apenas o primeiro anexo listado será enviado na proposta.
+                  </div>
+                </div>
+              `;
+              attachmentPreview.innerHTML = listHTML;
+            }
+          } else {
+            attachmentPreview.classList.add("hidden");
+          }
+        });
+      }
+      
+      // Initial run
+      updateForm();
     }
+
+    // Bind to both load and render to catch validation error re-renders
+    document.addEventListener("turbo:load", initializeProposalForm);
+    document.addEventListener("turbo:render", initializeProposalForm);
     
-    // Initial run
-    updateForm();
-  });
+    // Also invoke immediately to handle direct page loads
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeProposalForm);
+    } else {
+      initializeProposalForm();
+    }
+  })();
 </script>

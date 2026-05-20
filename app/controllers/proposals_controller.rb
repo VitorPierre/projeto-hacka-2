@@ -1,6 +1,6 @@
 class ProposalsController < ApplicationController
   before_action :require_login
-  before_action :set_proposal, only: [:show, :update, :accept, :reject, :close, :counter, :pay, :schedule, :start_session, :finish_session, :rate]
+  before_action :set_proposal, only: [:show, :update, :accept, :reject, :close, :counter, :pay, :schedule, :start_session, :finish_session, :rate, :upload_videoaula]
 
   def new
     if current_user.student?
@@ -69,9 +69,12 @@ class ProposalsController < ApplicationController
 
   def accept
     if @proposal.recipient?(current_user) && @proposal.pending?
-      @proposal.update(status: :accepted)
-      notify_both("A proposta '#{@proposal.subject.name}' foi aceita por #{current_user.name}.")
-      flash[:notice] = "Proposta aceita com sucesso!"
+      if @proposal.update(status: :accepted)
+        notify_both("A proposta '#{@proposal.subject.name}' foi aceita por #{current_user.name}.")
+        flash[:notice] = "Proposta aceita com sucesso!"
+      else
+        flash[:alert] = "Não foi possível aceitar a proposta: " + @proposal.errors.full_messages.to_sentence
+      end
     else
       flash[:alert] = "Ação não permitida."
     end
@@ -80,9 +83,12 @@ class ProposalsController < ApplicationController
 
   def reject
     if @proposal.recipient?(current_user) && @proposal.pending?
-      @proposal.update(status: :rejected)
-      notify_both("A proposta '#{@proposal.subject.name}' foi recusada por #{current_user.name}.")
-      flash[:notice] = "Proposta recusada."
+      if @proposal.update(status: :rejected)
+        notify_both("A proposta '#{@proposal.subject.name}' foi recusada por #{current_user.name}.")
+        flash[:notice] = "Proposta recusada."
+      else
+        flash[:alert] = "Não foi possível recusar a proposta: " + @proposal.errors.full_messages.to_sentence
+      end
     else
       flash[:alert] = "Ação não permitida."
     end
@@ -100,9 +106,12 @@ class ProposalsController < ApplicationController
         msg += " Como a pílula é gratuita, ela foi ativada automaticamente!"
       end
       
-      @proposal.update(attributes)
-      notify_both(msg)
-      flash[:notice] = "Proposta fechada com sucesso!"
+      if @proposal.update(attributes)
+        notify_both(msg)
+        flash[:notice] = "Proposta fechada com sucesso!"
+      else
+        flash[:alert] = "Não foi possível fechar a proposta: " + @proposal.errors.full_messages.to_sentence
+      end
     else
       flash[:alert] = "Ação não permitida."
     end
@@ -114,9 +123,12 @@ class ProposalsController < ApplicationController
       attributes = { paid: true }
       attributes[:started_at] = Time.current if @proposal.knowledge_pill?
       
-      @proposal.update(attributes)
-      notify_both("Pagamento confirmado para a proposta '#{@proposal.subject.name}'.")
-      flash[:notice] = "Pagamento simulado com sucesso!"
+      if @proposal.update(attributes)
+        notify_both("Pagamento confirmado para a proposta '#{@proposal.subject.name}'.")
+        flash[:notice] = "Pagamento simulado com sucesso!"
+      else
+        flash[:alert] = "Não foi possível realizar o pagamento: " + @proposal.errors.full_messages.to_sentence
+      end
     else
       flash[:alert] = "Não foi possível realizar o pagamento."
     end
@@ -155,11 +167,38 @@ class ProposalsController < ApplicationController
       if @proposal.synchronous?
         attributes[:recording_url] = "https://meet.jit.si/aprendeai-proposal-#{@proposal.id}#recording_#{Time.current.to_i}"
       end
-      @proposal.update(attributes)
-      notify_both("A aula de '#{@proposal.subject.name}' foi finalizada.")
-      flash[:notice] = "Aula finalizada com sucesso."
+      
+      if params[:videoaula].present?
+        @proposal.videoaula.attach(params[:videoaula])
+      end
+
+      if @proposal.update(attributes)
+        notify_both("A aula de '#{@proposal.subject.name}' foi finalizada.")
+        flash[:notice] = "Aula finalizada com sucesso."
+      else
+        flash[:alert] = "Não foi possível finalizar a aula: " + @proposal.errors.full_messages.to_sentence
+      end
     else
       flash[:alert] = "Ação não permitida."
+    end
+    redirect_to proposal_path(@proposal)
+  end
+
+  def upload_videoaula
+    if current_user == @proposal.teacher
+      if params[:videoaula].present?
+        @proposal.videoaula.attach(params[:videoaula])
+        if @proposal.save
+          notify_both("A videoaula de '#{@proposal.subject.name}' foi disponibilizada pelo professor.")
+          flash[:notice] = "Videoaula enviada com sucesso!"
+        else
+          flash[:alert] = "Não foi possível enviar a videoaula: " + @proposal.errors.full_messages.to_sentence
+        end
+      else
+        flash[:alert] = "Por favor, selecione um arquivo de vídeo."
+      end
+    else
+      flash[:alert] = "Apenas o professor desta proposta pode enviar a videoaula."
     end
     redirect_to proposal_path(@proposal)
   end

@@ -35,6 +35,7 @@ Rails.application.routes.draw do
       patch :start_session
       patch :finish_session
       patch :rate
+      patch :upload_videoaula
     end
     resources :messages, only: [:create] do
       member do

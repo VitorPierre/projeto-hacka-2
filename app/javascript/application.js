@@ -1,9 +1,18 @@
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 import "@hotwired/turbo-rails"
 import "controllers"
+import * as ActiveStorage from "@rails/activestorage"
 
-document.addEventListener('turbo:load', setupModerationChecks);
-document.addEventListener('DOMContentLoaded', setupModerationChecks);
+ActiveStorage.start()
+
+document.addEventListener('turbo:load', () => {
+  setupModerationChecks();
+  setupDirectUploads();
+});
+document.addEventListener('DOMContentLoaded', () => {
+  setupModerationChecks();
+  setupDirectUploads();
+});
 
 function setupModerationChecks() {
   const inputs = document.querySelectorAll('[data-moderation-check="true"]');
@@ -87,5 +96,106 @@ function clearWarning(input) {
   // Restaura a borda padrão do input
   input.classList.remove('border-amber-500', 'focus:ring-amber-500');
   input.classList.add('border-aprende-secondary', 'focus:ring-aprende-primary');
+}
+
+function setupDirectUploads() {
+  const inputs = document.querySelectorAll('input[type="file"][data-direct-upload-url]');
+  inputs.forEach(input => {
+    if (input.dataset.directUploadAttached) return;
+    input.dataset.directUploadAttached = "true";
+
+    const form = input.closest('form');
+    // Look for a progress container or create one
+    let progressContainer = form.querySelector('.direct-upload-progress-container');
+    
+    input.addEventListener("direct-upload:initialize", event => {
+      const { target, detail } = event;
+      const { id, file } = detail;
+      
+      if (!progressContainer) {
+        progressContainer = document.createElement('div');
+        progressContainer.className = 'direct-upload-progress-container w-full bg-slate-100 rounded-xl p-4 mt-3 border border-aprende-secondary/50 flex flex-col gap-2 transition-all';
+        progressContainer.innerHTML = `
+          <div class="flex justify-between items-center text-xs font-semibold text-aprende-text">
+            <span class="truncate flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-aprende-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              Enviando: <span class="text-aprende-muted font-normal">${file.name}</span>
+            </span>
+            <span class="direct-upload-percentage font-mono text-aprende-primary">0%</span>
+          </div>
+          <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+            <div class="direct-upload-bar bg-aprende-primary h-full w-0 transition-all duration-300"></div>
+          </div>
+        `;
+        input.parentNode.insertBefore(progressContainer, input.nextSibling);
+      } else {
+        progressContainer.classList.remove('hidden');
+        progressContainer.querySelector('.direct-upload-bar').style.width = '0%';
+        progressContainer.querySelector('.direct-upload-percentage').textContent = '0%';
+      }
+    });
+
+    input.addEventListener("direct-upload:start", event => {
+      // Disable form submit to prevent double-submitting during upload
+      const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-55', 'cursor-not-allowed');
+        if (submitBtn.tagName === 'INPUT') {
+          submitBtn.dataset.originalValue = submitBtn.value;
+          submitBtn.value = "Enviando arquivo...";
+        } else {
+          submitBtn.dataset.originalText = submitBtn.textContent;
+          submitBtn.textContent = "Enviando arquivo...";
+        }
+      }
+    });
+
+    input.addEventListener("direct-upload:progress", event => {
+      const { id, progress } = event.detail;
+      const bar = progressContainer.querySelector('.direct-upload-bar');
+      const text = progressContainer.querySelector('.direct-upload-percentage');
+      if (bar && text) {
+        bar.style.width = `${progress}%`;
+        text.textContent = `${Math.round(progress)}%`;
+      }
+    });
+
+    input.addEventListener("direct-upload:error", event => {
+      event.preventDefault();
+      const { id, error } = event.detail;
+      let errorBox = progressContainer.querySelector('.direct-upload-error-box');
+      if (!errorBox) {
+        errorBox = document.createElement('div');
+        errorBox.className = 'direct-upload-error-box bg-red-50 text-red-800 border border-red-200 rounded-xl p-3.5 mt-2 text-xs font-semibold';
+        progressContainer.appendChild(errorBox);
+      }
+      errorBox.innerHTML = `Erro no upload: ${error}`;
+      
+      const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-55', 'cursor-not-allowed');
+        if (submitBtn.tagName === 'INPUT') {
+          submitBtn.value = submitBtn.dataset.originalValue || "Tentar Novamente";
+        } else {
+          submitBtn.textContent = submitBtn.dataset.originalText || "Tentar Novamente";
+        }
+      }
+    });
+
+    input.addEventListener("direct-upload:end", event => {
+      const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-55', 'cursor-not-allowed');
+        if (submitBtn.tagName === 'INPUT') {
+          submitBtn.value = submitBtn.dataset.originalValue || "Finalizar Envio";
+        } else {
+          submitBtn.textContent = submitBtn.dataset.originalText || "Finalizar Envio";
+        }
+      }
+    });
+  });
 }
 
