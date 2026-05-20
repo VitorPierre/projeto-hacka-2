@@ -68,7 +68,7 @@ class User < ApplicationRecord
   validates :phone, presence: { message: "não pode ficar em branco" }
   validates :cpf, presence: { message: "não pode ficar em branco" }
   validates :cpf, uniqueness: { message: "já está cadastrado em outra conta" }, if: :cpf_changed?
-  validates :certificate_url, presence: { message: "não pode ficar em branco" }, if: :teacher?
+  validates :certificate_url, presence: { message: "não pode ficar em branco" }, if: -> { teacher? && !admin? }
   validates :availability, inappropriate_text: true, if: :availability_changed?
   validates :experience, inappropriate_text: true, if: :experience_changed?
   validates :preferences, inappropriate_text: true, if: :preferences_changed?

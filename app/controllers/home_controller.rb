@@ -26,9 +26,13 @@ class HomeController < ApplicationController
         terms_accepted_at: Time.current
       )
         flash[:notice] = "Termos aceitos com sucesso! Bem-vindo de volta."
-        redirect_to current_user.student? ? student_path(current_user) : teacher_path(current_user)
+        if current_user.admin?
+          redirect_to admin_moderation_index_path
+        else
+          redirect_to current_user.student? ? student_path(current_user) : teacher_path(current_user)
+        end
       else
-        flash.now[:alert] = "Não foi possível registrar o seu aceite. Tente novamente."
+        flash.now[:alert] = "Não foi possível registrar o seu aceite: #{current_user.errors.full_messages.to_sentence}"
         render :accept_terms, status: :unprocessable_entity
       end
     else

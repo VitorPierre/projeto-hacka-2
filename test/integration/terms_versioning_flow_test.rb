@@ -117,4 +117,38 @@ class TermsVersioningFlowTest < ActionDispatch::IntegrationTest
     assert_nil @student.terms_accepted_version
     assert_nil @student.privacy_accepted_version
   end
+
+  test "admin can log in, accept terms even without certificate_url, and is redirected to admin panel" do
+    # Create an admin user without certificate_url
+    admin = User.new(
+      name: "Admin Teste",
+      email: "admin_teste@aprendeai.com",
+      password: "password123",
+      role: :teacher,
+      education_level: :higher,
+      phone: "11999999999",
+      cpf: "12345678900",
+      certified: true,
+      admin: true,
+      terms_accepted_version: "0.9",
+      privacy_accepted_version: "0.9"
+    )
+    admin.save!(validate: false)
+    admin.update_columns(terms_accepted_version: "0.9", privacy_accepted_version: "0.9")
+
+    post login_path, params: { email: admin.email, password: "password123" }
+    assert_redirected_to teacher_path(admin)
+    follow_redirect!
+    assert_redirected_to accept_terms_path
+    follow_redirect!
+
+    # Submit terms acceptance
+    post accept_terms_path, params: { terms_acceptance: "1" }
+    
+    # Reload and assert terms are accepted
+    admin.reload
+    assert_equal "1.0", admin.terms_accepted_version
+
+    assert_redirected_to admin_moderation_index_path
+  end
 end
