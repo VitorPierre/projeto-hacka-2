@@ -88,7 +88,7 @@ class BannedUsersVisibilityTest < ActionDispatch::IntegrationTest
 
     get new_proposal_path(student_id: @banned_student.id)
     assert_redirected_to root_path
-    assert_equal "Acesso restrito para alunos.", flash[:alert]
+    assert_equal "Professores não podem fazer propostas padrão para alunos.", flash[:alert]
   end
 
   test "proposal model validation prevents saving proposals with banned users" do

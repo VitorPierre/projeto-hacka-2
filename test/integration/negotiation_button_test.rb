@@ -71,7 +71,7 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
     post login_path, params: { email: @teacher.email, password: "senha123" }
     get new_proposal_path(student_id: other_student.id)
     assert_redirected_to root_path
-    assert_equal "Acesso restrito para alunos.", flash[:alert]
+    assert_equal "Professores não podem fazer propostas padrão para alunos.", flash[:alert]
   end
 
   test "teacher cannot submit a proposal for a student" do
@@ -93,7 +93,7 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to root_path
-    assert_equal "Acesso restrito para alunos.", flash[:alert]
+    assert_equal "Professores não podem fazer propostas padrão para alunos.", flash[:alert]
   end
 
   test "student can submit a proposal for a teacher" do

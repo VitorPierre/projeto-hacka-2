@@ -32,7 +32,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to proposal_path(proposal)
     follow_redirect!
     assert_response :success
-    assert_select "h1", text: /Proposta:/
+    assert_select "h1", text: /Proposta/
   end
 
   test "student-created proposal is persisted with correct fields" do
@@ -52,20 +52,62 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
 
   # ── Teacher cannot send proposal to student ──
 
-  test "teacher cannot access the new proposal page" do
+  test "teacher cannot access the new proposal page for standard proposals" do
     post login_path, params: { email: @teacher.email, password: "senha123" }
     get new_proposal_path(student_id: @student.id)
     assert_redirected_to root_path
-    assert_equal "Acesso restrito para alunos.", flash[:alert]
+    assert_equal "Professores não podem fazer propostas padrão para alunos.", flash[:alert]
   end
 
-  test "teacher cannot create a proposal via POST" do
+  test "teacher cannot create a standard proposal via POST" do
     post login_path, params: { email: @teacher.email, password: "senha123" }
     assert_no_difference('Proposal.count') do
       post proposals_path, params: { proposal: { student_id: @student.id, subject_id: @subject.id, price: 80.0, modality: "focused_mentoring", duration: 60 } }
     end
     assert_redirected_to root_path
-    assert_equal "Acesso restrito para alunos.", flash[:alert]
+    assert_equal "Professores não podem fazer propostas padrão para alunos.", flash[:alert]
+  end
+
+  test "teacher can access new page and create experimental invite" do
+    post login_path, params: { email: @teacher.email, password: "senha123" }
+    
+    get new_proposal_path(student_id: @student.id, proposal_type: "experimental_invite")
+    assert_response :success
+
+    new_subject = Subject.create!(name: "Física Geral")
+    assert_difference('Proposal.count', 1) do
+      post proposals_path, params: { proposal: { student_id: @student.id, subject_id: new_subject.id, price: 0.0, modality: "focused_mentoring", duration: 60, proposal_type: "experimental_invite" } }
+    end
+    proposal = Proposal.last
+    assert_equal "experimental_invite", proposal.proposal_type
+    assert_equal @teacher.id, proposal.sender_id
+    assert_redirected_to proposal_path(proposal)
+  end
+
+  test "teacher can access new page and create doubt clarification" do
+    post login_path, params: { email: @teacher.email, password: "senha123" }
+    
+    get new_proposal_path(student_id: @student.id, proposal_type: "doubt_clarification")
+    assert_response :success
+
+    new_subject = Subject.create!(name: "Física Aplicada")
+    assert_difference('Proposal.count', 1) do
+      post proposals_path, params: { proposal: { student_id: @student.id, subject_id: new_subject.id, price: 0.0, modality: "knowledge_pill", proposal_type: "doubt_clarification" } }
+    end
+    proposal = Proposal.last
+    assert_equal "doubt_clarification", proposal.proposal_type
+    assert_equal @teacher.id, proposal.sender_id
+    assert_redirected_to proposal_path(proposal)
+  end
+
+  test "student cannot create experimental invite or doubt clarification" do
+    post login_path, params: { email: @student.email, password: "senha123" }
+
+    assert_no_difference('Proposal.count') do
+      post proposals_path, params: { proposal: { teacher_id: @teacher.id, subject_id: @subject.id, price: 0.0, modality: "focused_mentoring", duration: 60, proposal_type: "experimental_invite" } }
+    end
+    assert_redirected_to root_path
+    assert_equal "Alunos não podem enviar convites ou esclarecimentos de dúvidas.", flash[:alert]
   end
 
   # ── Accept/Reject: Recipient-based ──
@@ -156,7 +198,7 @@ class ProposalsFlowTest < ActionDispatch::IntegrationTest
 
     get proposal_path(proposal)
     assert_response :success
-    assert_select "h1", text: /Proposta:/
+    assert_select "h1", text: /Proposta/
     assert_select "span", text: /Aluno:/
     assert_select "span", text: /Professor:/
     assert_select "span", text: /Valor:/

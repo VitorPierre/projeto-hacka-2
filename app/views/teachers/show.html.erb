@@ -219,7 +219,7 @@
             <div class="bg-white rounded-xl shadow-sm border border-aprende-secondary p-5 flex flex-col gap-3">
               <div class="flex justify-between items-start gap-4">
                 <div>
-                  <p class="text-xs text-aprende-muted">Aluno</p>
+                  <p class="text-xs font-semibold text-aprende-primary"><%= proposal.proposal_type_human %></p>
                   <p class="font-medium text-aprende-text"><%= proposal.student.name %></p>
                   <p class="text-sm text-aprende-muted"><%= proposal.subject.name %></p>
                 </div>
@@ -254,7 +254,7 @@
                 <div class="bg-gray-50 rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col gap-3">
                   <div class="flex justify-between items-start gap-4">
                     <div>
-                      <p class="text-xs text-gray-500">Aluno</p>
+                      <p class="text-xs font-semibold text-aprende-primary"><%= proposal.proposal_type_human %></p>
                       <p class="font-medium text-gray-800"><%= proposal.student.name %></p>
                       <p class="text-sm text-gray-500"><%= proposal.subject.name %></p>
                     </div>

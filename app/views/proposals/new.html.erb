@@ -1,10 +1,24 @@
 <div class="max-w-2xl mx-auto w-full flex flex-col gap-6">
-  <h1 class="text-2xl md:text-3xl font-medium text-aprende-text px-2">Enviar Proposta de Aula</h1>
+  <h1 class="text-2xl md:text-3xl font-medium text-aprende-text px-2">
+    <% if @proposal.experimental_invite? %>
+      Convidar para Aula Experimental
+    <% elsif @proposal.doubt_clarification? %>
+      Iniciar Esclarecimento de Dúvidas
+    <% else %>
+      Enviar Proposta de Aula
+    <% end %>
+  </h1>
 
   <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm border border-aprende-secondary flex flex-col gap-6">
-    <% counterpart = @teacher || User.new(name: "Professor não encontrado") %>
-    <% counterpart_label = "Professor" %>
-    <% counterpart_subjects = @teacher&.subjects || [] %>
+    <% if current_user.teacher? %>
+      <% counterpart = @student || User.new(name: "Estudante não encontrado") %>
+      <% counterpart_label = "Estudante" %>
+      <% counterpart_subjects = current_user.subjects || [] %>
+    <% else %>
+      <% counterpart = @teacher || User.new(name: "Professor não encontrado") %>
+      <% counterpart_label = "Professor" %>
+      <% counterpart_subjects = @teacher&.subjects || [] %>
+    <% end %>
 
     <div class="pb-6 border-b border-aprende-secondary">
       <h2 class="font-medium text-aprende-muted text-sm uppercase tracking-wider mb-2">Detalhes do <%= counterpart_label %></h2>
@@ -13,7 +27,7 @@
         <p class="text-aprende-primary font-medium mt-1">Escolaridade: <%= counterpart.education_level_human %></p>
       <% end %>
       
-      <% if @teacher&.technical? || @teacher&.higher? %>
+      <% if !current_user.teacher? && (@teacher&.technical? || @teacher&.higher?) %>
         <div class="mt-4 bg-aprende-bg border border-aprende-secondary text-aprende-text p-4 rounded-xl text-sm flex gap-3 items-start animate-fadeIn">
           <svg class="w-5 h-5 text-aprende-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -26,7 +40,12 @@
     </div>
 
     <%= form_with model: @proposal, class: "flex flex-col gap-6", id: "proposal-form", multipart: true do |f| %>
-      <%= f.hidden_field :teacher_id, value: @teacher&.id %>
+      <% if current_user.teacher? %>
+        <%= f.hidden_field :student_id, value: @student&.id %>
+      <% else %>
+        <%= f.hidden_field :teacher_id, value: @teacher&.id %>
+      <% end %>
+      <%= f.hidden_field :proposal_type, value: @proposal.proposal_type %>
       
       <div class="flex flex-col gap-1">
         <%= f.label :subject_id, "Selecione a Especialidade", for: "proposal_subject_id", class: "text-sm font-medium text-aprende-text" %>
@@ -34,11 +53,21 @@
         <%= field_error(@proposal, :subject_id) %>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <%= f.label :modality, "Modalidade de Ensino", for: "modality-select", class: "text-sm font-medium text-aprende-text" %>
-        <%= f.select :modality, [["Pílula de Conhecimento (Dúvida Assíncrona)", "knowledge_pill"], ["Mentoria Focada (Síncrono)", "focused_mentoring"]], {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text", id: "modality-select", aria: @proposal.errors[:modality].any? ? { describedby: "proposal_modality_error" } : {} %>
-        <%= field_error(@proposal, :modality) %>
-      </div>
+      <% if @proposal.standard_proposal? %>
+        <div class="flex flex-col gap-1">
+          <%= f.label :modality, "Modalidade de Ensino", for: "modality-select", class: "text-sm font-medium text-aprende-text" %>
+          <%= f.select :modality, [["Pílula de Conhecimento (Dúvida Assíncrona)", "knowledge_pill"], ["Mentoria Focada (Síncrono)", "focused_mentoring"]], {}, class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text", id: "modality-select", aria: @proposal.errors[:modality].any? ? { describedby: "proposal_modality_error" } : {} %>
+          <%= field_error(@proposal, :modality) %>
+        </div>
+      <% else %>
+        <%= f.hidden_field :modality, value: @proposal.modality, id: "modality-select" %>
+        <div class="flex flex-col gap-1">
+          <span class="text-sm font-medium text-aprende-text">Modalidade de Ensino</span>
+          <div class="bg-gray-50 border border-aprende-secondary rounded-xl py-3 px-4 font-medium text-aprende-text">
+            <%= @proposal.modality_human %>
+          </div>
+        </div>
+      <% end %>
 
       <fieldset class="flex flex-col gap-1.5 hidden" id="duration-container">
         <legend class="text-sm font-medium text-aprende-text">Duração da Mentoria</legend>
@@ -73,7 +102,7 @@
           <%= f.label :price, "Valor da Proposta (R$)", for: "price-input", class: "text-sm font-medium text-aprende-text" %>
           <span id="price-hint" class="text-xs text-aprende-muted"></span>
         </div>
-        <% initial_price = (@teacher&.technical? || @teacher&.higher?) ? "50,00" : "" %>
+        <% initial_price = current_user.teacher? ? "0,00" : (((@teacher&.technical? || @teacher&.higher?) ? "50,00" : "")) %>
         <%= f.text_field :price, value: initial_price, data: { controller: "mask", mask_type_value: "money" }, placeholder: "R$ 0,00", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text text-lg placeholder-aprende-muted", id: "price-input", aria: @proposal.errors[:price].any? ? { describedby: "proposal_price_error" } : {} %>
         <%= field_error(@proposal, :price) %>
 
@@ -89,10 +118,15 @@
       </div>
 
       <div id="knowledge-pill-message-container" class="hidden flex flex-col gap-3 p-4 bg-aprende-bg rounded-xl border border-aprende-secondary mt-2">
-        <%= label_tag :message_content, "Sua Dúvida / Pergunta", for: "message-content-input", class: "text-sm font-medium text-aprende-text" %>
-        <p class="text-xs text-aprende-muted">Descreva sua dúvida com clareza. Você também pode anexar um arquivo.</p>
-        
-        <%= text_area_tag :message_content, "", rows: 4, placeholder: "Escreva sua dúvida detalhadamente aqui...", id: "message-content-input", class: "w-full p-3 rounded-lg border border-aprende-secondary bg-white text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary resize-none" %>
+        <% if current_user.teacher? %>
+          <%= label_tag :message_content, "Descrição / Mensagem Inicial", for: "message-content-input", class: "text-sm font-medium text-aprende-text" %>
+          <p class="text-xs text-aprende-muted">Escreva uma mensagem explicando como você pode ajudar o aluno ou dê orientações iniciais.</p>
+          <%= text_area_tag :message_content, "", rows: 4, placeholder: "Ex: Olá! Posso te ajudar a resolver sua dúvida...", id: "message-content-input", class: "w-full p-3 rounded-lg border border-aprende-secondary bg-white text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary resize-none" %>
+        <% else %>
+          <%= label_tag :message_content, "Sua Dúvida / Pergunta", for: "message-content-input", class: "text-sm font-medium text-aprende-text" %>
+          <p class="text-xs text-aprende-muted">Descreva sua dúvida com clareza. Você também pode anexar um arquivo.</p>
+          <%= text_area_tag :message_content, "", rows: 4, placeholder: "Escreva sua dúvida detalhadamente aqui...", id: "message-content-input", class: "w-full p-3 rounded-lg border border-aprende-secondary bg-white text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary resize-none" %>
+        <% end %>
         
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2">
@@ -119,9 +153,9 @@
       </div>
 
       <div class="pt-2 flex flex-col sm:flex-row gap-4">
-        <% cancel_path = teachers_path %>
+        <% cancel_path = current_user.teacher? ? student_path(counterpart) : teachers_path %>
         <%= link_to "Cancelar", cancel_path, class: "w-full sm:flex-1 text-center bg-white border border-aprende-secondary hover:bg-aprende-bg text-aprende-muted font-medium py-3 rounded-xl transition-colors" %>
-        <%= f.submit "Enviar Proposta", class: "w-full sm:flex-1 bg-aprende-primary hover:bg-aprende-primary-hover text-white font-medium py-3 rounded-xl transition-colors cursor-pointer" %>
+        <%= f.submit (@proposal.experimental_invite? ? "Enviar Convite" : (@proposal.doubt_clarification? ? "Iniciar Esclarecimento" : "Enviar Proposta")), class: "w-full sm:flex-1 bg-aprende-primary hover:bg-aprende-primary-hover text-white font-medium py-3 rounded-xl transition-colors cursor-pointer" %>
       </div>
     <% end %>
   </div>
@@ -146,7 +180,7 @@
       const freeTrialCheckbox = document.getElementById("free-trial-checkbox");
       const knowledgePillMessageContainer = document.getElementById("knowledge-pill-message-container");
 
-      const isCertifiedTeacher = <%= (@teacher&.technical? || @teacher&.higher?) ? "true" : "false" %>;
+      const isCertifiedTeacher = <%= (!current_user.teacher? && (@teacher&.technical? || @teacher&.higher?)) ? "true" : "false" %>;
       const priceRecommendationBox = document.getElementById("price-recommendation-box");
       const priceRecommendationIcon = document.getElementById("price-recommendation-icon");
       const priceRecommendationText = document.getElementById("price-recommendation-text");
@@ -154,11 +188,18 @@
       function updateForm() {
         const modality = modalitySelect.value;
         
+        const isTeacher = <%= current_user.teacher? ? "true" : "false" %>;
         if (modality === "knowledge_pill") {
           if (durationContainer) durationContainer.classList.add("hidden");
-          if (freeTrialContainer) freeTrialContainer.classList.remove("hidden");
+          if (freeTrialContainer) {
+            if (isTeacher) {
+              freeTrialContainer.classList.add("hidden");
+            } else {
+              freeTrialContainer.classList.remove("hidden");
+            }
+          }
           if (knowledgePillMessageContainer) knowledgePillMessageContainer.classList.remove("hidden");
-          if (priceHint) priceHint.textContent = "Bounty: Defina sua recompensa pela dúvida";
+          if (priceHint) priceHint.textContent = isTeacher ? "Valor do atendimento (pode ser R$ 0,00)" : "Bounty: Defina sua recompensa pela dúvida";
         } else {
           if (durationContainer) durationContainer.classList.add("hidden");
           if (freeTrialContainer) freeTrialContainer.classList.add("hidden");
@@ -182,7 +223,7 @@
             if (durationHoursSelect) durationHoursSelect.value = hours;
             if (durationMinutesSelect) durationMinutesSelect.value = minutes;
 
-            if (priceHint) priceHint.textContent = "Mentoria Focada: Negociação da aula (sugerido R$ 50/h)";
+            if (priceHint) priceHint.textContent = isTeacher ? "Valor do convite (pode ser R$ 0,00)" : "Mentoria Focada: Negociação da aula (sugerido R$ 50/h)";
           }
         }
 

@@ -9,6 +9,57 @@ class Proposal < ApplicationRecord
 
   enum :status, pending: 0, accepted: 1, rejected: 2, closed: 3
   enum :modality, knowledge_pill: 0, express_session: 1, focused_mentoring: 2
+  enum :proposal_type, standard_proposal: 0, experimental_invite: 1, doubt_clarification: 2
+
+  PROPOSAL_TYPE_NAMES = {
+    "standard_proposal" => "Proposta de Aula",
+    "experimental_invite" => "Convite para Aula Experimental",
+    "doubt_clarification" => "Esclarecimento de Dúvidas"
+  }.freeze
+
+  def proposal_type_human
+    PROPOSAL_TYPE_NAMES[proposal_type] || proposal_type.to_s.humanize
+  end
+
+  def type_created_message(user_name, for_recipient = false)
+    prefix = for_recipient ? "Você recebeu" : "Você enviou"
+    case proposal_type
+    when "standard_proposal"
+      "#{prefix} uma nova proposta de #{user_name} em #{subject.name}."
+    when "experimental_invite"
+      "#{prefix} um convite para aula experimental de #{user_name} em #{subject.name}."
+    when "doubt_clarification"
+      "#{prefix} um esclarecimento de dúvidas de #{user_name} em #{subject.name}."
+    else
+      "#{prefix} uma nova proposta de #{user_name} em #{subject.name}."
+    end
+  end
+
+  def type_accepted_message(user_name)
+    case proposal_type
+    when "standard_proposal"
+      "A proposta '#{subject.name}' foi aceita por #{user_name}."
+    when "experimental_invite"
+      "O convite para aula experimental '#{subject.name}' foi aceito por #{user_name}."
+    when "doubt_clarification"
+      "O esclarecimento de dúvidas '#{subject.name}' foi aceito por #{user_name}."
+    else
+      "A proposta '#{subject.name}' foi aceita por #{user_name}."
+    end
+  end
+
+  def type_rejected_message(user_name)
+    case proposal_type
+    when "standard_proposal"
+      "A proposta '#{subject.name}' foi recusada por #{user_name}."
+    when "experimental_invite"
+      "O convite para aula experimental '#{subject.name}' foi recusado por #{user_name}."
+    when "doubt_clarification"
+      "O esclarecimento de dúvidas '#{subject.name}' foi recusado por #{user_name}."
+    else
+      "A proposta '#{subject.name}' foi recusada por #{user_name}."
+    end
+  end
   
   MODALITY_NAMES = {
     "knowledge_pill" => "Pílula de Conhecimento",
@@ -59,6 +110,8 @@ class Proposal < ApplicationRecord
   validate :users_are_not_banned
   validate :users_are_not_admins
   validate :student_must_be_sender, on: :create
+  validate :teacher_must_be_sender_for_teacher_types, on: :create
+  validate :modality_matches_proposal_type
   validate :valid_status_transition, on: :update
   validate :videoaula_content_type_and_size
 
@@ -123,8 +176,12 @@ class Proposal < ApplicationRecord
 
   def set_default_modality
     if modality.blank?
-      self.modality = :focused_mentoring
-      self.duration ||= 60
+      if doubt_clarification?
+        self.modality = :knowledge_pill
+      else
+        self.modality = :focused_mentoring
+        self.duration ||= 60
+      end
     end
   end
 
@@ -142,8 +199,8 @@ class Proposal < ApplicationRecord
 
   def price_respects_floor
     if price.to_f <= 0.0
-      if modality == "knowledge_pill"
-        return # Permitido tentar gratuitamente
+      if modality == "knowledge_pill" || experimental_invite? || doubt_clarification?
+        return # Permitido tentar gratuitamente ou aula experimental/esclarecimento de dúvidas do professor
       else
         errors.add(:price, "deve ser maior que zero para esta modalidade")
         return
@@ -212,8 +269,22 @@ class Proposal < ApplicationRecord
   end
 
   def student_must_be_sender
-    if sender_id.present? && sender_id != student_id
-      errors.add(:sender, "Apenas o aluno pode iniciar uma proposta.")
+    if sender_id.present? && sender_id != student_id && standard_proposal?
+      errors.add(:sender, "Apenas o aluno pode iniciar uma proposta padrão.")
+    end
+  end
+
+  def teacher_must_be_sender_for_teacher_types
+    if sender_id.present? && sender_id != teacher_id && (experimental_invite? || doubt_clarification?)
+      errors.add(:sender, "Apenas o professor pode iniciar um convite ou esclarecimento de dúvidas.")
+    end
+  end
+
+  def modality_matches_proposal_type
+    if experimental_invite? && modality != "focused_mentoring"
+      errors.add(:modality, "convites experimentais devem ser mentorias focadas")
+    elsif doubt_clarification? && modality != "knowledge_pill"
+      errors.add(:modality, "esclarecimentos de dúvidas devem ser pílulas de conhecimento")
     end
   end
 end

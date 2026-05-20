@@ -1,18 +1,29 @@
 class ProposalsController < ApplicationController
   before_action :require_login
-  before_action :require_student, only: [:new, :create]
+  before_action :require_student_or_teacher_actions, only: [:new, :create]
   before_action :set_proposal, only: [:show, :update, :accept, :reject, :close, :counter, :pay, :schedule, :start_session, :finish_session, :rate, :upload_videoaula]
 
   def new
-    @teacher = User.certified_teachers.find(params[:teacher_id])
-    @student = current_user
-    @proposal = Proposal.new
+    if current_user.teacher?
+      @student = User.student.public_view.find(params[:student_id])
+      @teacher = current_user
+      @proposal = Proposal.new(proposal_type: params[:proposal_type], price: 0)
+    else
+      @teacher = User.certified_teachers.find(params[:teacher_id])
+      @student = current_user
+      @proposal = Proposal.new(proposal_type: 'standard_proposal')
+    end
   end
 
   def create
     @proposal = Proposal.new(proposal_params)
-    @proposal.student = current_user
-    @proposal.teacher_id = proposal_params[:teacher_id]
+    if current_user.teacher?
+      @proposal.teacher = current_user
+      @proposal.student_id = proposal_params[:student_id]
+    else
+      @proposal.student = current_user
+      @proposal.teacher_id = proposal_params[:teacher_id]
+    end
     @proposal.sender = current_user
     @proposal.status = :pending
     
@@ -20,22 +31,28 @@ class ProposalsController < ApplicationController
       if @proposal.knowledge_pill? && (params[:message_content].present? || params[:attachment].present?)
         @proposal.messages.create(
           user: current_user,
-          content: params[:message_content] || "Dúvida enviada via anexo.",
+          content: params[:message_content] || (@proposal.doubt_clarification? ? "Iniciou o esclarecimento de dúvidas." : "Dúvida enviada via anexo."),
           attachment: params[:attachment],
           message_type: :regular
         )
       end
 
       [@proposal.student, @proposal.teacher].each do |u|
-        prefix = u.id == current_user.id ? "Você enviou uma" : "Você recebeu uma"
-        Notification.create(user: u, message: "#{prefix} nova proposta de #{current_user.name} em #{@proposal.subject.name}.", url: "/proposals/#{@proposal.id}")
+        is_sender = (u.id == current_user.id)
+        msg = @proposal.type_created_message(current_user.name, !is_sender)
+        Notification.create(user: u, message: msg, url: "/proposals/#{@proposal.id}")
       end
-      flash[:notice] = "Proposta enviada com sucesso! Aguarde a resposta."
+      flash[:notice] = "#{@proposal.proposal_type_human} enviado(a) com sucesso! Aguarde a resposta."
       redirect_to proposal_path(@proposal)
     else
       # Reload counterpart for re-rendering the form
-      @teacher = User.find_by(id: proposal_params[:teacher_id])
-      @student = current_user
+      if current_user.teacher?
+        @student = User.find_by(id: proposal_params[:student_id])
+        @teacher = current_user
+      else
+        @teacher = User.find_by(id: proposal_params[:teacher_id])
+        @student = current_user
+      end
       flash.now[:alert] = "Não foi possível enviar a proposta: " + @proposal.errors.full_messages.to_sentence
       render :new, status: :unprocessable_entity
     end
@@ -49,8 +66,8 @@ class ProposalsController < ApplicationController
   def accept
     if @proposal.recipient?(current_user) && @proposal.pending?
       if @proposal.update(status: :accepted)
-        notify_both("A proposta '#{@proposal.subject.name}' foi aceita por #{current_user.name}.")
-        flash[:notice] = "Proposta aceita com sucesso!"
+        notify_both(@proposal.type_accepted_message(current_user.name))
+        flash[:notice] = "#{@proposal.proposal_type_human} aceito(a) com sucesso!"
       else
         flash[:alert] = "Não foi possível aceitar a proposta: " + @proposal.errors.full_messages.to_sentence
       end
@@ -63,8 +80,8 @@ class ProposalsController < ApplicationController
   def reject
     if @proposal.recipient?(current_user) && @proposal.pending?
       if @proposal.update(status: :rejected)
-        notify_both("A proposta '#{@proposal.subject.name}' foi recusada por #{current_user.name}.")
-        flash[:notice] = "Proposta recusada."
+        notify_both(@proposal.type_rejected_message(current_user.name))
+        flash[:notice] = "#{@proposal.proposal_type_human} recusado(a)."
       else
         flash[:alert] = "Não foi possível recusar a proposta: " + @proposal.errors.full_messages.to_sentence
       end
@@ -272,6 +289,25 @@ class ProposalsController < ApplicationController
 
   private
 
+  def require_student_or_teacher_actions
+    type = params[:proposal_type] || params.dig(:proposal, :proposal_type)
+    type = 'standard_proposal' if type.blank?
+
+    if current_user.teacher?
+      unless ['experimental_invite', 'doubt_clarification'].include?(type)
+        flash[:alert] = "Professores não podem fazer propostas padrão para alunos."
+        redirect_to root_path
+      end
+    elsif current_user.student?
+      unless type == 'standard_proposal'
+        flash[:alert] = "Alunos não podem enviar convites ou esclarecimentos de dúvidas."
+        redirect_to root_path
+      end
+    else
+      redirect_to login_path
+    end
+  end
+
   def notify_both(msg)
     [@proposal.student, @proposal.teacher].each do |u|
       Notification.create(
@@ -291,7 +327,7 @@ class ProposalsController < ApplicationController
   end
 
   def proposal_params
-    p = params.require(:proposal).permit(:teacher_id, :student_id, :subject_id, :price, :modality, :duration)
+    p = params.require(:proposal).permit(:teacher_id, :student_id, :subject_id, :price, :modality, :duration, :proposal_type)
     if p[:price].is_a?(String)
       price_str = p[:price].gsub("R$ ", "").strip
       if price_str.include?(",")

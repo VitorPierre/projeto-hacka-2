@@ -110,4 +110,42 @@ class ProposalTest < ActiveSupport::TestCase
     assert_equal 75.0, prop_90.recommended_price
     assert_equal "1 hora e 30 minutos", prop_90.duration_human
   end
+
+  test "proposal_type validation and sender roles" do
+    student = users(:student)
+    teacher = users(:teacher)
+    subject = subjects(:programming)
+
+    # 1. Standard proposal must have student as sender
+    p1 = Proposal.new(student: student, teacher: teacher, subject: subject, price: 50.0, sender: student, modality: :focused_mentoring, duration: 60, proposal_type: :standard_proposal)
+    assert p1.valid?
+
+    p2 = Proposal.new(student: student, teacher: teacher, subject: subject, price: 50.0, sender: teacher, modality: :focused_mentoring, duration: 60, proposal_type: :standard_proposal)
+    assert_not p2.valid?
+    assert_includes p2.errors[:sender].join, "Apenas o aluno pode iniciar uma proposta padrão."
+
+    # 2. Experimental invite must have teacher as sender and focused_mentoring modality
+    p3 = Proposal.new(student: student, teacher: teacher, subject: subject, price: 0.0, sender: teacher, modality: :focused_mentoring, duration: 60, proposal_type: :experimental_invite)
+    assert p3.valid?
+
+    p4 = Proposal.new(student: student, teacher: teacher, subject: subject, price: 0.0, sender: student, modality: :focused_mentoring, duration: 60, proposal_type: :experimental_invite)
+    assert_not p4.valid?
+    assert_includes p4.errors[:sender].join, "Apenas o professor pode iniciar um convite ou esclarecimento de dúvidas."
+
+    p5 = Proposal.new(student: student, teacher: teacher, subject: subject, price: 0.0, sender: teacher, modality: :knowledge_pill, proposal_type: :experimental_invite)
+    assert_not p5.valid?
+    assert_includes p5.errors[:modality].join, "convites experimentais devem ser mentorias focadas"
+
+    # 3. Doubt clarification must have teacher as sender and knowledge_pill modality
+    p6 = Proposal.new(student: student, teacher: teacher, subject: subject, price: 0.0, sender: teacher, modality: :knowledge_pill, proposal_type: :doubt_clarification)
+    assert p6.valid?
+
+    p7 = Proposal.new(student: student, teacher: teacher, subject: subject, price: 0.0, sender: student, modality: :knowledge_pill, proposal_type: :doubt_clarification)
+    assert_not p7.valid?
+    assert_includes p7.errors[:sender].join, "Apenas o professor pode iniciar um convite ou esclarecimento de dúvidas."
+
+    p8 = Proposal.new(student: student, teacher: teacher, subject: subject, price: 0.0, sender: teacher, modality: :focused_mentoring, duration: 60, proposal_type: :doubt_clarification)
+    assert_not p8.valid?
+    assert_includes p8.errors[:modality].join, "esclarecimentos de dúvidas devem ser pílulas de conhecimento"
+  end
 end
