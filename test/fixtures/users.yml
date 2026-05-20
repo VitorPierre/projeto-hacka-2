@@ -7,6 +7,9 @@ student:
   phone: "11999999999"
   cpf: "11122233344"
   certified: false
+  terms_accepted_version: "1.0"
+  privacy_accepted_version: "1.0"
+  terms_accepted_at: 2026-05-20 12:00:00
 
 teacher:
   name: "Professor Teste"
@@ -18,6 +21,9 @@ teacher:
   phone: "11888888888"
   cpf: "55566677788"
   certified: true
+  terms_accepted_version: "1.0"
+  privacy_accepted_version: "1.0"
+  terms_accepted_at: 2026-05-20 12:00:00
 
 uncertified_teacher:
   name: "Professor Sem Certificado"
@@ -29,6 +35,9 @@ uncertified_teacher:
   phone: "11777777777"
   cpf: "99900011122"
   certified: false
+  terms_accepted_version: "1.0"
+  privacy_accepted_version: "1.0"
+  terms_accepted_at: 2026-05-20 12:00:00
 
 admin:
   name: "Administrador"
@@ -41,6 +50,9 @@ admin:
   cpf: "88899900011"
   certified: true
   admin: true
+  terms_accepted_version: "1.0"
+  privacy_accepted_version: "1.0"
+  terms_accepted_at: 2026-05-20 12:00:00
 
 suspicious_user:
   name: "bobo"
@@ -52,3 +64,6 @@ suspicious_user:
   cpf: "22233344455"
   certified: false
   moderation_status: 0
+  terms_accepted_version: "1.0"
+  privacy_accepted_version: "1.0"
+  terms_accepted_at: 2026-05-20 12:00:00

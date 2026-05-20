@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_19_211600) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_20_154651) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -128,8 +128,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_19_211600) do
     t.string "phone"
     t.text "preferences"
     t.string "presentation_video_url"
+    t.string "privacy_accepted_version"
     t.integer "role", default: 0
     t.integer "status", default: 0
+    t.datetime "terms_accepted_at"
+    t.string "terms_accepted_version"
     t.datetime "updated_at", null: false
   end
 

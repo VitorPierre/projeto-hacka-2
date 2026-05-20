@@ -7,6 +7,8 @@ class ApplicationController < ActionController::Base
 
   helper_method :current_user, :logged_in?
 
+  before_action :check_terms_acceptance
+
   private
 
   def current_user
@@ -44,5 +46,19 @@ class ApplicationController < ActionController::Base
       flash[:alert] = "Acesso restrito para professores."
       redirect_to root_path
     end
+  end
+
+  def check_terms_acceptance
+    if logged_in? && !current_user.accepted_current_terms_and_privacy?
+      return if allowed_actions_for_unaccepted_terms?
+
+      flash[:alert] = "Atualizamos nossos Termos de Uso e Política de Privacidade. Por favor, leia e aceite os novos termos para continuar utilizando a plataforma."
+      redirect_to accept_terms_path
+    end
+  end
+
+  def allowed_actions_for_unaccepted_terms?
+    (controller_name == 'home' && ['terms', 'privacy', 'accept_terms', 'submit_accept_terms'].include?(action_name)) ||
+    (controller_name == 'sessions' && action_name == 'destroy')
   end
 end

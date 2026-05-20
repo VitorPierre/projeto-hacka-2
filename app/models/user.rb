@@ -51,7 +51,15 @@ class User < ApplicationRecord
     EDUCATION_LEVEL_NAMES[education_level] || "Não informado"
   end
 
+  CURRENT_TERMS_VERSION = "1.0"
+  CURRENT_PRIVACY_VERSION = "1.0"
+
+  def accepted_current_terms_and_privacy?
+    terms_accepted_version == CURRENT_TERMS_VERSION && privacy_accepted_version == CURRENT_PRIVACY_VERSION
+  end
+
   before_validation :normalize_cpf_and_phone
+  before_create :record_terms_acceptance
 
   validates :terms_acceptance, acceptance: { message: "deve ser aceito para prosseguir" }, on: :create
   validates :name, presence: { message: "não pode ficar em branco" }, inappropriate_text: true, if: :name_changed?
@@ -88,6 +96,12 @@ class User < ApplicationRecord
   end
 
   private
+
+  def record_terms_acceptance
+    self.terms_accepted_version = CURRENT_TERMS_VERSION
+    self.privacy_accepted_version = CURRENT_PRIVACY_VERSION
+    self.terms_accepted_at = Time.current
+  end
 
   def valid_presentation_video_url
     video_id = youtube_video_id

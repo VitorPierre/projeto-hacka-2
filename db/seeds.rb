@@ -31,3 +31,7 @@ areas.each do |area|
   Subject.find_or_create_by!(name: area)
 end
 puts "   #{Subject.count} áreas cadastradas/verificadas."
+
+# Nota: Caso decida futuramente cadastrar usuários de demonstração/teste no seed,
+# certifique-se de associar as colunas :terms_accepted_version, :privacy_accepted_version
+# e :terms_accepted_at com os valores vigentes vigentes no User (ex: User::CURRENT_TERMS_VERSION).

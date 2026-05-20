@@ -7,6 +7,8 @@ Rails.application.routes.draw do
 
   get '/terms', to: 'home#terms', as: :terms
   get '/privacy', to: 'home#privacy', as: :privacy
+  get '/accept_terms', to: 'home#accept_terms', as: :accept_terms
+  post '/accept_terms', to: 'home#submit_accept_terms', as: :submit_accept_terms
 
   resources :users, only: [:new, :create, :edit, :update] do
     collection do

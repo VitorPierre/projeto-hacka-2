@@ -707,6 +707,33 @@ Implementado com sucesso o ajuste no fluxo de propostas para simplificar as moda
   - Adicionado cenário de teste robusto para verificar o bloqueio de cadastro sem aceitação dos termos, retornando erros apropriados (`unprocessable_entity`).
   - A suíte de testes passou na sua totalidade com 100% de sucesso (**141 runs, 738 assertions, 0 failures, 0 errors**).
 
+## 🔄 Versionamento e Aceite Dinâmico de Termos & LGPD (Conformidade Jurídica Contínua)
+- **Causa Raiz/Necessidade:** Além de possuir os Termos e Políticas, a plataforma precisava registrar o consentimento individual e inequívoco dos usuários (evidência de aceite), rastrear a versão exata que concordaram e forçar reaceite dinâmico caso os termos mudem no futuro (ex: LGPD/novas taxas), bloqueando navegação até consentimento sem quebrar os fluxos existentes.
+- **Modelagem de Banco de Dados & Fixtures (`db/migrate` e `test/fixtures`):**
+  - Executada migration para adicionar `terms_accepted_version` (string), `privacy_accepted_version` (string) e `terms_accepted_at` (datetime) à tabela de `users`.
+  - Atualizados os arquivos de fixture (`test/fixtures/users.yml`) e seeds (`db/seeds.rb`) definindo que os usuários existentes já iniciam com a versão `"1.0"` aceita, evitando quebrar a suíte de testes e garantindo uma base de dados limpa.
+- **Estratégia de Persistência & Versionamento (`app/models/user.rb`):**
+  - Definidas constantes estáticas de versão no model `User`: `CURRENT_TERMS_VERSION = "1.0"` e `CURRENT_PRIVACY_VERSION = "1.0"`.
+  - Implementado helper `accepted_current_terms_and_privacy?` para rápida verificação de conformidade da sessão ativa.
+  - Adicionado callback `before_create :record_terms_acceptance` incondicional, assegurando que qualquer conta criada (seja via UI, sementes, console ou testes paralelos) herde o aceite das versões vigentes de forma nativa e sem necessidade de refatorar dezenas de testes de integração existentes.
+- **Barreira Global de Redirecionamento (`ApplicationController`):**
+  - Implementado filtro global `before_action :check_terms_acceptance`.
+  - Se o usuário estiver autenticado mas sua versão aceita for nula ou inferior às constantes vigentes, a barreira o redireciona automaticamente para a rota de aceite, com uma mensagem amigável no flash message.
+  - **Prevenção de Loops Infinitos:** Criada a lista de exceções seguras em `allowed_actions_for_unaccepted_terms?`, permitindo acesso livre a `/terms`, `/privacy`, `/accept_terms` (GET e POST) e, fundamentalmente, `/logout` (`sessions#destroy`), para que usuários que rejeitam as mudanças de termos possam se desconectar em segurança em vez de ficarem presos na tela de bloqueio.
+- **Página de Reaceite Premium (`app/views/home/accept_terms.html.erb`):**
+  - Criada uma tela de consentimento expresso alinhada com as diretrizes visuais `aprendeAI` (estilo light-mode verde-floresta `#15803D`, bordas arredondadas e suavizadas, e cards limpos).
+  - Inclui links explícitos para visualização dos documentos atualizados abrindo em nova aba (`target="_blank"`), preservando o estado do formulário de aceite.
+  - Interface acessível seguindo os padrões WCAG AA com foco em contornos contrastantes (`focus-visible:outline-aprende-primary`) e checkbox com labels clicáveis e intuitivos.
+- **Criação de Teste de Integração Robusto (`test/integration/terms_versioning_flow_test.rb`):**
+  - Criada suíte dedicada para validar todos os comportamentos do versionamento:
+    1. Gravação automática de versões corretas e data/hora no cadastro bem-sucedido.
+    2. Redirecionamento imediato e exibição de alerta para usuários com termos desatualizados tentando navegar no app.
+    3. Permissão de navegação para páginas livres (/terms, /privacy, /logout) mesmo sob a restrição do reaceite, sem loops infinitos.
+    4. Atualização perfeita dos registros no banco e liberação da navegação ao marcar o checkbox e enviar o formulário.
+    5. Impedimento da liberação e retorno de `unprocessable_entity` caso o usuário envie o formulário sem marcar o checkbox de consentimento.
+- **Resultado dos Testes:**
+  - A suíte de testes passou com **100% de sucesso (146 runs, 798 assertions, 0 failures, 0 errors, 0 skips)**, garantindo resiliência absoluta e conformidade total da plataforma.
+
 ## 🔜 Próximos Passos Evolutivos
 - Implantar as alterações no Render para validar a exibição estável das fotos em produção.
 - Configurar volumes persistentes no Render no caminho `/data/storage` para assegurar que uploads físicos não sejam apagados entre restarts de contêiner.
