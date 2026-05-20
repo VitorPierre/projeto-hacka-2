@@ -16,9 +16,151 @@
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible,
+  summary:focus-visible,
   [tabindex="0"]:focus-visible {
     outline: 3px solid var(--color-aprende-primary);
     outline-offset: 2px;
     border-radius: 0.375rem;
   }
+
+  /* Foco visível em labels que envolvem inputs de arquivo ocultos */
+  label:has(input[type="file"]):focus-within {
+    outline: 3px solid var(--color-aprende-primary);
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+  }
+
+  /* Skip link de navegação — oculto visualmente mas acessível por teclado */
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    background: var(--color-aprende-primary);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    z-index: 9999;
+    border-radius: 0 0 0.5rem 0;
+    transition: top 0.1s;
+  }
+  .skip-link:focus {
+    top: 0;
+  }
+
+  /* ── Touch targets mínimos (WCAG 2.5.5 — 44×44px) ─────────────────────── */
+  /* Botões e links interativos garantem área de toque mínima em mobile */
+  button,
+  [role="button"],
+  [type="submit"],
+  [type="button"],
+  [type="reset"],
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Inputs de formulário: altura mínima confortável para touch */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="datetime-local"] {
+    min-height: 44px;
+  }
+
+  /* Remove tap highlight azul padrão em iOS/Android sem remover o foco */
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  label[for] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Scroll suave e momentum no iOS para o container do chat */
+  .chat-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Região de anúncios para leitores de tela (alternativa ao aria-live poluente) */
+  .sr-announcer {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* ── Mobile: ajustes de texto e espaçamento ─────────────────────────────── */
+@media (max-width: 640px) {
+  /* Garante que forms não causem zoom em iOS (fonte mínima 16px) */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="datetime-local"],
+  select,
+  textarea {
+    font-size: 1rem; /* 16px — impede zoom automático no iOS */
+  }
+
+  /* Botão de envio do chat: maior em mobile para toque fácil */
+  #submit-btn {
+    min-height: 48px;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  /* Textarea do chat: altura mínima maior para mobile */
+  #message_content_area {
+    min-height: 80px;
+  }
+
+  /* Tabs do chat: targets maiores em telas pequenas */
+  [role="tab"] {
+    min-height: 44px;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  /* Estrelas de avaliação: maior em mobile */
+  .star-rating-label svg {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  /* Videochamada: iframe full-height em mobile */
+  .video-frame-wrapper {
+    height: 60vh;
+    min-height: 300px;
+  }
+}
+
+/* ── Videochamada: barra de controles acessíveis ────────────────────────── */
+.video-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Timer: destaque visual quando em alerta */
+[role="timer"].timer-warning {
+  color: #b45309; /* amber-700 — contraste 4.8:1 contra fundo branco */
+}
+[role="timer"].timer-danger {
+  color: #b91c1c; /* red-700 — contraste 5.9:1 contra fundo branco */
 }

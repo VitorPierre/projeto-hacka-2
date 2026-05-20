@@ -64,8 +64,8 @@
         <%= field_error(@user, :certificate_url) %>
       </div>
       
-      <div>
-        <label class="block text-sm font-medium text-aprende-text mb-1">Áreas de Ensino</label>
+      <fieldset>
+        <legend class="block text-sm font-medium text-aprende-text mb-1">Áreas de Ensino</legend>
         <div class="space-y-2">
           <% if Subject.any? %>
             <%= f.collection_check_boxes :subject_ids, Subject.all, :id, :name do |b| %>
@@ -79,7 +79,7 @@
             <p class="text-sm text-aprende-muted italic">Nenhuma área cadastrada no sistema. Contate o suporte.</p>
           <% end %>
         </div>
-      </div>
+      </fieldset>
     </div>
 
     <div id="student_fields" class="<%= @role == 'student' ? '' : 'hidden' %> space-y-4 border-t border-aprende-secondary mt-6 pt-4">
@@ -108,7 +108,7 @@
     </div>
 
     <div class="pt-4">
-      <%= f.submit "Finalizar Cadastro", class: "w-full bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 px-4 rounded-xl transition-colors cursor-pointer" %>
+      <%= f.submit "Finalizar Cadastro", class: "w-full bg-aprende-primary hover:bg-aprende-primary-hover text-white font-medium py-3 px-4 rounded-xl transition-colors cursor-pointer" %>
     </div>
   <% end %>
 </div>

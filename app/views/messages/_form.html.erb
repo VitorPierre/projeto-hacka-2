@@ -25,22 +25,25 @@
   <% end %>
 
   <div class="relative">
+    <label for="message_content_area" class="sr-only">
+      <% if current_user.teacher? %>Conteúdo da mensagem ou enunciado da atividade<% else %>Escreva sua mensagem<% end %>
+    </label>
     <%= f.text_area :content, id: "message_content_area", placeholder: "Escreva sua mensagem...", rows: 3, class: "w-full p-4 pb-12 rounded-xl border border-aprende-secondary bg-aprende-bg text-aprende-text placeholder-aprende-muted focus:outline-none focus:ring-2 focus:ring-aprende-primary transition-all resize-none", aria: { label: "Conteúdo da mensagem ou atividade" } %>
     
     <% if proposal.paid? || proposal.knowledge_pill? %>
       <div id="attachment-btn-container" class="absolute left-3 bottom-3 flex items-center gap-2">
-        <label class="cursor-pointer text-aprende-muted hover:text-aprende-primary p-1.5 rounded-lg transition-colors" title="Anexar Arquivo">
-          <%= f.file_field :attachment, class: "hidden", onchange: "this.form.requestSubmit();", aria: { label: "Anexar arquivo" } %>
+        <label class="cursor-pointer text-aprende-muted hover:text-aprende-primary p-1.5 rounded-lg transition-colors" title="Anexar Arquivo" aria-label="Anexar arquivo à mensagem">
+          <%= f.file_field :attachment, class: "sr-only", onchange: "this.form.requestSubmit();", aria: { label: "Selecione um arquivo para anexar" } %>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
         </label>
         <% if proposal.started_at? && !proposal.finished_at? && proposal.synchronous? %>
-          <%= link_to "https://meet.jit.si/aprendeai-proposal-#{proposal.id}", target: "_blank", class: "text-[#0056b3] hover:text-[#004494] p-1.5 rounded-lg transition-colors", title: "Iniciar Videochamada Externa" do %>
+          <%= link_to "https://meet.jit.si/aprendeai-proposal-#{proposal.id}", target: "_blank", class: "text-[#0056b3] hover:text-[#004494] p-1.5 rounded-lg transition-colors", title: "Iniciar Videochamada Externa", aria: { label: "Abrir sala de videochamada" } do %>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
           <% end %>
         <% end %>
       </div>
     <% else %>
-      <div class="absolute left-3 bottom-3 flex items-center gap-2 opacity-40 cursor-not-allowed" title="Anexos e Videochamada são liberados após a confirmação do pagamento.">
+      <div class="absolute left-3 bottom-3 flex items-center gap-2 opacity-40 cursor-not-allowed" title="Anexos e Videochamada são liberados após a confirmação do pagamento." aria-hidden="true">
         <div class="text-aprende-muted p-1.5 rounded-lg">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
         </div>
@@ -52,12 +55,19 @@
   </div>
 
   <div class="flex justify-end">
-    <%= f.submit "Enviar Mensagem", id: "submit-btn", class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer shadow-sm" %>
+    <%= f.submit "Enviar Mensagem", id: "submit-btn", class: "bg-aprende-primary hover:bg-aprende-primary-hover text-white font-medium py-3 px-6 rounded-xl transition-colors cursor-pointer shadow-sm" %>
   </div>
 <% end %>
 
+<div id="sr-announcer" class="sr-only" aria-live="polite"></div>
+
 <% if current_user.teacher? %>
   <script>
+    function announce(msg) {
+      const announcer = document.getElementById('sr-announcer');
+      if (announcer) announcer.textContent = msg;
+    }
+
     if (typeof switchTab === 'undefined') {
       window.switchTab = function(type) {
         const tabMsg = document.getElementById('tab-message');
@@ -82,6 +92,7 @@
           contentArea.placeholder = 'Digite a pergunta ou enunciado da atividade...';
           if (attachmentBtn) attachmentBtn.classList.add('hidden');
           submitBtn.value = 'Enviar Atividade';
+          announce('Modo de atividade ativado');
         } else {
           tabMsg.classList.add('border-aprende-primary', 'text-aprende-text');
           tabMsg.classList.remove('border-transparent', 'text-aprende-muted');
@@ -96,6 +107,7 @@
           contentArea.placeholder = 'Escreva sua mensagem...';
           if (attachmentBtn) attachmentBtn.classList.remove('hidden');
           submitBtn.value = 'Enviar Mensagem';
+          announce('Modo de mensagem normal ativado');
         }
       }
     }
@@ -113,5 +125,36 @@
         }
       }
     }
+
+    (function() {
+      const tablist = document.querySelector('[role="tablist"]');
+      if (!tablist) return;
+
+      tablist.addEventListener('keydown', function(e) {
+        const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+        const currentIndex = tabs.indexOf(document.activeElement);
+        if (currentIndex === -1) return;
+
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          const next = tabs[(currentIndex + 1) % tabs.length];
+          next.focus();
+          next.click();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const prev = tabs[(currentIndex - 1 + tabs.length) % tabs.length];
+          prev.focus();
+          prev.click();
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          tabs[0].focus();
+          tabs[0].click();
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          tabs[tabs.length - 1].focus();
+          tabs[tabs.length - 1].click();
+        }
+      });
+    })();
   </script>
 <% end %>

@@ -51,8 +51,8 @@
         <%= field_error(@proposal, :modality) %>
       </div>
 
-      <div class="flex flex-col gap-1.5 hidden" id="duration-container">
-        <label class="text-sm font-medium text-aprende-text">Duração da Mentoria</label>
+      <fieldset class="flex flex-col gap-1.5 hidden" id="duration-container">
+        <legend class="text-sm font-medium text-aprende-text">Duração da Mentoria</legend>
         <div class="flex gap-4">
           <div class="flex-1 flex flex-col gap-1">
             <label for="duration-hours" class="text-xs text-aprende-muted">Horas</label>
@@ -77,7 +77,7 @@
         </div>
         <%= f.hidden_field :duration, id: "duration-input" %>
         <%= field_error(@proposal, :duration) %>
-      </div>
+      </fieldset>
 
       <div class="flex flex-col gap-1">
         <div class="flex justify-between items-end">
@@ -107,10 +107,10 @@
         
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2">
-            <label for="attachment-input" class="cursor-pointer bg-white border border-aprende-secondary hover:bg-gray-50 text-aprende-text py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 focus-within:ring-2 focus-within:ring-aprende-primary focus-within:ring-offset-2">
+            <label for="attachment-input" class="cursor-pointer bg-white border border-aprende-secondary hover:bg-gray-50 text-aprende-text py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
               <svg class="w-4 h-4 text-aprende-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
               Anexar Arquivo
-              <%= file_field_tag :attachment, id: "attachment-input", class: "hidden", multiple: true %>
+              <%= file_field_tag :attachment, id: "attachment-input", class: "sr-only", multiple: true %>
             </label>
           </div>
           <div id="attachment-preview" class="hidden flex flex-col gap-1.5 mt-1"></div>
@@ -132,7 +132,7 @@
       <div class="pt-2 flex flex-col sm:flex-row gap-4">
         <% cancel_path = current_user.student? ? teachers_path : students_path %>
         <%= link_to "Cancelar", cancel_path, class: "w-full sm:flex-1 text-center bg-white border border-aprende-secondary hover:bg-aprende-bg text-aprende-muted font-medium py-3 rounded-xl transition-colors" %>
-        <%= f.submit "Enviar Proposta", class: "w-full sm:flex-1 bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 rounded-xl transition-colors cursor-pointer" %>
+        <%= f.submit "Enviar Proposta", class: "w-full sm:flex-1 bg-aprende-primary hover:bg-aprende-primary-hover text-white font-medium py-3 rounded-xl transition-colors cursor-pointer" %>
       </div>
     <% end %>
   </div>

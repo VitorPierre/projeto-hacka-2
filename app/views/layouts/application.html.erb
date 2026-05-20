@@ -20,6 +20,7 @@
   </head>
 
   <body class="bg-aprende-bg text-aprende-text font-sans min-h-screen flex flex-col">
+    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
     <header class="bg-white/80 backdrop-blur-md border-b border-aprende-secondary sticky top-0 z-50 transition-all">
       <nav class="px-4 md:px-8 py-4 flex justify-between items-center max-w-7xl mx-auto" aria-label="Navegação principal">
         <div class="flex items-center gap-3">
@@ -175,7 +176,7 @@
       </div>
     <% end %>
 
-    <main class="flex-1 w-full max-w-7xl mx-auto p-6">
+    <main id="main-content" role="main" class="flex-1 w-full max-w-7xl mx-auto p-6">
       <%= yield %>
     </main>
 

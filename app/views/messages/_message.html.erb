@@ -1,9 +1,9 @@
 <div id="<%= dom_id(message) %>" class="message-wrapper flex items-start gap-3 flex-row" data-sender-id="<%= message.user_id %>">
-  <div class="flex-shrink-0 mt-1 message-avatar">
+  <div class="flex-shrink-0 mt-1 message-avatar" aria-hidden="true">
     <%= user_avatar(message.user, size: "w-8 h-8", text_size: "text-xs") %>
   </div>
   <div class="message-aligner flex flex-col items-start max-w-[85%] w-full">
-    <span class="text-[10px] text-aprende-muted mb-1 px-1"><%= message.user.name %> - <%= message.created_at.strftime('%H:%M') %></span>
+    <span class="text-[10px] text-aprende-muted mb-1 px-1" aria-hidden="true"><%= message.user.name %> - <%= message.created_at.strftime('%H:%M') %></span>
     
     <% if message.activity? %>
       <!-- Renderizado especial de atividade -->
@@ -52,7 +52,7 @@
                 <div class="flex flex-col gap-2 mb-3">
                   <% message.parsed_options.each_with_index do |option, idx| %>
                     <label class="flex items-start gap-3 p-3 rounded-xl border border-aprende-secondary bg-aprende-bg hover:bg-white transition-all cursor-pointer">
-                      <%= radio_button_tag :student_answer, option, false, required: true, class: "mt-0.5 text-aprende-primary focus:ring-aprende-primary border-aprende-secondary cursor-pointer" %>
+                      <%= radio_button_tag :student_answer, option, false, required: true, id: "option_#{message.id}_#{idx}", class: "mt-0.5 text-aprende-primary focus:ring-aprende-primary border-aprende-secondary cursor-pointer" %>
                       <span class="text-sm text-aprende-text"><%= option %></span>
                     </label>
                   <% end %>
@@ -60,11 +60,11 @@
               <% else %>
                 <!-- Pergunta Aberta (Text Area) -->
                 <div class="mb-3">
-                  <%= text_area_tag :student_answer, nil, rows: 2, required: true, placeholder: "Digite sua resposta textual...", class: "w-full p-3 text-sm rounded-xl border border-aprende-secondary bg-aprende-bg text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary resize-none" %>
+                  <%= text_area_tag :student_answer, nil, rows: 2, required: true, placeholder: "Digite sua resposta textual...", aria: { label: "Sua resposta para a atividade" }, class: "w-full p-3 text-sm rounded-xl border border-aprende-secondary bg-aprende-bg text-aprende-text focus:outline-none focus:ring-2 focus:ring-aprende-primary resize-none" %>
                 </div>
               <% end %>
               <div class="flex justify-end">
-                <%= f.submit "Enviar Resposta", class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium text-xs py-2 px-4 rounded-lg transition-colors cursor-pointer shadow-sm" %>
+                <%= f.submit "Enviar Resposta", class: "bg-aprende-primary hover:bg-aprende-primary-hover text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors cursor-pointer shadow-sm" %>
               </div>
             <% end %>
           <% else %>

@@ -210,22 +210,27 @@
             <div class="bg-white border border-yellow-200 rounded-lg p-4">
               <h3 class="font-medium text-aprende-text mb-2">Como foi a aula com <%= @proposal.teacher.name %>?</h3>
               <%= form_with url: rate_proposal_path(@proposal), method: :patch, class: "flex flex-col gap-3" do |f| %>
-                <div class="flex gap-2">
-                  <% 5.downto(1) do |i| %>
-                    <label class="cursor-pointer" aria-label="Avaliar com <%= i %> estrelas">
-                      <%= f.radio_button :rating, i, class: "peer sr-only", required: true %>
-                      <svg class="w-8 h-8 text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-300 peer-focus-visible:ring-2 peer-focus-visible:ring-aprende-primary peer-focus-visible:ring-offset-2 rounded-full transition-colors" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    </label>
-                  <% end %>
-                </div>
+                <%# Estrelas renderizadas em ordem 1→5 para leitores de tela; CSS reverte visualmente %>
+                <fieldset>
+                  <legend class="sr-only">Avaliação da aula: escolha de 1 a 5 estrelas</legend>
+                  <div class="star-rating-group flex gap-2">
+                    <% (1..5).each do |i| %>
+                      <label class="star-rating-label cursor-pointer" aria-label="<%= i %> <%= i == 1 ? 'estrela' : 'estrelas' %>">
+                        <%= f.radio_button :rating, i, class: "peer sr-only", required: (i == 1) %>
+                        <svg class="w-8 h-8 text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-300 peer-focus-visible:ring-2 peer-focus-visible:ring-aprende-primary peer-focus-visible:ring-offset-2 rounded-full transition-colors" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      </label>
+                    <% end %>
+                  </div>
+                </fieldset>
                 <%= f.text_area :feedback, rows: 2, placeholder: "Deixe um comentário (opcional)...", aria: { label: "Comentário de feedback" }, class: "w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-aprende-primary text-sm resize-none" %>
-                <%= f.submit "Enviar Avaliação", class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer self-start" %>
+                <%= f.submit "Enviar Avaliação", class: "bg-aprende-primary hover:bg-aprende-primary-hover text-white font-medium py-2.5 px-5 rounded-lg transition-colors cursor-pointer self-start" %>
               <% end %>
               <style>
-                /* Reverse direction for star hovering logic */
-                .flex.gap-2 { flex-direction: row-reverse; justify-content: flex-end; }
-                .flex.gap-2 > label:hover ~ label svg { color: #facc15; } /* Tailwind yellow-400 */
-                .flex.gap-2 > label:hover svg { color: #facc15; }
+                /* Inverte exibição visual das estrelas (5→1 visualmente, 1→5 no DOM) */
+                .star-rating-group { flex-direction: row-reverse; justify-content: flex-end; }
+                /* Hover: ilumina a estrela focada e todas à direita dela (no DOM = menores valores) */
+                .star-rating-group > label:hover ~ label svg { color: #facc15; }
+                .star-rating-group > label:hover svg { color: #facc15; }
               </style>
             </div>
           <% elsif @proposal.rating.present? %>
@@ -248,7 +253,7 @@
 
       <div class="flex flex-wrap gap-4 items-center mt-2">
         <% if @proposal.recipient?(current_user) && @proposal.pending? %>
-          <%= button_to "Aceitar Proposta", accept_proposal_path(@proposal), method: :patch, class: "bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer" %>
+          <%= button_to "Aceitar Proposta", accept_proposal_path(@proposal), method: :patch, class: "bg-aprende-primary hover:bg-aprende-primary-hover text-white font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer" %>
           <%= button_to "Recusar", reject_proposal_path(@proposal), method: :patch, class: "bg-white text-red-600 border border-red-200 hover:bg-red-50 font-medium py-2.5 px-6 rounded-xl transition-colors cursor-pointer", form: { data: { turbo_confirm: 'Tem certeza que deseja recusar?' } } %>
         <% end %>
 
@@ -296,30 +301,36 @@
   <% if @proposal.started_at? && !@proposal.finished_at? %>
     <% if @proposal.synchronous? %>
       <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-4 sm:p-6 md:p-8 flex flex-col gap-4">
-        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-aprende-secondary/30 pb-3">
+        <div class="video-controls-bar border-b border-aprende-secondary/30 pb-3">
           <h2 class="text-xl font-medium text-aprende-text flex items-center gap-2">
-            <svg class="w-6 h-6 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            <svg class="w-6 h-6 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
             Sala Virtual
           </h2>
-          <div class="flex items-center gap-3 self-start sm:self-auto">
-            <span class="text-aprende-muted text-sm font-medium">Tempo Restante:</span>
-            <span id="session-timer" class="font-mono text-xl font-bold text-aprende-primary bg-aprende-bg px-3 py-1 rounded-lg border border-aprende-secondary" data-duration="<%= @proposal.duration.to_i %>">
+          <div class="flex items-center gap-3">
+            <span class="text-aprende-muted text-sm font-medium" id="timer-label">Tempo Restante:</span>
+            <span id="session-timer" role="timer" aria-label="Tempo restante da sessão" aria-labelledby="timer-label" class="font-mono text-xl font-bold text-aprende-primary bg-aprende-bg px-3 py-1 rounded-lg border border-aprende-secondary" data-duration="<%= @proposal.duration.to_i %>">
               <%= sprintf("%02d:00", @proposal.duration.to_i) %>
             </span>
           </div>
         </div>
         
-        <div class="w-full h-[500px] md:h-auto md:aspect-video rounded-xl overflow-hidden border border-aprende-secondary bg-black">
-          <iframe allow="camera; microphone; fullscreen; display-capture; autoplay" src="https://meet.jit.si/aprendeai-proposal-<%= @proposal.id %>" style="height: 100%; width: 100%; border: 0px;"></iframe>
+        <%# Região de anúncio para alertas de tempo — polite para não interromper %>
+        <div id="video-sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+        <div class="video-frame-wrapper w-full rounded-xl overflow-hidden border border-aprende-secondary bg-black" style="aspect-ratio: 16/9; min-height: 300px;">
+          <iframe title="Sala de videochamada da aula - Jitsi Meet" allow="camera; microphone; fullscreen; display-capture; autoplay" src="https://meet.jit.si/aprendeai-proposal-<%= @proposal.id %>" style="height: 100%; width: 100%; border: 0px;"></iframe>
         </div>
         
         <script>
           document.addEventListener("turbo:load", function() {
             const timerEl = document.getElementById("session-timer");
+            const announcer = document.getElementById("video-sr-announcer");
             if (!timerEl) return;
             
             let durationMinutes = parseInt(timerEl.dataset.duration);
             let timeLeft = durationMinutes * 60; // in seconds
+            let warned5min = false;
+            let warned1min = false;
             
             const interval = setInterval(function() {
               timeLeft--;
@@ -327,14 +338,22 @@
               if (timeLeft <= 0) {
                 clearInterval(interval);
                 timerEl.textContent = "00:00";
-                timerEl.classList.add("text-red-600");
-                timerEl.classList.remove("text-aprende-primary");
+                timerEl.classList.remove("text-aprende-primary", "timer-warning");
+                timerEl.classList.add("timer-danger");
+                if (announcer) announcer.textContent = "Tempo da sessão encerrado.";
                 return;
               }
               
-              if (timeLeft <= 300) { // 5 minutes warning
-                timerEl.classList.add("text-yellow-600");
+              if (timeLeft <= 60 && !warned1min) { // 1 minute warning
+                warned1min = true;
+                timerEl.classList.remove("text-aprende-primary", "timer-warning");
+                timerEl.classList.add("timer-danger");
+                if (announcer) announcer.textContent = "Atenção: 1 minuto restante na sessão.";
+              } else if (timeLeft <= 300 && !warned5min) { // 5 minutes warning
+                warned5min = true;
                 timerEl.classList.remove("text-aprende-primary");
+                timerEl.classList.add("timer-warning");
+                if (announcer) announcer.textContent = "Atenção: 5 minutos restantes na sessão.";
               }
               
               let minutes = Math.floor(timeLeft / 60);
@@ -354,20 +373,24 @@
           <p class="text-aprende-muted text-sm mt-1">Aguardando a resposta do professor pelo chat.</p>
         </div>
         <div class="flex items-center gap-3 bg-white p-3 rounded-lg border border-aprende-secondary shadow-sm">
-          <span class="text-aprende-text text-sm font-medium">Prazo para Resposta:</span>
-          <span id="kp-timer" class="font-mono text-xl font-bold text-aprende-primary" data-started-at="<%= @proposal.started_at.to_i %>">
+          <span class="text-aprende-text text-sm font-medium" id="kp-timer-label">Prazo para Resposta:</span>
+          <span id="kp-timer" role="timer" aria-label="Tempo restante para resposta da pílula" aria-labelledby="kp-timer-label" class="font-mono text-xl font-bold text-aprende-primary" data-started-at="<%= @proposal.started_at.to_i %>">
             24:00:00
           </span>
         </div>
       </div>
+      <div id="kp-sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
       
       <script>
         document.addEventListener("turbo:load", function() {
           const kpTimerEl = document.getElementById("kp-timer");
+          const kpAnnouncer = document.getElementById("kp-sr-announcer");
           if (!kpTimerEl) return;
           
           let startedAt = parseInt(kpTimerEl.dataset.startedAt);
           let deadline = startedAt + (24 * 60 * 60); // 24 hours in seconds
+          let kpWarned1h = false;
+          let kpWarned30m = false;
           
           const kpInterval = setInterval(function() {
             let now = Math.floor(Date.now() / 1000);
@@ -376,14 +399,22 @@
             if (timeLeft <= 0) {
               clearInterval(kpInterval);
               kpTimerEl.textContent = "00:00:00";
-              kpTimerEl.classList.add("text-red-600");
-              kpTimerEl.classList.remove("text-aprende-primary");
+              kpTimerEl.classList.remove("text-aprende-primary", "timer-warning");
+              kpTimerEl.classList.add("timer-danger");
+              if (kpAnnouncer) kpAnnouncer.textContent = "Prazo para resposta da pílula encerrado.";
               return;
             }
             
-            if (timeLeft <= 3600) { // 1 hour warning
-              kpTimerEl.classList.add("text-yellow-600");
+            if (timeLeft <= 1800 && !kpWarned30m) { // 30 min warning
+              kpWarned30m = true;
+              kpTimerEl.classList.remove("text-aprende-primary", "timer-warning");
+              kpTimerEl.classList.add("timer-danger");
+              if (kpAnnouncer) kpAnnouncer.textContent = "Atenção: 30 minutos restantes para responder a pílula.";
+            } else if (timeLeft <= 3600 && !kpWarned1h) { // 1 hour warning
+              kpWarned1h = true;
               kpTimerEl.classList.remove("text-aprende-primary");
+              kpTimerEl.classList.add("timer-warning");
+              if (kpAnnouncer) kpAnnouncer.textContent = "Atenção: 1 hora restante para responder a pílula.";
             }
             
             let hours = Math.floor(timeLeft / 3600);
@@ -400,7 +431,7 @@
   <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-6 md:p-8 flex flex-col gap-6">
     <h2 class="text-xl font-medium text-aprende-text">Mensagens</h2>
     
-    <div id="messages" class="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2">
+    <div id="messages" aria-live="polite" aria-atomic="false" aria-label="Mensagens desta proposta" class="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2 chat-scroll">
       <% if @messages.any? %>
         <%= render @messages %>
       <% else %>

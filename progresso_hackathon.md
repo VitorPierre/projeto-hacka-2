@@ -734,12 +734,25 @@ Implementado com sucesso o ajuste no fluxo de propostas para simplificar as moda
 - **Resultado dos Testes:**
   - A suíte de testes passou com **100% de sucesso (146 runs, 798 assertions, 0 failures, 0 errors, 0 skips)**, garantindo resiliência absoluta e conformidade total da plataforma.
 
+## ♿ Implementação de Acessibilidade (WCAG 2.1 AA) — Concluída
+- **Escopo:** Correções de maior impacto real nas 5 telas críticas: Login, Cadastro, Nova Proposta, Chat e Videochamada.
+- **Alterações Aplicadas:**
+  - **`application.css`:** Adicionados `summary:focus-visible` e `label:has(input[type="file"]):focus-within` ao bloco de foco global. Criada classe utilitária `.skip-link` para navegação de teclado sem distração visual.
+  - **`layouts/application.html.erb`:** Adicionado skip link "Pular para o conteúdo principal" (invisível até Tab), `id="main-content"` e `role="main"` no `<main>`.
+  - **`sessions/new.html.erb`:** Substituído hover direto `#159b3f` por token `aprende-primary-hover` no botão; adicionado `aria-hidden="true"` no separador decorativo `&bull;`.
+  - **`users/new.html.erb`:** `<label>` de "Áreas de Ensino" convertida em `<fieldset>/<legend>` para associação semântica correta de grupo de checkboxes. Hover do botão de cadastro corrigido.
+  - **`proposals/new.html.erb`:** `<label>` de "Duração da Mentoria" convertida em `<fieldset>/<legend>`. Input de arquivo do botão "Anexar Arquivo" alterado de `class="hidden"` para `class="sr-only"` (foco por teclado restaurado). Hover corrigido.
+  - **`messages/_form.html.erb`:** Input de arquivo do chat alterado de `hidden` para `sr-only`. Adicionado `aria-label` descritivo na label do botão de anexo. Hover do botão de envio corrigido.
+  - **`messages/_message.html.erb`:** Adicionado `aria: { label: "Sua resposta para a atividade" }` no textarea de resposta aberta das atividades. Hover do botão "Enviar Resposta" corrigido.
+  - **`proposals/show.html.erb`:** `<iframe>` do Jitsi Meet recebeu `title="Sala de videochamada da aula - Jitsi Meet"`. Cronômetros de sessão e pílula receberam `role="timer"`, `aria-label` e `aria-labelledby` semânticos. Contêiner `#messages` recebeu `aria-live="polite"` e `aria-atomic="false"` para anúncio automático de novas mensagens. Hover de todos os botões CTAs corrigido.
+- **Testes:** A suíte completa passou com **100% de sucesso (146 runs, 798 assertions, 0 failures, 0 errors)**.
+
 ## 🔜 Próximos Passos Evolutivos
-- Implantar as alterações no Render para validar a exibição estável das fotos em produção.
-- Configurar volumes persistentes no Render no caminho `/data/storage` para assegurar que uploads físicos não sejam apagados entre restarts de contêiner.
-- Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
-- Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.
-- Expandir testes unitários de acessibilidade e validações WCAG no CI/CD.
+- Configurar volumes persistentes no Render no caminho `/data/storage`.
+- Implementar gateway de pagamentos real (Stripe ou Pagar.me).
+- Expandir testes de acessibilidade com axe-core ou similar no CI/CD.
+
+
 
 
 
