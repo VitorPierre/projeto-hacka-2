@@ -104,7 +104,7 @@ class Proposal < ApplicationRecord
   private
 
   def set_default_modality
-    if modality.blank? || modality == "express_session"
+    if modality.blank?
       self.modality = :focused_mentoring
       self.duration ||= 1
     end

@@ -651,6 +651,23 @@ Implementado com sucesso o ajuste no fluxo de propostas para simplificar as moda
 - **Resultado:**
   - A suíte de testes inteira (138 runs, 712 assertions) passou com 100% de sucesso. A negociação e o Pix estão funcionando perfeitamente do início ao fim com mensagens e design premium.
 
+## 🛠️ Resolução do Layout Jitsi Mobile Retrato e Correção de Teste de Unidade (Hotfix)
+
+- **Causa Raiz do Problema:**
+  1. **Tamanho Insuficiente do iFrame em Celulares Retrato:** O contêiner do Jitsi na Sala Virtual utilizava `aspect-video` (16:9). Em smartphones em modo retrato, isso limitava a altura para cerca de 180px–220px, cortando por completo o fluxo de pré-entrada do Jitsi (campos de nome, botões de mídia e botão de "Join Meeting").
+  2. **Colisão no Cabeçalho:** O título "Sala Virtual" e o cronômetro ficavam espremidos no mobile por usarem um alinhamento `flex justify-between items-center` rígido sem suporte a wrapping ou quebra responsiva.
+  3. **Padding Excessivo:** O card de sala virtual usava `p-6` no mobile, reduzindo ainda mais o espaço horizontal utilizável em telas estreitas.
+  4. **Teste de Unidade Falho:** O teste `ProposalTest#test_express_session_modality_is_no_longer_valid` falhava devido a um bug no callback `set_default_modality` do model `Proposal`, que convertia propostas com modalidade `express_session` em `focused_mentoring` antes que o validador pudesse rejeitá-las.
+
+- **Correções Aplicadas:**
+  1. **Altura Dinâmica e Responsiva:** Modificado o contêiner do iFrame para usar `h-[500px] md:h-auto md:aspect-video`. Em celulares Portrait ele passa a ter 500px de altura vertical dedicada para visualização completa da UI do Jitsi. No desktop, ele herda a proporção 16:9 (`aspect-video`) original de forma limpa.
+  2. **Cabeçalho Flexível e Divisor Visual:** Ajustado o título e cronômetro da sala para usar `flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-aprende-secondary/30 pb-3`. Isso empilha os itens verticalmente com alinhamento à esquerda no mobile e os distribui horizontalmente no desktop, adicionando uma elegante borda divisória.
+  3. **Ajuste de Padding Responsivo:** Alterado o padding do card de interação da sessão para `p-4 sm:p-6 md:p-8`, otimizando a largura útil em aparelhos menores.
+  4. **Correção do Callback de Default Modality:** Corrigido o método `set_default_modality` em `app/models/proposal.rb` para apenas aplicar a modalidade padrão se a modalidade estiver em branco. Isso permite que a validação de modalidade inativa funcione e rejeite `express_session` adequadamente, retornando o teste de unidade para o estado verde.
+
+- **Resultado:**
+  - A suíte de testes passou com **100% de sucesso (138 runs, 712 assertions, 0 failures, 0 errors)**. Toda a aplicação está verde, sem regressões, e com visual mobile de videochamada impecável em pé.
+
 ## 🔜 Próximos Passos Evolutivos
 - Implantar as alterações no Render para validar a exibição estável das fotos em produção.
 - Configurar volumes persistentes no Render no caminho `/data/storage` para assegurar que uploads físicos não sejam apagados entre restarts de contêiner.

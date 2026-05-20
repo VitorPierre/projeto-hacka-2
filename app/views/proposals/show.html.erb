@@ -295,13 +295,13 @@
   <!-- Interação da Sessão -->
   <% if @proposal.started_at? && !@proposal.finished_at? %>
     <% if @proposal.synchronous? %>
-      <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-6 md:p-8 flex flex-col gap-4">
-        <div class="flex justify-between items-center">
+      <div class="bg-white rounded-[1.5rem] shadow-sm border border-aprende-secondary p-4 sm:p-6 md:p-8 flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-aprende-secondary/30 pb-3">
           <h2 class="text-xl font-medium text-aprende-text flex items-center gap-2">
             <svg class="w-6 h-6 text-aprende-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
             Sala Virtual
           </h2>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 self-start sm:self-auto">
             <span class="text-aprende-muted text-sm font-medium">Tempo Restante:</span>
             <span id="session-timer" class="font-mono text-xl font-bold text-aprende-primary bg-aprende-bg px-3 py-1 rounded-lg border border-aprende-secondary" data-duration="<%= @proposal.duration.to_i * 60 %>">
               <%= sprintf("%02d:00", @proposal.duration.to_i * 60) %>
@@ -309,7 +309,7 @@
           </div>
         </div>
         
-        <div class="w-full aspect-video rounded-xl overflow-hidden border border-aprende-secondary bg-black">
+        <div class="w-full h-[500px] md:h-auto md:aspect-video rounded-xl overflow-hidden border border-aprende-secondary bg-black">
           <iframe allow="camera; microphone; fullscreen; display-capture; autoplay" src="https://meet.jit.si/aprendeai-proposal-<%= @proposal.id %>" style="height: 100%; width: 100%; border: 0px;"></iframe>
         </div>
         
