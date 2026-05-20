@@ -668,12 +668,53 @@ Implementado com sucesso o ajuste no fluxo de propostas para simplificar as moda
 - **Resultado:**
   - A suíte de testes passou com **100% de sucesso (138 runs, 712 assertions, 0 failures, 0 errors)**. Toda a aplicação está verde, sem regressões, e com visual mobile de videochamada impecável em pé.
 
+## 🛠️ Ajuste da Duração em Horas e Minutos na Mentoria e Recálculo da Recomendação
+
+- **Causa Raiz do Problema:**
+  1. **Duração em Horas Inteiras Apenas:** O formulário de mentoria no front-end e a lógica de persistência limitavam o estudante a escolher apenas quantidades inteiras de horas, impossibilitando propostas mais realistas de curta duração (como 30 ou 45 minutos).
+  2. **Recomendação de Preço Incorreta:** O cálculo do preço sugerido para profissionais técnicos/bacharel não escalava de acordo com frações de horas (minutos), o que gerava inconsistências ou valores fixados estaticamente.
+  3. **Integração Frágil nos Testes:** Vários testes de integração legados continham `duration: 1`, que representava 1 hora na modelagem antiga, mas passou a significar 1 minuto na modelagem de persistência em minutos totais.
+
+- **Correções Aplicadas:**
+  1. **Persistência em Minutos Totais:** A modelagem no model `Proposal` foi fixada para persistir `duration` em minutos totais (ex: 30, 45, 60, 90, 120) mantendo compatibilidade direta com a coluna `duration` (inteiro) do SQLite sem quebrar o banco de dados.
+  2. **Interface com Selects de Horas e Minutos:** O formulário de criação de proposta foi reformulado para exibir dropdowns separados de "Horas" (0h a 5h) e "Minutos" (0, 15, 30, 45 min) apenas quando a modalidade for Mentoria Focada. Um campo oculto mapeia os valores selecionados para o total de minutos.
+  3. **Recálculo Dinâmico (JS & Ruby):** O model `Proposal` e a lógica do front-end (`new.html.erb`) foram alinhados para calcular dinamicamente a recomendação de preço proporcionalmente ao tempo escolhido: `(R$ 50,00 / 60) * total_minutos`. A recomendação é atualizada reativamente conforme o aluno altera a duração ou o valor no formulário.
+  4. **Validação de Duração Não-Zero:** Adicionado validador robusto impedindo a submissão de propostas com duração zero (`to_i <= 0` é inválido) e mantendo a liberdade de propor qualquer valor (sem travar por preço).
+  5. **Atualização dos Testes:** Refatorados todos os testes de integração (`payment_flow_test.rb`, `negotiation_button_test.rb`) que usavam `duration: 1` para usar `duration: 60`, alinhando os cenários de teste à nova modelagem. Adicionado novo teste de fluxo pontual para criação de propostas com durações curtas de mentoria (ex: 45 minutos) com validação de recomendações de preço corretas.
+
+- **Resultado:**
+  - A suíte de testes inteira passou com 100% de sucesso. O aluno pode propor mentorias flexíveis com qualquer fração de tempo e ver as estimativas monetárias exatas na tela.
+
+## 📜 Implementação de Termos de Uso e LGPD (Transparência & Conformidade Jurídica)
+- **Causa Raiz/Necessidade:** A plataforma carecia de conformidade jurídica com a LGPD e termos de uso claros. Como um marketplace educacional completo com transações de dinheiro (bounty/taxa de 20%), perfis específicos (aluno/professor), chats com upload de arquivos e chamadas de vídeo via Jitsi, o sistema precisava de regras realistas e aceites obrigatórios para mitigar riscos jurídicos.
+- **Termos de Uso Customizados (`app/views/home/terms.html.erb`):**
+  - Documento realista redigido especificamente para o aprendeAI.
+  - Abrange regras de comissão (20% de taxa da plataforma retidos no Pix), funcionamento das modalidades de interação (Sessões Expressas de 15min, Mentorias de 30-60min, Pílula de Conhecimento de 24h), regras de conduta aceitável com política ativa contra discursos de ódio ou spam (com moderação automática integrada no app), e as penalidades para infrações (advertência e suspensão/banimento definitivo da conta).
+- **Política de Privacidade & LGPD (`app/views/home/privacy.html.erb`):**
+  - Documento aderente à Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
+  - Detalha a coleta de dados de alunos e professores (CPF, telefone, e-mail, logs do chat, histórico de propostas, anexos e gravações de videochamadas).
+  - Define as bases legais do tratamento (execução de contrato, consentimento e legítimo interesse), direitos dos titulares (acesso, retificação, exclusão), medidas de segurança e contato oficial do DPO (`lgpd@aprendeai.com.br`).
+- **Aceitação Obrigatória no Cadastro (`app/models/user.rb` e `UsersController`):**
+  - Adicionado atributo virtual `terms_acceptance` no model `User`.
+  - Implementada validação `acceptance: true` sob o escopo `:create`, impedindo que contas sejam geradas sem concordar com os documentos.
+  - Mapeado o erro de validação de forma extremamente acessível na UI de cadastro (`users/new.html.erb`), utilizando a cor vermelha em alto contraste, ícone claro de alerta e suporte completo a leitores de tela via `role="alert"` e `aria-describedby` dinâmico (`field_error`).
+  - O checkbox na interface do formulário direciona o link dos termos para abrir em nova aba (`target="_blank"`), evitando perda do progresso do preenchimento caso o usuário clique para ler.
+- **Acessibilidade e Navegação Global:**
+  - Inserido rodapé (`<footer>`) global e semântico no layout base (`layouts/application.html.erb`) contendo links institucionais para "/terms" e "/privacy" em alto contraste verde escuro/musgo, atendendo às especificações WCAG AA.
+  - Links adicionados também de forma discreta e elegante abaixo do card de login (`sessions/new.html.erb`).
+- **Suíte de Testes e Integração:**
+  - Atualizados os cenários de cadastro de `auth_flow_test.rb` para injetar `terms_acceptance: "1"`, garantindo o fluxo feliz.
+  - Adicionado cenário de teste robusto para verificar o bloqueio de cadastro sem aceitação dos termos, retornando erros apropriados (`unprocessable_entity`).
+  - A suíte de testes passou na sua totalidade com 100% de sucesso (**141 runs, 738 assertions, 0 failures, 0 errors**).
+
 ## 🔜 Próximos Passos Evolutivos
 - Implantar as alterações no Render para validar a exibição estável das fotos em produção.
 - Configurar volumes persistentes no Render no caminho `/data/storage` para assegurar que uploads físicos não sejam apagados entre restarts de contêiner.
 - Implementar gateway de pagamentos real (ex: Stripe ou Pagar.me) e travar liberação do bounty até aprovação.
 - Armazenamento das gravações do Jitsi Meet associadas ao registro da aula.
 - Expandir testes unitários de acessibilidade e validações WCAG no CI/CD.
+
+
 
 
 

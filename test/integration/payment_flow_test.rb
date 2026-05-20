@@ -23,7 +23,7 @@ class PaymentFlowTest < ActionDispatch::IntegrationTest
           subject_id: new_subject.id, 
           price: "60,00", 
           modality: "focused_mentoring", 
-          duration: 1 
+          duration: 60 
         } 
       }
     end

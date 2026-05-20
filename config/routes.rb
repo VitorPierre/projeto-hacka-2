@@ -5,6 +5,9 @@ Rails.application.routes.draw do
   post '/login', to: 'sessions#create'
   delete '/logout', to: 'sessions#destroy'
 
+  get '/terms', to: 'home#terms', as: :terms
+  get '/privacy', to: 'home#privacy', as: :privacy
+
   resources :users, only: [:new, :create, :edit, :update] do
     collection do
       post :check_moderation

@@ -179,6 +179,22 @@
       <%= yield %>
     </main>
 
+    <footer class="bg-white border-t border-aprende-secondary mt-auto py-8">
+      <div class="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+        <div>
+          <p class="text-sm font-semibold text-aprende-text">aprende<span class="text-aprende-primary font-bold">AI</span></p>
+          <p class="text-xs text-aprende-muted mt-1">Conectando saberes, transformando a educação.</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-6 text-sm">
+          <%= link_to "Termos de Uso", terms_path, class: "text-aprende-muted hover:text-aprende-primary transition-colors font-medium" %>
+          <%= link_to "Política de Privacidade / LGPD", privacy_path, class: "text-aprende-muted hover:text-aprende-primary transition-colors font-medium" %>
+        </div>
+        <div class="text-xs text-aprende-muted">
+          &copy; <%= Time.current.year %> aprendeAI. Todos os direitos reservados.
+        </div>
+      </div>
+    </footer>
+
     <script>
       function toggleNotifications() {
         const dropdown = document.getElementById('notif-dropdown');

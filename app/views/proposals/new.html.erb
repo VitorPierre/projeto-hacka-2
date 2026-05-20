@@ -51,9 +51,31 @@
         <%= field_error(@proposal, :modality) %>
       </div>
 
-      <div class="flex flex-col gap-1 hidden" id="duration-container">
-        <%= f.label :duration, "Quantidade de Horas", for: "duration-input", class: "text-sm font-medium text-aprende-text" %>
-        <%= f.number_field :duration, min: 1, step: 1, placeholder: "Ex: 2", class: "w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text", id: "duration-input", aria: @proposal.errors[:duration].any? ? { describedby: "proposal_duration_error" } : {} %>
+      <div class="flex flex-col gap-1.5 hidden" id="duration-container">
+        <label class="text-sm font-medium text-aprende-text">Duração da Mentoria</label>
+        <div class="flex gap-4">
+          <div class="flex-1 flex flex-col gap-1">
+            <label for="duration-hours" class="text-xs text-aprende-muted">Horas</label>
+            <select id="duration-hours" class="w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text">
+              <option value="0">0h</option>
+              <option value="1" selected>1h</option>
+              <option value="2">2h</option>
+              <option value="3">3h</option>
+              <option value="4">4h</option>
+              <option value="5">5h</option>
+            </select>
+          </div>
+          <div class="flex-1 flex flex-col gap-1">
+            <label for="duration-minutes" class="text-xs text-aprende-muted">Minutos</label>
+            <select id="duration-minutes" class="w-full border border-aprende-secondary rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-aprende-primary bg-white text-aprende-text">
+              <option value="0" selected>0 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+            </select>
+          </div>
+        </div>
+        <%= f.hidden_field :duration, id: "duration-input" %>
         <%= field_error(@proposal, :duration) %>
       </div>
 
@@ -125,6 +147,8 @@
 
       const durationContainer = document.getElementById("duration-container");
       const durationInput = document.getElementById("duration-input");
+      const durationHoursSelect = document.getElementById("duration-hours");
+      const durationMinutesSelect = document.getElementById("duration-minutes");
       const priceInput = document.getElementById("price-input");
       const priceHint = document.getElementById("price-hint");
       const platformFeeEl = document.getElementById("platform-fee");
@@ -157,13 +181,32 @@
           
           if (modality === "focused_mentoring") {
             if (durationContainer) durationContainer.classList.remove("hidden");
-            if (durationInput && (!durationInput.value || parseInt(durationInput.value) < 1)) {
-              durationInput.value = "1";
+            
+            let totalMins = parseInt(durationInput.value);
+            if (isNaN(totalMins) || totalMins <= 0) {
+              totalMins = 60; // default to 60 minutes
             }
-            if (priceHint) priceHint.textContent = "Mentoria Focada: Negociação por hora (sugerido R$ 50/h)";
+            durationInput.value = totalMins;
+            
+            const hours = Math.floor(totalMins / 60);
+            const minutes = totalMins % 60;
+            if (durationHoursSelect) durationHoursSelect.value = hours;
+            if (durationMinutesSelect) durationMinutesSelect.value = minutes;
+
+            if (priceHint) priceHint.textContent = "Mentoria Focada: Negociação da aula (sugerido R$ 50/h)";
           }
         }
 
+        calculateFees();
+      }
+
+      function updateHiddenDuration() {
+        if (!durationHoursSelect || !durationMinutesSelect || !durationInput) return;
+        const hours = parseInt(durationHoursSelect.value) || 0;
+        const minutes = parseInt(durationMinutesSelect.value) || 0;
+        const totalMinutes = (hours * 60) + minutes;
+        
+        durationInput.value = totalMinutes;
         calculateFees();
       }
 
@@ -204,9 +247,21 @@
           recommendedPrice = 15.0;
           labelDetail = "R$ 15,00 por pílula";
         } else if (modality === "focused_mentoring") {
-          const hours = durationInput ? (parseInt(durationInput.value) || 1) : 1;
-          recommendedPrice = 50.0 * hours;
-          labelDetail = `R$ 50,00 por hora (Total recomendado: R$ ${recommendedPrice.toFixed(2).replace(".", ",")})`;
+          const totalMinutes = durationInput ? (parseInt(durationInput.value) || 60) : 60;
+          recommendedPrice = (50.0 / 60.0) * totalMinutes;
+          
+          let durationText = "";
+          const h = Math.floor(totalMinutes / 60);
+          const m = totalMinutes % 60;
+          if (h > 0) {
+            durationText += `${h} ${h === 1 ? 'hora' : 'horas'}`;
+          }
+          if (m > 0) {
+            if (durationText) durationText += " e ";
+            durationText += `${m} ${m === 1 ? 'minuto' : 'minutos'}`;
+          }
+          
+          labelDetail = `R$ 50,00 por hora (Duração: ${durationText} - Total recomendado: R$ ${recommendedPrice.toFixed(2).replace(".", ",")})`;
         }
 
         priceRecommendationBox.classList.remove("hidden");
@@ -258,8 +313,11 @@
       }
 
       modalitySelect.addEventListener("change", updateForm);
-      if (durationInput) {
-        durationInput.addEventListener("input", calculateFees);
+      if (durationHoursSelect) {
+        durationHoursSelect.addEventListener("change", updateHiddenDuration);
+      }
+      if (durationMinutesSelect) {
+        durationMinutesSelect.addEventListener("change", updateHiddenDuration);
       }
       if (priceInput) {
         priceInput.addEventListener("input", calculateFees);

@@ -87,7 +87,7 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
           subject_id: subjects(:math).id,
           price: 75.0,
           modality: "focused_mentoring",
-          duration: 1
+          duration: 60
         }
       }
     end
@@ -112,7 +112,7 @@ class NegotiationButtonTest < ActionDispatch::IntegrationTest
           subject_id: subjects(:programming).id,
           price: 80.0,
           modality: "focused_mentoring",
-          duration: 1
+          duration: 60
         }
       }
     end

@@ -22,4 +22,10 @@
   <p class="mt-6 text-center text-sm text-aprende-muted">
     Ainda não tem conta? <%= link_to "Cadastre-se", new_user_path, class: "text-aprende-primary hover:underline font-medium" %>
   </p>
+
+  <div class="mt-6 pt-4 border-t border-aprende-secondary/40 text-center text-xs text-aprende-muted flex justify-center gap-4">
+    <%= link_to "Termos de Uso", terms_path, class: "hover:text-aprende-primary hover:underline" %>
+    <span>&bull;</span>
+    <%= link_to "Privacidade / LGPD", privacy_path, class: "hover:text-aprende-primary hover:underline" %>
+  </div>
 </div>

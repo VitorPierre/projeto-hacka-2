@@ -8,4 +8,10 @@ class HomeController < ApplicationController
     @teachers = User.teacher.public_view.includes(:subjects).limit(3)
     @students = User.student.public_view.includes(:subjects).limit(3)
   end
+
+  def terms
+  end
+
+  def privacy
+  end
 end

@@ -53,6 +53,7 @@ class User < ApplicationRecord
 
   before_validation :normalize_cpf_and_phone
 
+  validates :terms_acceptance, acceptance: { message: "deve ser aceito para prosseguir" }, on: :create
   validates :name, presence: { message: "não pode ficar em branco" }, inappropriate_text: true, if: :name_changed?
   validates :email, presence: { message: "não pode ficar em branco" }
   validates :email, uniqueness: { message: "já está cadastrado em outra conta" }, if: :email_changed?

@@ -95,6 +95,18 @@
       </div>
     </div>
 
+    <div class="flex items-start mt-4">
+      <div class="flex items-center h-5">
+        <%= f.check_box :terms_acceptance, class: "h-4 w-4 text-aprende-primary focus:ring-aprende-primary border-aprende-secondary rounded bg-white" %>
+      </div>
+      <div class="ml-3 text-sm">
+        <%= f.label :terms_acceptance, class: "text-aprende-text font-medium" do %>
+          Li e concordo com os <%= link_to "Termos de Uso", terms_path, target: "_blank", class: "text-aprende-primary hover:underline" %> e a <%= link_to "Política de Privacidade / LGPD", privacy_path, target: "_blank", class: "text-aprende-primary hover:underline" %> da plataforma.
+        <% end %>
+        <%= field_error(@user, :terms_acceptance) %>
+      </div>
+    </div>
+
     <div class="pt-4">
       <%= f.submit "Finalizar Cadastro", class: "w-full bg-aprende-primary hover:bg-[#159b3f] text-white font-medium py-3 px-4 rounded-xl transition-colors cursor-pointer" %>
     </div>

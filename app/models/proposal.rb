@@ -20,6 +20,23 @@ class Proposal < ApplicationRecord
     MODALITY_NAMES[modality] || modality.to_s.humanize
   end
 
+  def duration_human
+    return "" if duration.blank?
+    
+    hours = duration / 60
+    minutes = duration % 60
+    
+    parts = []
+    if hours > 0
+      parts << "#{hours} #{hours == 1 ? 'hora' : 'horas'}"
+    end
+    if minutes > 0
+      parts << "#{minutes} #{minutes == 1 ? 'minuto' : 'minutos'}"
+    end
+    
+    parts.join(" e ")
+  end
+
   STATUS_NAMES = {
     "pending" => "Pendente",
     "accepted" => "Aceita",
@@ -91,7 +108,7 @@ class Proposal < ApplicationRecord
     when "knowledge_pill"
       15.0
     when "focused_mentoring"
-      50.0 * (duration || 1).to_i
+      ((50.0 / 60.0) * (duration || 60).to_f).round(2)
     else
       15.0
     end
@@ -106,7 +123,7 @@ class Proposal < ApplicationRecord
   def set_default_modality
     if modality.blank?
       self.modality = :focused_mentoring
-      self.duration ||= 1
+      self.duration ||= 60
     end
   end
 
@@ -116,7 +133,7 @@ class Proposal < ApplicationRecord
       errors.add(:duration, "não deve ser preenchida para pílula de conhecimento") if duration.present?
     when "focused_mentoring"
       errors.add(:duration, "deve ser informada para mentoria focada") if duration.blank?
-      errors.add(:duration, "deve ser de pelo menos 1 hora") if duration.present? && duration.to_i < 1
+      errors.add(:duration, "não pode ser zero") if duration.present? && duration.to_i <= 0
     when "express_session"
       errors.add(:modality, "Expressa não é mais uma modalidade ativa")
     end
